@@ -60,7 +60,7 @@ export default function HomePage() {
               <div className="flex items-center justify-center space-x-2 tracking-tight">
                 <p className="text-center light">Sign In/Sign Up</p>
                 <Button onClick={handleConnect} className="inline-flex items-center">
-                  <Icons.LogInIcon className="h-5 w-5" />
+                  <Icons.LucideLogIn className="h-5 w-5" />
                 </Button>
               </div>
             ) : (
@@ -71,7 +71,7 @@ export default function HomePage() {
                   variant="destructive"
                   className="inline-flex items-center"
                 >
-                  <Icons.Wallet />
+                  <Icons.LucideLogOut />
                 </Button>
               </div>
             )}

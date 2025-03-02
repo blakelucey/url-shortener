@@ -1,4 +1,7 @@
+"use client"
+
 import { AppSidebar } from "@/components/app-sidebar"
+import React, { useState, useEffect } from 'react'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -13,8 +16,16 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
+import dbConnect from '../lib/../../lib/dbConnect';
+import User from '../../../models/users';
+import { useAccount } from "wagmi"
+import { useAppKitAccount } from "@reown/appkit/react";
 
-export default function Page() {
+
+export default function Dashboard() {
+  const { embeddedWalletInfo } = useAppKitAccount();
+  const { isConnected, address } = useAccount();
+
   return (
     <SidebarProvider>
       <AppSidebar />

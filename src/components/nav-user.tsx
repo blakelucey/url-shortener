@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from "react";
 import {
   BadgeCheck,
   Bell,
@@ -29,6 +30,9 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { useDisconnect } from "@reown/appkit/react";
+import { useRouter } from "next/navigation";
+import { useAccount } from "wagmi"
 
 export function NavUser({
   user,
@@ -40,6 +44,22 @@ export function NavUser({
   }
 }) {
   const { isMobile } = useSidebar()
+  const { disconnect } = useDisconnect();
+  const { isConnected } = useAccount();
+  const router = useRouter();
+
+
+  useEffect(() => {
+    if (!isConnected) {
+      router.push('/')
+    }
+  }, [isConnected])
+
+  
+  const handleDisconnect = () => {
+    console.log("Disconnecting wallet...");
+    disconnect();
+  };
 
   return (
     <SidebarMenu>
@@ -102,7 +122,7 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={handleDisconnect}>
               <LogOut />
               Log out
             </DropdownMenuItem>
