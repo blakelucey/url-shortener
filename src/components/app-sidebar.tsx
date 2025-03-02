@@ -2,10 +2,10 @@
 
 import * as React from "react"
 import {
-  AudioWaveform,
+  // AudioWaveform,
   BookOpen,
   Bot,
-  Command,
+  // Command,
   Frame,
   GalleryVerticalEnd,
   Map,
@@ -15,9 +15,9 @@ import {
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
-import { NavProjects } from "@/components/nav-projects"
+// import { NavProjects } from "@/components/nav-projects"
 import { NavUser } from "@/components/nav-user"
-import { TeamSwitcher } from "@/components/team-switcher"
+// import { TeamSwitcher } from "@/components/team-switcher"
 import {
   Sidebar,
   SidebarContent,
@@ -25,14 +25,15 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar"
+import { Icons } from "./icons"
 
 // This is sample data.
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
+  // user: {
+  //   name: "shadcn",
+  //   email: "m@example.com",
+  //   avatar: "/avatars/shadcn.jpg",
+  // },
   teams: [
     {
       name: "Acme Inc",
@@ -52,63 +53,47 @@ const data = {
   ],
   navMain: [
     {
-      title: "Playground",
+      title: "Links",
       url: "#",
-      icon: SquareTerminal,
+      icon: Icons.LucideLink,
       isActive: true,
       items: [
         {
-          title: "History",
+          title: "Create a new link",
           url: "#",
         },
         {
-          title: "Starred",
-          url: "#",
-        },
-        {
-          title: "Settings",
+          title: "View all links",
           url: "#",
         },
       ],
     },
     {
-      title: "Models",
+      title: "Analytics",
       url: "#",
-      icon: Bot,
+      icon: Icons.LucideChartNetwork,
       items: [
         {
-          title: "Genesis",
-          url: "#",
-        },
-        {
-          title: "Explorer",
-          url: "#",
-        },
-        {
-          title: "Quantum",
+          title: "View",
           url: "#",
         },
       ],
     },
     {
-      title: "Documentation",
+      title: "Contact",
       url: "#",
-      icon: BookOpen,
+      icon: Icons.LucideBadgeHelp,
       items: [
         {
-          title: "Introduction",
+          title: "Help",
           url: "#",
         },
         {
-          title: "Get Started",
+          title: "Suggest a new feature",
           url: "#",
         },
         {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
+          title: "Report a bug",
           url: "#",
         },
       ],
@@ -116,24 +101,16 @@ const data = {
     {
       title: "Settings",
       url: "#",
-      icon: Settings2,
+      icon: Icons.LucideSettings,
       items: [
         {
           title: "General",
           url: "#",
         },
-        {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
-        },
+        // {
+        //   title: "Billing",
+        //   url: "#",
+        // },
       ],
     },
   ],
@@ -167,7 +144,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         {/* <NavProjects projects={data.projects} /> */}
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        {/* <NavUser user={data.user} />  */} {/* Important! need this line for billing later */}
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
