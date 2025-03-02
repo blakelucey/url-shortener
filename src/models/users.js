@@ -1,49 +1,23 @@
-import { Schema, model } from 'mongoose';
+import { Schema, model, models } from 'mongoose';
 import { isEmail } from 'validator';
-import { hash } from 'bcrypt';
-import { nanoid } from 'nanoid'
+import { hash } from 'bcryptjs';
 
 const userSchema = new Schema({
   userId: {
     type: String,
     unique: true,
     required: true,
-    default: function () {
-      return 'usr_' + nanoid(9);
-    },
   },
   authType: {
     type: String,
     enum: ['wallet', 'sso', 'email'],
-    required: true,
-  },
-  walletHash: {
-    type: String,
-    required: function () {
-      return this.authType === 'wallet';
-    },
-  },
-  ssoInfo: {
-    type: Object,
-    required: function () {
-      return this.authType === 'sso';
-    },
+    required: false,
   },
   email: {
     type: String,
-    required: function () {
-      return this.authType === 'email';
-    },
     lowercase: true,
     trim: true,
     validate: [isEmail, 'Invalid email'],
-  },
-  password: {
-    type: String,
-    required: function () {
-      return this.authType === 'email';
-    },
-    minlength: 8,
   },
   firstName: {
     type: String,
@@ -67,4 +41,6 @@ userSchema.pre('save', async function (next) {
   next();
 });
 
-export default model('User', userSchema);
+const User = models.User || model('User', userSchema)
+
+export default User

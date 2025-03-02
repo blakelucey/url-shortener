@@ -1,12 +1,12 @@
 import mongoose from 'mongoose';
 
-const MONGODB_URI = process.env.NEXT_PUBLIC_MONGODB_URI;
+const MONGODB_URI = process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
-  throw new Error('Please define the MONGODB_URI environment variable inside .env.local');
+  throw new Error('Please define MONGODB_URI in .env.local');
 }
 
-// Cache the connection globally to reuse it
+// Cache to reuse the connection
 let cached = global.mongoose;
 
 if (!cached) {
@@ -22,13 +22,13 @@ async function dbConnect() {
     const opts = {
       useNewUrlParser: true,
       useUnifiedTopology: true,
-      bufferCommands: false,
     };
 
     cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
       return mongoose;
     });
   }
+
   cached.conn = await cached.promise;
   return cached.conn;
 }
