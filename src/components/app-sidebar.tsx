@@ -1,23 +1,15 @@
 "use client"
 
 import * as React from "react"
+import { useState } from "react"
 import {
-  // AudioWaveform,
-  BookOpen,
-  Bot,
-  // Command,
+  Component,
   Frame,
   GalleryVerticalEnd,
   Map,
   PieChart,
-  Settings2,
-  SquareTerminal,
 } from "lucide-react"
-
 import { NavMain } from "@/components/nav-main"
-// import { NavProjects } from "@/components/nav-projects"
-import { NavUser } from "@/components/nav-user"
-// import { TeamSwitcher } from "@/components/team-switcher"
 import {
   Sidebar,
   SidebarContent,
@@ -26,30 +18,12 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar"
 import { Icons } from "./icons"
+import { OnboardingDialog } from "./contact-dialog" // Adjust path
 
-// This is sample data.
+// Sample data (unchanged)
 const data = {
-  // user: {
-  //   name: "shadcn",
-  //   email: "m@example.com",
-  //   avatar: "/avatars/shadcn.jpg",
-  // },
   teams: [
-    {
-      name: "Acme Inc",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-    // {
-    //   name: "Acme Corp.",
-    //   logo: AudioWaveform,
-    //   plan: "Startup",
-    // },
-    // {
-    //   name: "Evil Corp.",
-    //   logo: Command,
-    //   plan: "Free",
-    // },
+    { name: "Acme Inc", logo: GalleryVerticalEnd, plan: "Enterprise" },
   ],
   navMain: [
     {
@@ -58,95 +32,70 @@ const data = {
       icon: Icons.LucideLink,
       isActive: true,
       items: [
-        {
-          title: "Create a new link",
-          url: "#",
-        },
-        {
-          title: "View all links",
-          url: "#",
-        },
+        { title: "Create a new link", url: "#" },
+        { title: "View all links", url: "#" },
       ],
     },
     {
       title: "Analytics",
       url: "#",
       icon: Icons.LucideChartNetwork,
-      items: [
-        {
-          title: "View",
-          url: "#",
-        },
-      ],
+      items: [{ title: "View", url: "#" }],
     },
     {
       title: "Contact",
       url: "#",
       icon: Icons.LucideBadgeHelp,
       items: [
-        {
-          title: "Help",
-          url: "#",
-        },
-        {
-          title: "Suggest a new feature",
-          url: "#",
-        },
-        {
-          title: "Report a bug",
-          url: "#",
-        },
+        { title: "Help", url: "#" },
+        { title: "Suggest a new feature", url: "#" },
+        { title: "Report a bug", url: "#" },
       ],
     },
     {
       title: "Settings",
       url: "#",
       icon: Icons.LucideSettings,
-      items: [
-        {
-          title: "General",
-          url: "#",
-        },
-        // {
-        //   title: "Billing",
-        //   url: "#",
-        // },
-      ],
+      items: [{ title: "General", url: "#" }],
     },
   ],
   projects: [
-    {
-      name: "Design Engineering",
-      url: "#",
-      icon: Frame,
-    },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
-    },
+    { name: "Design Engineering", url: "#", icon: Frame },
+    { name: "Sales & Marketing", url: "#", icon: PieChart },
+    { name: "Travel", url: "#", icon: Map },
   ],
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const [isContactDialogOpen, setIsContactDialogOpen] = useState(false);
+
+  console.log('open', isContactDialogOpen)
+
+  const modifiedNavMain = data.navMain.map(item => ({
+    ...item,
+    items: item.items?.map(subItem => ({
+      ...subItem,
+      onClick: item.title === "Contact" ? () => setIsContactDialogOpen(true) : () => {}, // No-op for others
+    })),
+  }));
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         {/* <TeamSwitcher teams={data.teams} /> */}
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain items={modifiedNavMain} />
         {/* <NavProjects projects={data.projects} /> */}
       </SidebarContent>
       <SidebarFooter>
-        {/* <NavUser user={data.user} />  */} {/* Important! need this line for billing later */}
+        {/* <NavUser user={data.user} /> */}
       </SidebarFooter>
       <SidebarRail />
+      <OnboardingDialog
+        open={isContactDialogOpen}
+        onOpenChange={setIsContactDialogOpen}
+      />
     </Sidebar>
-  )
+  );
 }

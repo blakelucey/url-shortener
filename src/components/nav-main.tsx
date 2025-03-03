@@ -29,6 +29,7 @@ export function NavMain({
     items?: {
       title: string
       url: string
+      onClick: () => void
     }[]
   }[]
 }) {
@@ -55,7 +56,7 @@ export function NavMain({
                 <SidebarMenuSub>
                   {item.items?.map((subItem) => (
                     <SidebarMenuSubItem key={subItem.title}>
-                      <SidebarMenuSubButton asChild>
+                      <SidebarMenuSubButton asChild onClick={subItem.onClick}>
                         <a href={subItem.url}>
                           <span>{subItem.title}</span>
                         </a>
