@@ -17,23 +17,37 @@ import {
 import { ChannelComboxInput } from './channel-input';
 import { nanoid } from "nanoid";
 import Link from 'next/link';
+import { CampaignComboInput } from './campaign-input';
 
 const CreateLinkInput = () => {
     const [link, setLink] = useState("");
     const { caipAddress } = useAppKitAccount();
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [campaigns, setCampaigns] = useState<string[]>([]);
+    const [channels, setChannels] = useState<string[]>([]);
+    const [shortHash, setShortHash] = useState(nanoid(7))
+
+    const handleCampaignSelection = (values: string[]) => {
+        console.log('Selected campaigns:', values);
+        setCampaigns(values);
+    };
+
+    const handleChannelSelection = (values: string[]) => {
+        console.log('Selected channels:', values);
+        setChannels(values);
+    };
 
     const userId = caipAddress;
-    const shortHash = nanoid(7);
 
     const handleSubmit = async (e: { preventDefault: () => void; }) => {
         e.preventDefault();
         console.log("Submitted link:", link);
         // Future axios.post('/api/shorten', { url: link }) can go here
         try {
-            const response = await axios.post("http://localhost:3000/api/users", { userId, });
+            const response = await axios.post("http://localhost:3000/api/users", { userId, campaigns, link, channels, shortHash });
             if (response.status === 200) {
                 console.log('success')
+                setIsSubmitting(true)
             } else {
                 console.error("Failed to submit onboarding data");
             }
@@ -54,8 +68,7 @@ const CreateLinkInput = () => {
                 <SheetHeader>
                     <SheetTitle>Add your link</SheetTitle>
                     <SheetDescription>
-                        Add new links here. Add your link, see what it will look like, input channels and campaigns for analytics. Click submit when you're done.
-                    </SheetDescription>
+                        Add your link, see what it will look like, input channels and campaigns for analytics. Click submit when you're done.                    </SheetDescription>
                 </SheetHeader>
                 <form onSubmit={handleSubmit} className="space-y-4 max-w-sm mx-auto">
                     <div className="space-y-1.5">
@@ -78,11 +91,15 @@ const CreateLinkInput = () => {
                     )}
                     <div className='space-y-1.5'>
                         <Label htmlFor="What channels will you use?" className='text-gray-700'>What channels will you use?</Label>
-                        <ChannelComboxInput />
+                        <ChannelComboxInput onSelectionChange={handleChannelSelection} />
+                    </div>
+                    <div className='space-y-1.5'>
+                        <Label htmlFor="What campaign(s) will you use?" className='text-gray-700'>What campaign(s) will you use?</Label>
+                        <CampaignComboInput onSelectionChange={handleCampaignSelection} />
                     </div>
                     <SheetFooter>
                         <SheetClose asChild>
-                            <Button type="submit" className="w-full">Shorten URL</Button>
+                            <Button type="submit" className="w-full">Submit</Button>
                         </SheetClose>
                     </SheetFooter>
                 </form>
