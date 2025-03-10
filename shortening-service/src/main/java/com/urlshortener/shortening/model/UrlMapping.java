@@ -10,6 +10,7 @@ import java.util.Date;
 public class UrlMapping {
     @Id
     private String id;
+    private String userId;
     private String shortCode;
     private String longUrl;
     private Date createdAt;
@@ -19,7 +20,8 @@ public class UrlMapping {
         this.createdAt = new Date();
     }
 
-    public UrlMapping(String shortCode, String longUrl) {
+    public UrlMapping(String userId, String shortCode, String longUrl) {
+        this.userId = userId;
         this.shortCode = shortCode;
         this.longUrl = longUrl;
         this.createdAt = new Date();

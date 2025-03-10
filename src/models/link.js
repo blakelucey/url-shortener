@@ -5,6 +5,7 @@ const linkSchema = new Schema({
     type: String,
     ref: 'User',
     required: true,
+    index: true,
   },
   originalUrl: {
     type: String,
