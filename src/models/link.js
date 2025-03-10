@@ -2,7 +2,7 @@ import { Schema, model } from 'mongoose';
 
 const linkSchema = new Schema({
   userId: {
-    type: Schema.Types.ObjectId,
+    type: String,
     ref: 'User',
     required: true,
   },
@@ -15,6 +15,16 @@ const linkSchema = new Schema({
     unique: true,
     required: true,
   },
+  channels: {
+    type: [String],
+    unique: false,
+    required: false
+  },
+  campaigns: {
+    type: [String],
+    unique: false,
+    required: false
+  }
 }, { timestamps: true });
 
 export default model('Link', linkSchema);

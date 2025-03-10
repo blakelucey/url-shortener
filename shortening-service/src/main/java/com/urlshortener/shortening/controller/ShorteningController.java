@@ -1,4 +1,3 @@
-// src/main/java/com/example/shorteningservice/controller/ShorteningController.java
 package com.example.shorteningservice.controller;
 
 import com.example.shorteningservice.model.UrlMapping;
@@ -10,6 +9,7 @@ import java.util.Map;
 import java.util.Random;
 
 @RestController
+@CrossOrigin(origins = "${NEXT_PUBLIC_FRONTEND_URL}") // Add this
 public class ShorteningController {
 
     @Autowired
@@ -26,7 +26,7 @@ public class ShorteningController {
         UrlMapping mapping = new UrlMapping(shortCode, longUrl);
         repository.save(mapping);
 
-        String shortUrl = "http://localhost:8081/" + shortCode; // Adjust base URL for production
+        String shortUrl = "http://short-ly.link/" + shortCode; // Adjust base URL for production
         return Map.of("shortUrl", shortUrl);
     }
 
@@ -37,7 +37,7 @@ public class ShorteningController {
         int length = 6;
 
         do {
-            sb.setLength(0); // Clear previous attempt
+            sb.setLength(0);
             for (int i = 0; i < length; i++) {
                 sb.append(chars.charAt(random.nextInt(chars.length())));
             }

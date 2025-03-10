@@ -53,7 +53,7 @@ export function NavUser({
     if (!isConnected) {
       router.push('/')
     }
-  }, [isConnected])
+  }, [isConnected, router])
 
   
   const handleDisconnect = () => {
