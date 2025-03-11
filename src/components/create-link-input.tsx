@@ -50,7 +50,7 @@ const CreateLinkInput = () => {
             }
         };
         fetchShortHash();
-    }, [link]);
+    }, [link, userId]);
 
     // Handle campaign selection
     const handleCampaignSelection = (values: string[]) => {

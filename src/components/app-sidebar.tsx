@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/sidebar"
 import { Icons } from "./icons"
 import { OnboardingDialog } from "./contact-dialog" // Adjust path
+import { NavUser } from "./nav-user"
 
 // Sample data (unchanged)
 const data = {
@@ -89,7 +90,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         {/* <NavProjects projects={data.projects} /> */}
       </SidebarContent>
       <SidebarFooter>
-        {/* <NavUser user={data.user} /> */}
+        <NavUser user={{
+          name: "",
+          email: "",
+          avatar: ""
+        }} />
       </SidebarFooter>
       <SidebarRail />
       <OnboardingDialog

@@ -28,30 +28,35 @@ export default function Dashboard() {
   const { isConnected, address } = useAccount();
 
   useEffect(() => {
-    const checkUserStatus = async () => {
-      console.log('isConnected:', isConnected);
-      console.log('caipAddress:', caipAddress);
-      if (isConnected && caipAddress) {
-        try {
-          const response = await axios.get(`http://localhost:3000/api/users?userId=${caipAddress}`);
-          console.log('API response:', response.data, 'Status:', response.status);
-          if (response.status === 200 && response.data.exists) {
-            setIsOnboardingOpen(false);
-          } else {
+    console.log('isConnected:', isConnected);
+    console.log('caipAddress:', caipAddress);
+
+    try {
+      const checkUserStatus = async () => {
+
+        if (isConnected && caipAddress !== undefined) {
+          try {
+            const response = await axios.get(`http://localhost:3000/api/users?userId=${caipAddress}`);
+            console.log('API response:', response.data, 'Status:', response.status);
+            if (response.status === 200 && response.data.exists) {
+              setIsOnboardingOpen(false);
+            } else { 
+              setIsOnboardingOpen(true);
+            }
+          } catch (error) {
+            console.error("Error checking user status:", error);
             setIsOnboardingOpen(true);
           }
-        } catch (error) {
-          console.error("Error checking user status:", error);
-          setIsOnboardingOpen(true);
+        } else {
+          setIsOnboardingOpen(false);
         }
-      } else {
-        setIsOnboardingOpen(false);
-      }
-    };
-    checkUserStatus().catch((e) => {
-      console.error(e);
-    });
-  }, [isConnected, caipAddress]);
+      };
+      checkUserStatus().catch((e) => {
+        console.error(e);
+      });
+    } catch (e) { console.error(e) }
+
+  }, [isConnected, caipAddress!]);
 
   return (
     <div>
