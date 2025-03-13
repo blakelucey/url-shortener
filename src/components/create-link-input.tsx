@@ -17,6 +17,8 @@ import {
 import { ChannelComboxInput } from './channel-input';
 import { CampaignComboInput } from './campaign-input';
 import Link from 'next/link';
+import { createLinkAsync } from '@/store/slices/linkSlice';
+import { useAppDispatch } from '@/store/hooks';
 
 const CreateLinkInput = () => {
     const [link, setLink] = useState(""); // Original URL input
@@ -26,7 +28,8 @@ const CreateLinkInput = () => {
     const [channels, setChannels] = useState<string[]>([]); // Selected channels
     const [isSubmitting, setIsSubmitting] = useState(false); // Submission state
     const { caipAddress } = useAppKitAccount(); // User ID from AppKit
-    const userId = caipAddress;
+    const userId = caipAddress!;
+    const dispatch = useAppDispatch()
 
     // Fetch short hash from Java Shortening Service when the URL changes
     useEffect(() => {
@@ -40,7 +43,6 @@ const CreateLinkInput = () => {
                 const response = await axios.post("http://localhost:8080/shorten", { url: link, userId: userId });
                 console.log('response', response)
                 const shortUrl = response.data.shortUrl; // e.g., "http://localhost:8081/abc123"
-                // const hash = shortUrl.split('/').pop(); // Extract "abc123" from the URL
                 setShortHash(shortUrl);
             } catch (error) {
                 console.error("Error fetching short hash:", error);
@@ -73,26 +75,13 @@ const CreateLinkInput = () => {
         setIsSubmitting(true);
         try {
 
-            const signResponse = await axios.get(`${process.env.NEXT_PUBLIC_FRONTEND_URL!}/api/signToken`, {
-                params: { userId } // Pass any required data here
-            });
-            const token = signResponse.data.data;
+            const linkData = { userId, originalUrl: link, shortHash, channels, campaigns }
 
-            const response = await axios.post("http://localhost:3000/api/links", {
-                userId,
-                originalUrl: link,
-                shortHash,
-                channels,
-                campaigns
-            }, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-
-            console.log('response', response)
-            if (response.statusText === 'Created') {
-                console.log('Success:', response.data);
+            const response: any = await dispatch(createLinkAsync({ linkData })).unwrap().catch((e) => {
+                console.error(e)
+            })
+            if (response.message === 'Link created') {
+                console.log('Success:', response);
             } else {
                 console.error("Failed to submit link data");
             }
