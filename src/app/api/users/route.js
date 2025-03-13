@@ -26,7 +26,7 @@ export async function GET(request) {
 
   try {
     await client.connect();
-    const database = client.db("urlShortener")
+    const database = client.db("test") // one DB 
     const collection = database.collection('users')
     const user = await collection.findOne({ userId });
     console.log('user', user)

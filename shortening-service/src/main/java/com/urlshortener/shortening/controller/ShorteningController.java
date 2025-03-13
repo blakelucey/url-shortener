@@ -31,7 +31,7 @@ public class ShorteningController {
         UrlMapping mapping = new UrlMapping(userId, shortCode, longUrl);
         repository.save(mapping);
 
-        String shortUrl = "http://short-ly.link/" + shortCode; // Adjust base URL for production
+        String shortUrl = "https://kliqly.link/" + shortCode; // Adjust base URL for production
         return Map.of("shortUrl", shortUrl);
     }
 

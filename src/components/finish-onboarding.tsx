@@ -33,7 +33,7 @@ export function OnboardingDialog({ open, onOpenChange }: OnboardingDialogProps) 
     setIsSubmitting(true);
     try {
       const response = await axios.post("http://localhost:3000/api/users", { userId, firstName, lastName, email, authType });
-      if (response.status === 200) {
+      if (response.status === 200 || 201) {
         onOpenChange(false); // Close dialog on success
       } else {
         console.error("Failed to submit onboarding data");
