@@ -19,13 +19,15 @@ import {
 import { useAccount } from "wagmi"
 import { useAppKitAccount } from "@reown/appkit/react";
 import { OnboardingDialog } from "@/components/finish-onboarding"
-import axios from 'axios'
 import { LinkDataTable } from "@/components/link-table"
+import { fetchUser } from "@/store/slices/userSlice"
+import { useAppDispatch } from "@/store/hooks"
 
 export default function Dashboard() {
   const { embeddedWalletInfo, caipAddress } = useAppKitAccount();
   const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(false);
   const { isConnected, address } = useAccount();
+  const dispatch = useAppDispatch()
 
   useEffect(() => {
     console.log('isConnected:', isConnected);
@@ -33,14 +35,14 @@ export default function Dashboard() {
 
     try {
       const checkUserStatus = async () => {
-
         if (isConnected && caipAddress !== undefined) {
           try {
-            const response = await axios.get(`http://localhost:3000/api/users?userId=${caipAddress}`);
-            console.log('API response:', response.data, 'Status:', response.status);
-            if (response.status === 200 && response.data.exists) {
+            const response = await dispatch(fetchUser(caipAddress)).unwrap().catch((e) => {
+              console.error(e)
+            })
+            if (response.exists === true) {
               setIsOnboardingOpen(false);
-            } else { 
+            } else {
               setIsOnboardingOpen(true);
             }
           } catch (error) {
