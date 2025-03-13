@@ -47,7 +47,6 @@ export const createUserAsync = createAsyncThunk(
       if (!response.ok) {
         return rejectWithValue(data.error || 'Failed to create user');
       }
-      // Assuming your POST endpoint returns { message, user }
       return data.user;
     } catch (error: any) {
       return rejectWithValue(error.message);
