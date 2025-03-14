@@ -36,8 +36,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import CreateLinkInput from "./create-link-input";
+import { fetchLinks } from "@/store/slices/linkSlice";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { useAppKitAccount } from "@reown/appkit/react";
 
-// Define the new data type
+// Define the type used for rendering data in the table.
 export type LinkData = {
   id: string;
   link: string;
@@ -46,32 +49,7 @@ export type LinkData = {
   createdAt: string;
 };
 
-// Sample data with static shortHash values
-const data: LinkData[] = [
-  {
-    id: "link1",
-    link: "https://example.com/link1",
-    shortHash: "short.ly/abc123",
-    clicks: 100,
-    createdAt: "2023-10-01 12:00",
-  },
-  {
-    id: "link2",
-    link: "https://example.com/link2",
-    shortHash: "short.ly/def456",
-    clicks: 250,
-    createdAt: "2023-10-02 14:30",
-  },
-  {
-    id: "link3",
-    link: "https://example.com/link3",
-    shortHash: "short.ly/ghi789",
-    clicks: 75,
-    createdAt: "2023-10-03 09:15",
-  },
-];
-
-// Define the columns with shortHash added
+// Define the columns for the table.
 export const columns: ColumnDef<LinkData>[] = [
   {
     id: "select",
@@ -148,16 +126,45 @@ export const columns: ColumnDef<LinkData>[] = [
 ];
 
 export function LinkDataTable() {
-  const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
+  const dispatch = useAppDispatch();
+  const { caipAddress } = useAppKitAccount(); // User ID from AppKit
+  const userId = caipAddress!;
+  const { links: fetchedLinks, loading, error } = useAppSelector(
+    (state) => state.links
   );
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
+
+  // Fetch links on component mount.
+  React.useEffect(() => {
+    const handleFetch = async () => {
+      try {
+        dispatch(fetchLinks(userId));
+      } catch (e) { console.error(e) }
+
+    }
+
+    handleFetch().catch((e) => {
+      console.error(e)
+    })
+  }, [dispatch, userId]);
+
+  // Ensure fetchedLinks is an array before mapping.
+  const tableData: LinkData[] = Array.isArray(fetchedLinks)
+    ? fetchedLinks.map((l: any) => ({
+      id: l._id, // _id must be available for this to be a record on mongo db
+      link: l.originalUrl,
+      shortHash: l.shortHash,
+      clicks: 0, // Since click data isn't available yet.
+      createdAt: l.createdAt,
+    }))
+    : [];
+
+  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
 
   const table = useReactTable({
-    data,
+    data: tableData,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -200,31 +207,31 @@ export function LinkDataTable() {
               {table
                 .getAllColumns()
                 .filter((column) => column.getCanHide())
-                .map((column) => {
-                  return (
-                    <DropdownMenuCheckboxItem
-                      key={column.id}
-                      className="capitalize"
-                      checked={column.getIsVisible()}
-                      onCheckedChange={(value) =>
-                        column.toggleVisibility(!!value)
-                      }
-                    >
-                      {column.id}
-                    </DropdownMenuCheckboxItem>
-                  );
-                })}
+                .map((column) => (
+                  <DropdownMenuCheckboxItem
+                    key={column.id}
+                    className="capitalize"
+                    checked={column.getIsVisible()}
+                    onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                  >
+                    {column.id}
+                  </DropdownMenuCheckboxItem>
+                ))}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </div>
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
+      {loading ? (
+        <div>Loading links...</div>
+      ) : error ? (
+        <div className="text-red-500">Error: {error}</div>
+      ) : (
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
                     <TableHead key={header.id}>
                       {header.isPlaceholder
                         ? null
@@ -233,41 +240,32 @@ export function LinkDataTable() {
                           header.getContext()
                         )}
                     </TableHead>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
                   ))}
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  No results.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={columns.length} className="h-24 text-center">
+                    No results.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      )}
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground">
           {table.getFilteredSelectedRowModel().rows.length} of{" "}
