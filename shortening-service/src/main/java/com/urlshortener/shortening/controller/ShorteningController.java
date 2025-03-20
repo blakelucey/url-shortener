@@ -18,24 +18,21 @@ public class ShorteningController {
     @PostMapping("/shorten")
     public Map<String, String> shortenUrl(@RequestBody Map<String, String> request) {
         String longUrl = request.get("url");
-        String userId = request.get("userId");
 
         if (longUrl == null || longUrl.trim().isEmpty()) {
             throw new IllegalArgumentException("URL cannot be empty");
         }
-        if (userId == null || userId.trim().isEmpty()) {
-            throw new IllegalArgumentException("User ID cannot be empty");
-        }
 
-        String shortCode = generateUniqueShortCode(userId);
-        UrlMapping mapping = new UrlMapping(userId, shortCode, longUrl);
+        // Generate a globally unique short code.
+        String shortCode = generateUniqueShortCode();
+        UrlMapping mapping = new UrlMapping(shortCode, longUrl);
         repository.save(mapping);
 
         String shortUrl = "https://kliqly.link/" + shortCode; // Adjust base URL for production
         return Map.of("shortUrl", shortUrl);
     }
 
-    private String generateUniqueShortCode(String userId) {
+    private String generateUniqueShortCode() {
         String chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         Random random = new Random();
         String shortCode;
@@ -47,7 +44,7 @@ public class ShorteningController {
                 sb.append(chars.charAt(random.nextInt(chars.length())));
             }
             shortCode = sb.toString();
-        } while (repository.existsByUserIdAndShortCode(userId, shortCode));
+        } while (repository.existsByShortCode(shortCode)); // Global uniqueness check
 
         return shortCode;
     }

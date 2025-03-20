@@ -40,7 +40,7 @@ const CreateLinkInput = () => {
             }
             setIsFetchingHash(true);
             try {
-                const response = await axios.post("http://localhost:8080/shorten", { url: link, userId: userId });
+                const response = await axios.post("http://localhost:8080/shorten", { url: link });
                 console.log('response', response)
                 const shortUrl = response.data.shortUrl; // e.g., "http://localhost:8081/abc123"
                 setShortHash(shortUrl);
@@ -80,7 +80,8 @@ const CreateLinkInput = () => {
             const response: any = await dispatch(createLinkAsync({ linkData })).unwrap().catch((e) => {
                 console.error(e)
             })
-            if (response.message === 'Link created') {
+
+            if (response.status === 200 || 201) {
                 console.log('Success:', response);
             } else {
                 console.error("Failed to submit link data");

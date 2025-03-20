@@ -133,36 +133,32 @@ export function LinkDataTable() {
     (state) => state.links
   );
 
-  // Fetch links on component mount.
-  React.useEffect(() => {
-    const handleFetch = async () => {
-      try {
-        dispatch(fetchLinks(userId));
-      } catch (e) { console.error(e) }
-
-    }
-
-    handleFetch().catch((e) => {
-      console.error(e)
-    })
-  }, [dispatch, userId]);
-
-  // Ensure fetchedLinks is an array before mapping.
-  const tableData: LinkData[] = Array.isArray(fetchedLinks)
-    ? fetchedLinks.map((l: any) => ({
-      id: l._id, // _id must be available for this to be a record on mongo db
-      link: l.originalUrl,
-      shortHash: l.shortHash,
-      clicks: 0, // Since click data isn't available yet.
-      createdAt: l.createdAt,
-    }))
-    : [];
-
+  // Declare table state variables first.
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
 
+  // Fetch links on component mount.
+  React.useEffect(() => {
+    if (userId) {
+      dispatch(fetchLinks(userId));
+    }
+  }, [dispatch, userId]);
+
+  // Memoize the derived table data.
+  const tableData: LinkData[] = React.useMemo(() => {
+    if (!Array.isArray(fetchedLinks)) return [];
+    return fetchedLinks.map((l: any) => ({
+      id: l._id, // Make sure _id is available or use a fallback.
+      link: l.originalUrl,
+      shortHash: l.shortHash,
+      clicks: 0, // Since click data isn't available yet.
+      createdAt: l.createdAt ? new Date(l.createdAt).toLocaleString() : "",
+    }));
+  }, [fetchedLinks]);
+
+  // Now create the table instance.
   const table = useReactTable({
     data: tableData,
     columns,
@@ -212,7 +208,9 @@ export function LinkDataTable() {
                     key={column.id}
                     className="capitalize"
                     checked={column.getIsVisible()}
-                    onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                    onCheckedChange={(value) =>
+                      column.toggleVisibility(!!value)
+                    }
                   >
                     {column.id}
                   </DropdownMenuCheckboxItem>
@@ -236,9 +234,9 @@ export function LinkDataTable() {
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
                     </TableHead>
                   ))}
                 </TableRow>
@@ -247,7 +245,10 @@ export function LinkDataTable() {
             <TableBody>
               {table.getRowModel().rows?.length ? (
                 table.getRowModel().rows.map((row) => (
-                  <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                  >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id}>
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -257,7 +258,10 @@ export function LinkDataTable() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={columns.length} className="h-24 text-center">
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center"
+                  >
                     No results.
                   </TableCell>
                 </TableRow>

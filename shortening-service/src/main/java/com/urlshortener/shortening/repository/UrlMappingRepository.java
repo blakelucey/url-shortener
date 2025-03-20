@@ -6,5 +6,5 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 
 public interface UrlMappingRepository extends MongoRepository<UrlMapping, String> {
     UrlMapping findByShortCode(String shortCode);
-    boolean existsByUserIdAndShortCode(String userId, String shortCode);
+    boolean existsByShortCode(String shortCode);
 }
