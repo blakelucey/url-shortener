@@ -42,6 +42,7 @@ import { fetchLinks, deleteLinkAsync } from "@/store/slices/linkSlice";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { useAppKitAccount } from "@reown/appkit/react";
 import { useEffect, useMemo, useState } from "react";
+import { fetchClicks } from "@/store/slices/clickSlice"
 // Define the type used for rendering data in the table.
 export type LinkData = {
   id: string;
@@ -128,7 +129,7 @@ export const columns: ColumnDef<LinkData>[] = [
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              onClick={() => {navigator.clipboard.writeText(linkData.link); toast(`${linkData.link} copied to clipboard!`);}}
+              onClick={() => { navigator.clipboard.writeText(linkData.link); toast(`${linkData.link} copied to clipboard!`); }}
             >
               Copy link
             </DropdownMenuItem>

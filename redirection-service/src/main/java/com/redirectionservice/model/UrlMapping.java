@@ -11,17 +11,17 @@ public class UrlMapping {
     private String id;
     private String userId;       // added so we know which user owns this link
     private String shortCode;
-    private String longUrl;
+    private String originalUrl;
     private Date createdAt;
 
     public UrlMapping() {
         this.createdAt = new Date();
     }
 
-    public UrlMapping(String userId, String shortCode, String longUrl) {
+    public UrlMapping(String userId, String shortCode, String originalUrl) {
         this.userId = userId;
         this.shortCode = shortCode;
-        this.longUrl = longUrl;
+        this.originalUrl = originalUrl;
         this.createdAt = new Date();
     }
 
@@ -44,11 +44,11 @@ public class UrlMapping {
     public void setShortCode(String shortCode) {
         this.shortCode = shortCode;
     }
-    public String getLongUrl() {
-        return longUrl;
+    public String getOriginalUrl() {
+        return originalUrl;
     }
-    public void setLongUrl(String longUrl) {
-        this.longUrl = longUrl;
+    public void setoriginalUrl(String originalUrl) {
+        this.originalUrl = originalUrl;
     }
     public Date getCreatedAt() {
         return createdAt;

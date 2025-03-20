@@ -11,17 +11,18 @@ public class UrlMapping {
     @Id
     private String id;
     private String shortCode;
-    private String longUrl;
+    private String originalUrl;
     private Date createdAt;
 
-    // Constructors
+    // Default constructor
     public UrlMapping() {
         this.createdAt = new Date();
     }
 
-    public UrlMapping(String shortCode, String longUrl) {
+    // Constructor including userId
+    public UrlMapping(String shortCode, String originalUrl) {
         this.shortCode = shortCode;
-        this.longUrl = longUrl;
+        this.originalUrl = originalUrl;
         this.createdAt = new Date();
     }
 
@@ -42,12 +43,12 @@ public class UrlMapping {
         this.shortCode = shortCode;
     }
 
-    public String getLongUrl() {
-        return longUrl;
+    public String getOriginalUrl() {
+        return originalUrl;
     }
 
-    public void setLongUrl(String longUrl) {
-        this.longUrl = longUrl;
+    public void setOriginalUrl(String originalUrl) {
+        this.originalUrl = originalUrl;
     }
 
     public Date getCreatedAt() {
