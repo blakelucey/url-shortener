@@ -10,6 +10,7 @@ import java.util.Date;
 public class UrlMapping {
     @Id
     private String id;
+    private String userId;       // Added field for the user ID
     private String shortCode;
     private String originalUrl;
     private Date createdAt;
@@ -19,8 +20,9 @@ public class UrlMapping {
         this.createdAt = new Date();
     }
 
-    // Constructor including userId
-    public UrlMapping(String shortCode, String originalUrl) {
+    // Update the constructor to accept userId as well
+    public UrlMapping(String userId, String shortCode, String originalUrl) {
+        this.userId = userId;
         this.shortCode = shortCode;
         this.originalUrl = originalUrl;
         this.createdAt = new Date();
@@ -33,6 +35,14 @@ public class UrlMapping {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     public String getShortCode() {

@@ -40,7 +40,7 @@ const CreateLinkInput = () => {
             }
             setIsFetchingHash(true);
             try {
-                const response = await axios.post("http://localhost:8080/shorten", { url: link });
+                const response = await axios.post("http://localhost:8080/shorten", { url: link, userId: userId });
                 console.log('response', response)
                 const shortUrl = response.data.shortUrl; // e.g., "http://localhost:8081/abc123"
                 setShortHash(shortUrl);

@@ -21,15 +21,16 @@ public class ShorteningController {
 
     @PostMapping("/shorten")
     public Map<String, String> shortenUrl(@RequestBody Map<String, String> request) {
-        String longUrl = request.get("url");
+        String originalUrl = request.get("url");
+        String userId = request.get("userId");
 
-        if (longUrl == null || longUrl.trim().isEmpty()) {
+        if (originalUrl == null || originalUrl.trim().isEmpty()) {
             throw new IllegalArgumentException("URL cannot be empty");
         }
 
         // Generate a globally unique short code.
         String shortCode = generateUniqueShortCode();
-        UrlMapping mapping = new UrlMapping(shortCode, longUrl);
+        UrlMapping mapping = new UrlMapping(userId, shortCode, originalUrl);
         repository.save(mapping);
 
         String shortUrl = redirectionUrl + shortCode;
