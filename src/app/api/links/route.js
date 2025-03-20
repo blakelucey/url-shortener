@@ -47,3 +47,29 @@ export async function GET(request) {
         return new Response(JSON.stringify({ error: error.message }), { status: 500 });
     }
 }
+
+
+export async function DELETE(request) {
+    try {
+        await dbConnect();
+        const token = request.headers.get('Authorization')?.split(' ')[1];
+        if (!token) {
+            return new Response(JSON.stringify({ error: 'Authentication required' }), { status: 401 });
+        }
+        const decoded = verifyToken(token);
+        const userId = decoded.userId;
+
+        // Get the shortHash from the query parameters
+        const { searchParams } = new URL(request.url);
+        const shortHash = searchParams.get('shortHash');
+        if (!shortHash) {
+            return new Response(JSON.stringify({ error: 'shortHash is required' }), { status: 400 });
+        }
+
+        // Delete the link for the authenticated user and given shortHash
+        await Link.deleteOne({ userId, shortHash });
+        return new Response(JSON.stringify({ message: 'Link deleted successfully' }), { status: 200 });
+    } catch (error) {
+        return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+    }
+}

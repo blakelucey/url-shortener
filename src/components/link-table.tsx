@@ -36,9 +36,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import CreateLinkInput from "./create-link-input";
-import { fetchLinks } from "@/store/slices/linkSlice";
+import { fetchLinks, deleteLinkAsync } from "@/store/slices/linkSlice";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { useAppKitAccount } from "@reown/appkit/react";
+import { useEffect, useMemo, useState } from "react";
 
 // Define the type used for rendering data in the table.
 export type LinkData = {
@@ -134,20 +135,20 @@ export function LinkDataTable() {
   );
 
   // Declare table state variables first.
-  const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = React.useState({});
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [rowSelection, setRowSelection] = useState({});
 
   // Fetch links on component mount.
-  React.useEffect(() => {
+  useEffect(() => {
     if (userId) {
       dispatch(fetchLinks(userId));
     }
   }, [dispatch, userId]);
 
   // Memoize the derived table data.
-  const tableData: LinkData[] = React.useMemo(() => {
+  const tableData: LinkData[] = useMemo(() => {
     if (!Array.isArray(fetchedLinks)) return [];
     return fetchedLinks.map((l: any) => ({
       id: l._id, // Make sure _id is available or use a fallback.
@@ -177,6 +178,34 @@ export function LinkDataTable() {
       rowSelection,
     },
   });
+
+  // Handler for deleting selected rows.
+  const handleDeleteSelected = async () => {
+    // Get selected rows from the filtered selected row model.
+    const selectedRows = table.getFilteredSelectedRowModel().rows;
+    if (selectedRows.length === 0) {
+      alert("No links selected for deletion.");
+      return;
+    }
+    if (
+      !window.confirm(
+        `Are you sure you want to delete ${selectedRows.length} link(s)?`
+      )
+    ) {
+      return;
+    }
+    // Iterate over each selected row and dispatch the delete thunk.
+    for (const row of selectedRows) {
+      const link = row.original as LinkData;
+      try {
+        await dispatch(deleteLinkAsync({ userId, shortHash: link.shortHash })).unwrap();
+      } catch (err) {
+        console.error("Deletion error", err);
+      }
+    }
+    // Optionally clear selection after deletion.
+    setRowSelection({});
+  };
 
   return (
     <div className="w-full">
@@ -219,6 +248,21 @@ export function LinkDataTable() {
           </DropdownMenu>
         </div>
       </div>
+
+      {/* Delete Selected Button */}
+      {Object.keys(rowSelection).length != 0 && (
+        <div className="mb-4">
+          <Button
+            variant="destructive"
+            onClick={handleDeleteSelected}
+            disabled={Object.keys(rowSelection).length === 0}
+          >
+            Delete Selected
+          </Button>
+        </div>
+      )}
+
+
       {loading ? (
         <div>Loading links...</div>
       ) : error ? (
@@ -234,9 +278,9 @@ export function LinkDataTable() {
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                     </TableHead>
                   ))}
                 </TableRow>

@@ -25,7 +25,7 @@ export const fetchLinks = createAsyncThunk<Link[], string>(
   'links/fetchLinks',
   async (userId: string, { rejectWithValue }) => {
     try {
-      // First, get the token using userId.
+      // Get token using userId.
       const signResponse = await fetch(`/api/signToken?userId=${encodeURIComponent(userId)}`, {
         method: 'GET',
       });
@@ -35,11 +35,9 @@ export const fetchLinks = createAsyncThunk<Link[], string>(
       }
       const signData = await signResponse.json();
       const token = signData.data; // Assuming token is in signData.data
-
       if (!token) {
         throw new Error('Token not found');
       }
-
       // Now fetch links using the token.
       const response = await fetch('/api/links', {
         headers: {
@@ -50,7 +48,6 @@ export const fetchLinks = createAsyncThunk<Link[], string>(
       if (!response.ok) {
         return rejectWithValue(data.error || 'Failed to fetch links');
       }
-      // Assume data is an array of Link objects.
       return data;
     } catch (error: any) {
       return rejectWithValue(error.message);
@@ -59,12 +56,11 @@ export const fetchLinks = createAsyncThunk<Link[], string>(
 );
 
 // Async thunk to create a new link for the authenticated user.
-// Note: Instead of passing a token from outside, we'll fetch it internally using linkData.userId.
 export const createLinkAsync = createAsyncThunk<Link, { linkData: Link }>(
   'links/createLink',
   async ({ linkData }, { rejectWithValue }) => {
     try {
-      // First, get the token using the userId from linkData.
+      // Get token using the userId from linkData.
       const signResponse = await fetch(`/api/signToken?userId=${encodeURIComponent(linkData.userId)}`, {
         method: 'GET',
       });
@@ -77,8 +73,7 @@ export const createLinkAsync = createAsyncThunk<Link, { linkData: Link }>(
       if (!token) {
         throw new Error('Token not found');
       }
-
-      // Now create the link using the token.
+      // Create the link using the token.
       const response = await fetch('/api/links', {
         method: 'POST',
         headers: {
@@ -91,8 +86,44 @@ export const createLinkAsync = createAsyncThunk<Link, { linkData: Link }>(
       if (!response.ok) {
         return rejectWithValue(data.error || 'Failed to create link');
       }
-      // Assuming your endpoint returns an object with a "link" property.
       return data.link;
+    } catch (error: any) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+// **New:** Async thunk to delete a link.
+export const deleteLinkAsync = createAsyncThunk<string, { userId: string; shortHash: string }>(
+  'links/deleteLink',
+  async ({ userId, shortHash }, { rejectWithValue }) => {
+    try {
+      // Get token using userId.
+      const signResponse = await fetch(`/api/signToken?userId=${encodeURIComponent(userId)}`, {
+        method: 'GET',
+      });
+      if (!signResponse.ok) {
+        const errorData = await signResponse.json();
+        return rejectWithValue(errorData.error || 'Failed to sign token');
+      }
+      const signData = await signResponse.json();
+      const token = signData.data;
+      if (!token) {
+        throw new Error('Token not found');
+      }
+      // Call DELETE endpoint. Notice shortHash is passed as a query parameter.
+      const response = await fetch(`/api/links?shortHash=${encodeURIComponent(shortHash)}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        return rejectWithValue(data.error || 'Failed to delete link');
+      }
+      // Return the shortHash as an identifier for deletion.
+      return shortHash;
     } catch (error: any) {
       return rejectWithValue(error.message);
     }
@@ -155,6 +186,20 @@ const linkSlice = createSlice({
       .addCase(createLinkAsync.rejected, (state, action) => {
         state.loading = false;
         state.error = (action.payload as string) || 'Failed to create link';
+      })
+      // Handle deleteLinkAsync
+      .addCase(deleteLinkAsync.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteLinkAsync.fulfilled, (state, action: PayloadAction<string>) => {
+        // Remove link from state by shortHash.
+        state.links = state.links.filter(link => link.shortHash !== action.payload);
+        state.loading = false;
+      })
+      .addCase(deleteLinkAsync.rejected, (state, action) => {
+        state.loading = false;
+        state.error = (action.payload as string) || 'Failed to delete link';
       });
   },
 });
