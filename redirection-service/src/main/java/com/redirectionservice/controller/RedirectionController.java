@@ -28,6 +28,10 @@ public class RedirectionController {
     @GetMapping("/{shortCode}")
     public RedirectView redirect(@PathVariable String shortCode, HttpServletRequest request) {
         UrlMapping mapping = urlRepository.findByShortCode(shortCode);
+        System.out.println("Redirect request for short code: " + shortCode);
+        if (mapping == null) {
+    System.out.println("No URL mapping found for: " + shortCode);
+}
         if (mapping != null) {
             // Extract request data for analytics
             String userAgent = request.getHeader("User-Agent");

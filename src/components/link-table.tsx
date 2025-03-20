@@ -14,6 +14,8 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { ChevronDown, MoreHorizontal } from "lucide-react";
+import { toast } from "sonner"
+
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -40,7 +42,6 @@ import { fetchLinks, deleteLinkAsync } from "@/store/slices/linkSlice";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { useAppKitAccount } from "@reown/appkit/react";
 import { useEffect, useMemo, useState } from "react";
-
 // Define the type used for rendering data in the table.
 export type LinkData = {
   id: string;
@@ -82,7 +83,20 @@ export const columns: ColumnDef<LinkData>[] = [
   {
     accessorKey: "shortHash",
     header: "Short URL",
-    cell: ({ row }) => <div>{row.getValue("shortHash")}</div>,
+    cell: ({ row, getValue }) => {
+      const shortUrl = getValue() as string;
+      return (
+        <div
+          onClick={() => {
+            navigator.clipboard.writeText(shortUrl);
+            toast(`${shortUrl} copied to clipboard!`);
+          }}
+          style={{ cursor: "pointer" }}
+        >
+          {shortUrl}
+        </div>
+      );
+    },
   },
   {
     accessorKey: "createdAt",
@@ -112,10 +126,15 @@ export const columns: ColumnDef<LinkData>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuSeparator />
             <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(linkData.link)}
+              onClick={() => {navigator.clipboard.writeText(linkData.link); toast(`${linkData.link} copied to clipboard!`);}}
             >
               Copy link
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => { navigator.clipboard.writeText(linkData.shortHash); toast(`${linkData.shortHash} copied to clipboard!`); }}>
+              Copy short URL
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>View link details</DropdownMenuItem>

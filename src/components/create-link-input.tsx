@@ -125,7 +125,7 @@ const CreateLinkInput = () => {
                                 {isFetchingHash ? (
                                     "Generating..."
                                 ) : (
-                                    <Link href={`http://localhost:8081/${shortHash}`} target="_blank">
+                                    <Link href={`${shortHash}`} target="_blank">
                                         {shortHash}
                                     </Link>
                                 )}

@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 import StoreProvider from "./StoreProvider";
 import "./globals.css";
 import Providers from "./Providers";
+import { Toaster } from "@/components/ui/sonner"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -41,6 +42,7 @@ export default async function RootLayout({
             <Providers cookies={cookies}>{children}</Providers>
           </ThemeProvider>
         </StoreProvider>
+        <Toaster />
       </body>
     </html>
   );

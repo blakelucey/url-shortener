@@ -4,6 +4,7 @@ import com.example.shorteningservice.model.UrlMapping;
 import com.example.shorteningservice.repository.UrlMappingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.Map;
 import java.util.Random;
@@ -14,6 +15,9 @@ public class ShorteningController {
 
     @Autowired
     private UrlMappingRepository repository;
+
+     @Value("${NEXT_PUBLIC_REDIRECTION_URL}")
+    private String redirectionUrl;
 
     @PostMapping("/shorten")
     public Map<String, String> shortenUrl(@RequestBody Map<String, String> request) {
@@ -28,7 +32,7 @@ public class ShorteningController {
         UrlMapping mapping = new UrlMapping(shortCode, longUrl);
         repository.save(mapping);
 
-        String shortUrl = "https://kliqly.link/" + shortCode; // Adjust base URL for production
+        String shortUrl = redirectionUrl + shortCode;
         return Map.of("shortUrl", shortUrl);
     }
 
