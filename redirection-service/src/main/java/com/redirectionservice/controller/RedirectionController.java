@@ -32,13 +32,13 @@ public class RedirectionController {
     // Cache TTL: 1 hour.
     private static final long CACHE_TTL_MS = TimeUnit.HOURS.toMillis(1);
 
-    @GetMapping("/{shortCode}")
-    public RedirectView redirect(@PathVariable String shortCode, HttpServletRequest request) {
+    @GetMapping("/{shortHash}")
+    public RedirectView redirect(@PathVariable String shortHash, HttpServletRequest request) {
         // Retrieve the URL mapping by short code.
-        UrlMapping mapping = urlRepository.findByShortCode(shortCode);
-        System.out.println("Redirect request for short code: " + shortCode);
+        UrlMapping mapping = urlRepository.findByShortHash(shortHash);
+        System.out.println("Redirect request for short code: " + shortHash);
         if (mapping == null) {
-            System.out.println("No URL mapping found for: " + shortCode);
+            System.out.println("No URL mapping found for: " + shortHash);
             return new RedirectView("/404");
         }
 
@@ -60,9 +60,8 @@ public class RedirectionController {
 
         // Build a new Click record.
         Click click = new Click();
-        click.setLinkId(mapping.getId());
+        click.setLinkId(mapping.getId().toString());
         // Set the userId from the URL mapping (ensure that your link creation process populates this field).
-System.out.println("user id: " + mapping.getUserId());
         click.setUserId(mapping.getUserId());
         click.setReferrer(referrer);
         click.setIp(ipAddress);

@@ -22,6 +22,7 @@ import { useAppDispatch } from '@/store/hooks';
 
 const CreateLinkInput = () => {
     const [link, setLink] = useState(""); // Original URL input
+    const [shortUrl, setShortUrl] = useState(""); // Short hash from Java service
     const [shortHash, setShortHash] = useState(""); // Short hash from Java service
     const [isFetchingHash, setIsFetchingHash] = useState(false); // Loading state for hash preview
     const [campaigns, setCampaigns] = useState<string[]>([]); // Selected campaigns
@@ -33,9 +34,9 @@ const CreateLinkInput = () => {
 
     // Fetch short hash from Java Shortening Service when the URL changes
     useEffect(() => {
-        const fetchShortHash = async () => {
+        const fetchShortUrl = async () => {
             if (!link) {
-                setShortHash("");
+                setShortUrl("");
                 return;
             }
             setIsFetchingHash(true);
@@ -43,15 +44,17 @@ const CreateLinkInput = () => {
                 const response = await axios.post("http://localhost:8080/shorten", { url: link, userId: userId });
                 console.log('response', response)
                 const shortUrl = response.data.shortUrl; // e.g., "http://localhost:8081/abc123"
-                setShortHash(shortUrl);
+                const shortHash = response.data.shortHash
+                setShortUrl(shortUrl);
+                setShortHash(shortHash);
             } catch (error) {
                 console.error("Error fetching short hash:", error);
-                setShortHash("Error");
+                setShortUrl("Error");
             } finally {
                 setIsFetchingHash(false);
             }
         };
-        fetchShortHash();
+        fetchShortUrl();
     }, [link, userId]);
 
     // Handle campaign selection
@@ -68,14 +71,14 @@ const CreateLinkInput = () => {
     // Handle form submission
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!userId || !shortHash || shortHash === "Error") {
+        if (!userId || !shortUrl || shortUrl === "Error") {
             console.error("Missing required fields or invalid short hash");
             return;
         }
         setIsSubmitting(true);
         try {
 
-            const linkData = { userId, originalUrl: link, shortHash, channels, campaigns }
+            const linkData = { userId, originalUrl: link, shortUrl, shortHash, channels, campaigns }
 
             const response: any = await dispatch(createLinkAsync({ linkData })).unwrap().catch((e) => {
                 console.error(e)
@@ -125,8 +128,8 @@ const CreateLinkInput = () => {
                                 {isFetchingHash ? (
                                     "Generating..."
                                 ) : (
-                                    <Link href={`${shortHash}`} target="_blank">
-                                        {shortHash}
+                                    <Link href={`${shortUrl}`} target="_blank">
+                                        {shortUrl}
                                     </Link>
                                 )}
                             </p>
@@ -142,7 +145,7 @@ const CreateLinkInput = () => {
                     </div>
                     <SheetFooter>
                         <SheetClose asChild>
-                            <Button type="submit" className="w-full" disabled={isSubmitting || !shortHash || shortHash === "Error"}>
+                            <Button type="submit" className="w-full" disabled={isSubmitting || !shortUrl || shortHash === "Error"}>
                                 {isSubmitting ? "Submitting..." : "Submit"}
                             </Button>
                         </SheetClose>

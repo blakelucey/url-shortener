@@ -40,6 +40,7 @@ export const fetchLinks = createAsyncThunk<Link[], string>(
       }
       // Now fetch links using the token.
       const response = await fetch('/api/links', {
+        method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
         },

@@ -15,6 +15,7 @@ export async function POST(request) {
         const userId = decoded.userId;
 
         const { originalUrl,
+            shortUrl,
             shortHash,
             channels,
             campaigns } = await request.json();
@@ -22,7 +23,7 @@ export async function POST(request) {
             return new Response(JSON.stringify({ error: 'originalUrl is required' }), { status: 400 });
         }
 
-        const link = new Link({ userId, originalUrl, shortHash, channels, campaigns });
+        const link = new Link({ userId, originalUrl, shortUrl, shortHash, channels, campaigns });
         await link.save();
 
         return new Response(JSON.stringify({ message: 'Link created', link }), { status: 201 });

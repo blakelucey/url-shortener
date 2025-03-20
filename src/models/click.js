@@ -1,4 +1,4 @@
-import { Schema, model } from 'mongoose';
+import { Schema, model, models } from 'mongoose';
 
 const clickSchema = new Schema({
   linkId: {
@@ -69,4 +69,6 @@ clickSchema.index({ utm_source: 1 });
 clickSchema.index({ utm_medium: 1 });
 clickSchema.index({ utm_campaign: 1 });
 
-export default model('Click', clickSchema);
+const Clicks =  models.Click || model('Click', clickSchema);
+
+export default Clicks

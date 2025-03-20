@@ -5,6 +5,6 @@ import com.example.shorteningservice.model.UrlMapping;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 public interface UrlMappingRepository extends MongoRepository<UrlMapping, String> {
-    UrlMapping findByShortCode(String shortCode);
-    boolean existsByShortCode(String shortCode);
+    UrlMapping findByShortHash(String shortHash);
+    boolean existsByShortHash(String shortHash);
 }

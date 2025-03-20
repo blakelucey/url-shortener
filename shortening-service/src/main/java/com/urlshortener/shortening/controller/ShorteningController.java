@@ -29,18 +29,19 @@ public class ShorteningController {
         }
 
         // Generate a globally unique short code.
-        String shortCode = generateUniqueShortCode();
-        UrlMapping mapping = new UrlMapping(userId, shortCode, originalUrl);
+        String shortHash = generateUniqueShortHash();
+        UrlMapping mapping = new UrlMapping(userId, shortHash, originalUrl);
         repository.save(mapping);
 
-        String shortUrl = redirectionUrl + shortCode;
-        return Map.of("shortUrl", shortUrl);
+        String shortUrl = redirectionUrl + shortHash;
+        Map<String, String> response = Map.of("shortUrl", shortUrl, "shortHash", shortHash);
+        return response;
     }
 
-    private String generateUniqueShortCode() {
+    private String generateUniqueShortHash() {
         String chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         Random random = new Random();
-        String shortCode;
+        String shortHash;
         int length = 6;
 
         do {
@@ -48,9 +49,9 @@ public class ShorteningController {
             for (int i = 0; i < length; i++) {
                 sb.append(chars.charAt(random.nextInt(chars.length())));
             }
-            shortCode = sb.toString();
-        } while (repository.existsByShortCode(shortCode)); // Global uniqueness check
+            shortHash = sb.toString();
+        } while (repository.existsByShortHash(shortHash)); // Global uniqueness check
 
-        return shortCode;
+        return shortHash;
     }
 }

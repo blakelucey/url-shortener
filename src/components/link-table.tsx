@@ -47,7 +47,7 @@ import { fetchClicks } from "@/store/slices/clickSlice"
 export type LinkData = {
   id: string;
   link: string;
-  shortHash: string;
+  shortUrl: string;
   clicks: number;
   createdAt: string;
 };
@@ -82,7 +82,7 @@ export const columns: ColumnDef<LinkData>[] = [
     cell: ({ row }) => <div>{row.getValue("link")}</div>,
   },
   {
-    accessorKey: "shortHash",
+    accessorKey: "shortUrl",
     header: "Short URL",
     cell: ({ row, getValue }) => {
       const shortUrl = getValue() as string;
@@ -134,7 +134,7 @@ export const columns: ColumnDef<LinkData>[] = [
               Copy link
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => { navigator.clipboard.writeText(linkData.shortHash); toast(`${linkData.shortHash} copied to clipboard!`); }}>
+            <DropdownMenuItem onClick={() => { navigator.clipboard.writeText(linkData.shortUrl); toast(`${linkData.shortUrl} copied to clipboard!`); }}>
               Copy short URL
             </DropdownMenuItem>
             <DropdownMenuSeparator />
@@ -153,6 +153,9 @@ export function LinkDataTable() {
   const { links: fetchedLinks, loading, error } = useAppSelector(
     (state) => state.links
   );
+  const { clicks } = useAppSelector((state) => state.clicks);
+  const [linkData, setLinkData] = useState([])
+
 
   // Declare table state variables first.
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -167,14 +170,31 @@ export function LinkDataTable() {
     }
   }, [dispatch, userId]);
 
+  // Once links are fetched, dispatch fetchClicks for each link.
+  useEffect(() => {
+    (async () => {
+      if (userId && fetchedLinks.length > 0) {
+        console.log('hit')
+        fetchedLinks.forEach((link: any) => {
+          console.log('link', link)
+          dispatch(fetchClicks({ userId, linkId: link._id }));
+        });
+      }
+    })()
+
+    console.log('clicks', clicks)
+
+  }, [dispatch, userId, fetchedLinks]);
+
+
   // Memoize the derived table data.
   const tableData: LinkData[] = useMemo(() => {
     if (!Array.isArray(fetchedLinks)) return [];
     return fetchedLinks.map((l: any) => ({
       id: l._id, // Make sure _id is available or use a fallback.
       link: l.originalUrl,
-      shortHash: l.shortHash,
-      clicks: 0, // Since click data isn't available yet.
+      shortUrl: l.shortUrl,
+      clicks: 0,
       createdAt: l.createdAt ? new Date(l.createdAt).toLocaleString() : "",
     }));
   }, [fetchedLinks]);
@@ -218,7 +238,7 @@ export function LinkDataTable() {
     for (const row of selectedRows) {
       const link = row.original as LinkData;
       try {
-        await dispatch(deleteLinkAsync({ userId, shortHash: link.shortHash })).unwrap();
+        await dispatch(deleteLinkAsync({ userId, shortHash: link.shortUrl })).unwrap();
       } catch (err) {
         console.error("Deletion error", err);
       }

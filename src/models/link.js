@@ -1,4 +1,4 @@
-import { Schema, model } from 'mongoose';
+import { Schema, model, models } from 'mongoose';
 
 const linkSchema = new Schema({
   userId: {
@@ -10,6 +10,10 @@ const linkSchema = new Schema({
   originalUrl: {
     type: String,
     required: true,
+  },
+  shortUrl: {
+    type: String,
+    required: true
   },
   shortHash: {
     type: String,
@@ -28,4 +32,6 @@ const linkSchema = new Schema({
   }
 }, { timestamps: true });
 
-export default model('Link', linkSchema);
+const Link = models.Link || model('Link', linkSchema);
+
+export default Link;

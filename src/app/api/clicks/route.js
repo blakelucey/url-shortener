@@ -69,34 +69,22 @@ export async function POST(request) {
 export async function GET(request) {
     try {
         await dbConnect();
-        const token = request.headers.get("Authorization")?.split(" ")[1];
+        const token = request.headers.get('Authorization')?.split(' ')[1];
         if (!token) {
-            return new Response(
-                JSON.stringify({ error: "Authentication required" }),
-                { status: 401 }
-            );
+            return new Response(JSON.stringify({ error: 'Authentication required' }), { status: 401 });
         }
         const decoded = verifyToken(token);
         const userId = decoded.userId;
 
         const { searchParams } = new URL(request.url);
-        const linkId = searchParams.get("linkId");
+        const linkId = searchParams.get('linkId')
+        console.log('linkId', linkId)
 
-        // Find clicks and populate the associated link.
-        const clicks = await Click.find(linkId ? { linkId } : {}).populate({
-            path: "linkId",
-            match: { userId: userId } // Only populate if the link belongs to the authenticated user.
-        });
-
-        // Only return clicks whose link was successfully populated.
-        const filteredClicks = clicks.filter((click) => click.linkId);
-
-        return new Response(JSON.stringify(filteredClicks), { status: 200 });
+        const clicks = await Click.findOne({ linkId: linkId });
+        console.log('clicks', clicks)
+        return new Response(JSON.stringify(clicks), { status: 200 });
     } catch (error) {
-        return new Response(
-            JSON.stringify({ error: error.message }),
-            { status: 500 }
-        );
+        return new Response(JSON.stringify({ error: error.message }), { status: 500 });
     }
 }
 

@@ -39,13 +39,28 @@ export const fetchClicks = createAsyncThunk<Click[], { userId: string; linkId?: 
   'clicks/fetchClicks',
   async ({ userId, linkId }, { rejectWithValue }) => {
     try {
+      // Get token using userId.
+      const signResponse = await fetch(`/api/signToken?userId=${encodeURIComponent(userId)}`, {
+        method: 'GET',
+      });
+      if (!signResponse.ok) {
+        const errorData = await signResponse.json();
+        return rejectWithValue(errorData.error || 'Failed to sign token');
+      }
+      const signData = await signResponse.json();
+      const token = signData.data; // Assuming token is in signData.data
+      if (!token) {
+        throw new Error('Token not found');
+      }
+
       let url = `/api/clicks`;
       if (linkId) {
         url += `?linkId=${encodeURIComponent(linkId)}`;
       }
       const response = await fetch(url, {
+        method: "GET",
         headers: {
-          'Authorization': `Bearer YOUR_TOKEN_HERE`, // Replace with your token logic
+          'Authorization': `Bearer ${token}`,
         },
       });
       const data = await response.json();
@@ -59,42 +74,30 @@ export const fetchClicks = createAsyncThunk<Click[], { userId: string; linkId?: 
   }
 );
 
-// Async thunk to create a new click.
-export const createClickAsync = createAsyncThunk<Click, Partial<Click>>(
-  'clicks/createClick',
-  async (clickData, { rejectWithValue }) => {
-    try {
-      const response = await fetch('/api/clicks', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer YOUR_TOKEN_HERE`, // Replace with your token logic
-        },
-        body: JSON.stringify(clickData),
-      });
-      const data = await response.json();
-      if (!response.ok) {
-        return rejectWithValue(data.error || 'Failed to create click');
-      }
-      // Assuming the API returns the created click as data.click.
-      return data.click;
-    } catch (error: any) {
-      return rejectWithValue(error.message);
-    }
-  }
-);
-
 // Async thunk to delete a click.
-export const deleteClickAsync = createAsyncThunk<string, { clickId: string }>(
+export const deleteClickAsync = createAsyncThunk<string, { clickId: string, userId: string }>(
   'clicks/deleteClick',
-  async ({ clickId }, { rejectWithValue }) => {
+  async ({ clickId, userId }, { rejectWithValue }) => {
     try {
+      // Get token using userId.
+      const signResponse = await fetch(`/api/signToken?userId=${encodeURIComponent(userId)}`, {
+        method: 'GET',
+      });
+      if (!signResponse.ok) {
+        const errorData = await signResponse.json();
+        return rejectWithValue(errorData.error || 'Failed to sign token');
+      }
+      const signData = await signResponse.json();
+      const token = signData.data; // Assuming token is in signData.data
+      if (!token) {
+        throw new Error('Token not found');
+      }
       // Assuming you have a DELETE endpoint at /api/clicks/:clickId
       const response = await fetch(`/api/clicks/${clickId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer YOUR_TOKEN_HERE`, // Replace with your token logic
+          'Authorization': `Bearer ${token}`, // Replace with your token logic
         },
       });
       const data = await response.json();
@@ -145,19 +148,6 @@ const clickSlice = createSlice({
     builder.addCase(fetchClicks.rejected, (state, action) => {
       state.loading = false;
       state.error = (action.payload as string) || 'Failed to fetch clicks';
-    });
-    // Create click
-    builder.addCase(createClickAsync.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    });
-    builder.addCase(createClickAsync.fulfilled, (state, action: PayloadAction<Click>) => {
-      state.clicks.push(action.payload);
-      state.loading = false;
-    });
-    builder.addCase(createClickAsync.rejected, (state, action) => {
-      state.loading = false;
-      state.error = (action.payload as string) || 'Failed to create click';
     });
     // Delete click
     builder.addCase(deleteClickAsync.pending, (state) => {

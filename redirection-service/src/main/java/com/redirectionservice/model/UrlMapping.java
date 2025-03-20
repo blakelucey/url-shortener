@@ -10,7 +10,7 @@ public class UrlMapping {
     @Id
     private String id;
     private String userId;       // added so we know which user owns this link
-    private String shortCode;
+    private String shortHash;
     private String originalUrl;
     private Date createdAt;
 
@@ -18,9 +18,9 @@ public class UrlMapping {
         this.createdAt = new Date();
     }
 
-    public UrlMapping(String userId, String shortCode, String originalUrl) {
+    public UrlMapping(String userId, String shortHash, String originalUrl) {
         this.userId = userId;
-        this.shortCode = shortCode;
+        this.shortHash = shortHash;
         this.originalUrl = originalUrl;
         this.createdAt = new Date();
     }
@@ -38,11 +38,11 @@ public class UrlMapping {
     public void setUserId(String userId) {
         this.userId = userId;
     }
-    public String getShortCode() {
-        return shortCode;
+    public String getShortHash() {
+        return shortHash;
     }
-    public void setShortCode(String shortCode) {
-        this.shortCode = shortCode;
+    public void setShortHash(String shortHash) {
+        this.shortHash = shortHash;
     }
     public String getOriginalUrl() {
         return originalUrl;
