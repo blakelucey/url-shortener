@@ -1,7 +1,22 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+// src/store/slices/userSlice.ts
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import type { RootState } from '../store'; // adjust the path as needed
+
+export interface User {
+  _id: string;
+  userId: string;
+  authType: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  isPro: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  __v: number;
+}
 
 interface UserState {
-  user: any;
+  user: User | null;
   loading: boolean;
   error: string | null;
 }
@@ -12,8 +27,7 @@ const initialState: UserState = {
   error: null,
 };
 
-// Async thunk to fetch a user by userId via GET endpoint.
-export const fetchUser = createAsyncThunk(
+export const fetchUser = createAsyncThunk<User, string, { rejectValue: string }>(
   'user/fetchUser',
   async (userId: string, { rejectWithValue }) => {
     try {
@@ -22,7 +36,6 @@ export const fetchUser = createAsyncThunk(
       if (!response.ok) {
         return rejectWithValue(data.error || 'Failed to fetch user');
       }
-      // Your endpoint returns { exists, isComplete } or similar.
       return data;
     } catch (error: any) {
       return rejectWithValue(error.message);
@@ -30,13 +43,13 @@ export const fetchUser = createAsyncThunk(
   }
 );
 
-// Async thunk to create a new user via POST endpoint.
-export const createUserAsync = createAsyncThunk(
+export const createUserAsync = createAsyncThunk<
+  User,
+  { userId: string; firstName: string; lastName: string; email: string; authType?: string },
+  { rejectValue: string }
+>(
   'user/createUser',
-  async (
-    userData: { userId: string; firstName: string; lastName: string; email: string; authType?: string },
-    { rejectWithValue }
-  ) => {
+  async (userData, { rejectWithValue }) => {
     try {
       const response = await fetch('/api/users', {
         method: 'POST',
@@ -58,15 +71,15 @@ const userSlice = createSlice({
   name: 'user',
   initialState,
   reducers: {
-    setUser: (state, action) => {
+    setUser: (state, action: PayloadAction<User>) => {
       state.user = action.payload;
       state.loading = false;
       state.error = null;
     },
-    setLoading: (state, action) => {
+    setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
     },
-    setError: (state, action) => {
+    setError: (state, action: PayloadAction<string | null>) => {
       state.error = action.payload;
       state.loading = false;
     },
@@ -78,34 +91,36 @@ const userSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Handle fetchUser actions.
       .addCase(fetchUser.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchUser.fulfilled, (state, action) => {
+      .addCase(fetchUser.fulfilled, (state, action: PayloadAction<User>) => {
         state.user = action.payload;
         state.loading = false;
       })
       .addCase(fetchUser.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string;
+        state.error = action.payload || 'Failed to fetch user';
       })
-      // Handle createUserAsync actions.
       .addCase(createUserAsync.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(createUserAsync.fulfilled, (state, action) => {
+      .addCase(createUserAsync.fulfilled, (state, action: PayloadAction<User>) => {
         state.user = action.payload;
         state.loading = false;
       })
       .addCase(createUserAsync.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string;
+        state.error = action.payload || 'Failed to create user';
       });
   },
 });
+
+// This is your selectUser shortcut selector.
+// You can import this function anywhere in your app to quickly get the user data.
+export const selectUser = (state: RootState) => state.users.user;
 
 export const { setUser, setLoading, setError, clearUser } = userSlice.actions;
 export default userSlice.reducer;

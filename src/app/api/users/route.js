@@ -33,7 +33,7 @@ export async function GET(request) {
     if (user) {
       const isComplete = user.firstName && user.lastName && user.email;
       console.log('isComplete', isComplete)
-      return new Response(JSON.stringify({ exists: true, isComplete }), { status: 200 });
+      return new Response(JSON.stringify({ exists: true, isComplete, user }), { status: 200 });
     } else {
       return new Response(JSON.stringify({ exists: false }), { status: 200 });
     }

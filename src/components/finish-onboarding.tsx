@@ -39,8 +39,8 @@ export function OnboardingDialog({ open, onOpenChange }: OnboardingDialogProps) 
       const response = await dispatch(createUserAsync(userData)).unwrap().catch((e) => {
         console.error(e)
       })
-      console.log('response', response._id)
-      if (response._id) {
+      console.log('response', response?._id)
+      if (response?._id) {
         onOpenChange(false); // Close dialog on success
       } else {
         console.error("Failed to submit onboarding data");
