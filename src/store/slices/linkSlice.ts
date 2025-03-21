@@ -95,9 +95,9 @@ export const createLinkAsync = createAsyncThunk<Link, { linkData: Link }>(
 );
 
 // **New:** Async thunk to delete a link.
-export const deleteLinkAsync = createAsyncThunk<string, { userId: string; shortUrl: string }>(
+export const deleteLinkAsync = createAsyncThunk<string, { userId: string; shortUrl: string; linkId: string; }>(
   'links/deleteLink',
-  async ({ userId, shortUrl }, { rejectWithValue }) => {
+  async ({ userId, shortUrl, linkId }, { rejectWithValue }) => {
     try {
       // Get token using userId.
       const signResponse = await fetch(`/api/signToken?userId=${encodeURIComponent(userId)}`, {
@@ -113,7 +113,7 @@ export const deleteLinkAsync = createAsyncThunk<string, { userId: string; shortU
         throw new Error('Token not found');
       }
       // Call DELETE endpoint. Notice shortHash is passed as a query parameter.
-      const response = await fetch(`/api/links?shortUrl=${encodeURIComponent(shortUrl)}`, {
+      const response = await fetch(`/api/links?shortUrl=${encodeURIComponent(shortUrl)}&linkId=${encodeURIComponent(linkId)}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

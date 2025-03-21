@@ -187,6 +187,7 @@ export function LinkDataTable() {
   }, [dispatch, userId, fetchedLinks]);
 
 
+
   // Memoize the derived table data.
   const tableData: LinkData[] = useMemo(() => {
     if (!Array.isArray(fetchedLinks)) return [];
@@ -229,22 +230,34 @@ export function LinkDataTable() {
     }
     if (
       !window.confirm(
-        `Are you sure you want to delete ${selectedRows.length} link(s)?`
+        `Are you sure you want to delete ${selectedRows.length} link(s) and their associated clicks?`
       )
     ) {
       return;
     }
-    // Iterate over each selected row and dispatch the delete thunk.
-    for (const row of selectedRows) {
-      const link = row.original as LinkData;
-      try {
-        await dispatch(deleteLinkAsync({ userId, shortUrl: link.shortUrl })).unwrap();
-      } catch (err) {
-        console.error("Deletion error", err);
-      }
+    try {
+      // Map each selected row to a deletion promise.
+      const deletePromises = selectedRows.map((row) => {
+        const link: any = row.original as LinkData;
+        return dispatch(
+          deleteLinkAsync({ userId, shortUrl: link.shortUrl, linkId: link.id })
+        ).unwrap();
+      });
+
+      // Wait for all deletions to finish.
+      await Promise.all(deletePromises);
+
+      // Re-fetch the updated list of links so the table re-renders.
+      await dispatch(fetchLinks(userId));
+
+      // Clear the selected rows.
+      setRowSelection({});
+
+      toast("Selected links and their clicks have been deleted successfully.");
+    } catch (err) {
+      console.error("Deletion error", err);
+      toast.error("Error deleting selected links.");
     }
-    // Optionally clear selection after deletion.
-    setRowSelection({});
   };
 
   return (
