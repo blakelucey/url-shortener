@@ -1,14 +1,21 @@
 // src/main/java/com/example/redirectionservice/controller/RedirectionController.java
-package com.example.redirectionservice.controller;
+package com.redirectionservice.controller;
 
-import com.example.redirectionservice.model.Click;
-import com.example.redirectionservice.model.UrlMapping;
-import com.example.redirectionservice.repository.UrlMappingRepository;
-import com.example.redirectionservice.service.AsyncClickService;
+import com.redirectionservice.model.Click;
+import com.redirectionservice.model.UrlMapping;
+import com.redirectionservice.repository.UrlMappingRepository;
+import com.redirectionservice.service.AsyncClickService;
+import org.bson.Document;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.view.RedirectView;
 
@@ -27,6 +34,9 @@ public class RedirectionController {
     @Autowired
     private AsyncClickService asyncClickService;
 
+    @Autowired
+    private MongoTemplate mongoTemplate; // For querying the 'links' collection
+
     // In-memory cache for geolocation data keyed by IP address.
     private static final ConcurrentHashMap<String, CacheEntry> geoCache = new ConcurrentHashMap<>();
     // Cache TTL: 1 hour.
@@ -34,7 +44,7 @@ public class RedirectionController {
 
     @GetMapping("/{shortHash}")
     public RedirectView redirect(@PathVariable String shortHash, HttpServletRequest request) {
-        // Retrieve the URL mapping by short code.
+        // Retrieve the URL mapping by short code from the shorteningservice collection.
         UrlMapping mapping = urlRepository.findByShortHash(shortHash);
         System.out.println("Redirect request for short code: " + shortHash);
         if (mapping == null) {
@@ -42,13 +52,23 @@ public class RedirectionController {
             return new RedirectView("/404");
         }
 
+        // Query the 'links' collection to get the _id for the Click object
+        Query query = new Query(Criteria.where("shortHash").is(shortHash));
+        Document linkDoc = mongoTemplate.findOne(query, Document.class, "links");
+        ObjectId linkId = null;
+        if (linkDoc != null && linkDoc.get("_id") != null) {
+            linkId = linkDoc.getObjectId("_id"); // Use the _id from 'links' collection
+            System.out.println("Links _id: " + linkId.toHexString());
+        } else {
+            System.out.println("No matching link found in links collection for shortHash: " + shortHash);
+        }
+
         // Extract request data for analytics.
         String userAgent = request.getHeader("User-Agent");
         String ipAddress = request.getRemoteAddr();
         String referrer = (request.getHeader("Referer") != null) ? request.getHeader("Referer") : "Direct";
 
-        // (Optionally) extract UTM parameters from the query string.
-        // For example, if the redirect URL is appended with utm_source, utm_medium, etc.
+        // Extract UTM parameters from the query string, if present.
         String utm_source = request.getParameter("utm_source");
         String utm_medium = request.getParameter("utm_medium");
         String utm_campaign = request.getParameter("utm_campaign");
@@ -60,24 +80,24 @@ public class RedirectionController {
 
         // Build a new Click record.
         Click click = new Click();
-        click.setLinkId(mapping.getId().toString());
-        // Set the userId from the URL mapping (ensure that your link creation process populates this field).
-        click.setUserId(mapping.getUserId());
+        // Use the _id from 'links' if available, otherwise fallback to UrlMapping _id
+        click.setLinkId(linkId != null ? linkId : mapping.get_id());
+        System.out.println("Click linkId: " + click.getLinkId().toHexString());
+        click.setUserId(mapping.getUserId()); // From UrlMapping, assuming it's populated
         click.setReferrer(referrer);
         click.setIp(ipAddress);
         click.setUserAgent(userAgent);
         click.setCountry(geoData.getOrDefault("country", "Unknown"));
         click.setRegion(geoData.getOrDefault("region", "Unknown"));
         click.setCity(geoData.getOrDefault("city", "Unknown"));
-        // Optionally set UTM parameters if they are present.
+        // Set UTM parameters if they are present.
         click.setUtm_source(utm_source);
         click.setUtm_medium(utm_medium);
         click.setUtm_campaign(utm_campaign);
         click.setUtm_term(utm_term);
         click.setUtm_content(utm_content);
-        // Optionally, you can also set deviceType, browser, and operatingSystem if you parse those from the user-agent.
 
-        // Log the click asynchronously so the redirect is not delayed.
+        // Log the click asynchronously to avoid delaying the redirect.
         asyncClickService.logClick(click);
 
         // Redirect to the original long URL.
@@ -92,17 +112,14 @@ public class RedirectionController {
         Map<String, String> geoData = new HashMap<>();
         try {
             RestTemplate restTemplate = new RestTemplate();
-            // Using a free endpoint (ip-api.com) that does not require an API token.
+            // Using ip-api.com free endpoint for geolocation data.
             String url = "http://ip-api.com/json/" + ipAddress;
             ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
             if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
                 Map<String, Object> data = response.getBody();
-                String country = (String) data.getOrDefault("country", "Unknown");
-                String region = (String) data.getOrDefault("regionName", "Unknown"); // ip-api.com uses "regionName"
-                String city = (String) data.getOrDefault("city", "Unknown");
-                geoData.put("country", country);
-                geoData.put("region", region);
-                geoData.put("city", city);
+                geoData.put("country", (String) data.getOrDefault("country", "Unknown"));
+                geoData.put("region", (String) data.getOrDefault("regionName", "Unknown"));
+                geoData.put("city", (String) data.getOrDefault("city", "Unknown"));
             }
         } catch (Exception e) {
             e.printStackTrace();

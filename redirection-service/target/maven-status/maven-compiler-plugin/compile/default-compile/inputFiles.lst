@@ -1,6 +1,8 @@
+/Users/blakelucey/Desktop/Coding/development/my-url-shortener/redirection-service/src/main/java/com/redirectionservice/config/AppConfig.java
+/Users/blakelucey/Desktop/Coding/development/my-url-shortener/redirection-service/src/main/java/com/redirectionservice/repository/ClickRepository.java
 /Users/blakelucey/Desktop/Coding/development/my-url-shortener/redirection-service/src/main/java/com/redirectionservice/RedirectionServiceApplication.java
 /Users/blakelucey/Desktop/Coding/development/my-url-shortener/redirection-service/src/main/java/com/redirectionservice/repository/UrlMappingRepository.java
-/Users/blakelucey/Desktop/Coding/development/my-url-shortener/redirection-service/src/main/java/com/redirectionservice/repository/AccessLogRepository.java
 /Users/blakelucey/Desktop/Coding/development/my-url-shortener/redirection-service/src/main/java/com/redirectionservice/controller/RedirectionController.java
 /Users/blakelucey/Desktop/Coding/development/my-url-shortener/redirection-service/src/main/java/com/redirectionservice/model/UrlMapping.java
-/Users/blakelucey/Desktop/Coding/development/my-url-shortener/redirection-service/src/main/java/com/redirectionservice/model/AccessLog.java
+/Users/blakelucey/Desktop/Coding/development/my-url-shortener/redirection-service/src/main/java/com/redirectionservice/model/Click.java
+/Users/blakelucey/Desktop/Coding/development/my-url-shortener/redirection-service/src/main/java/com/redirectionservice/service/AsyncClickService.java

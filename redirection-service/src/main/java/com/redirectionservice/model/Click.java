@@ -1,19 +1,20 @@
 // src/main/java/com/example/redirectionservice/model/Click.java
-package com.example.redirectionservice.model;
+package com.redirectionservice.model;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.bson.types.ObjectId;
 
 import java.util.Date;
 
 @Document(collection = "clicks")
 public class Click {
     @Id
-    private String id;
+    private ObjectId _id;
 
     // The link this click belongs to – we store it as an ObjectId (here as String)
-    private String linkId;
+    private ObjectId linkId;
 
     // Index userId for fast lookup
     @Indexed
@@ -40,7 +41,7 @@ public class Click {
 
     public Click() {}
 
-    public Click(String linkId, String userId, String referrer, String ip, String userAgent) {
+    public Click(ObjectId linkId, String userId, String referrer, String ip, String userAgent) {
         this.linkId = linkId;
         this.userId = userId;
         this.referrer = referrer;
@@ -50,11 +51,11 @@ public class Click {
 
     // ... getters and setters for all fields ...
 
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
+    public ObjectId get_id() { return _id; }
+    public void set_id(ObjectId id) { this._id = id; }
 
-    public String getLinkId() { return linkId; }
-    public void setLinkId(String linkId) { this.linkId = linkId; }
+    public ObjectId getLinkId() { return linkId; }
+    public void setLinkId(ObjectId linkId) { this.linkId = linkId; }
 
     public String getUserId() { return userId; }
     public void setUserId(String userId) { this.userId = userId; }

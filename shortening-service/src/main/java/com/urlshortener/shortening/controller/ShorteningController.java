@@ -1,7 +1,7 @@
-package com.example.shorteningservice.controller;
+package com.shorteningservice.controller;
 
-import com.example.shorteningservice.model.UrlMapping;
-import com.example.shorteningservice.repository.UrlMappingRepository;
+import com.shorteningservice.model.UrlMapping;
+import com.shorteningservice.repository.UrlMappingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Value;

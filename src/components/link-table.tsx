@@ -238,7 +238,7 @@ export function LinkDataTable() {
     for (const row of selectedRows) {
       const link = row.original as LinkData;
       try {
-        await dispatch(deleteLinkAsync({ userId, shortHash: link.shortUrl })).unwrap();
+        await dispatch(deleteLinkAsync({ userId, shortUrl: link.shortUrl })).unwrap();
       } catch (err) {
         console.error("Deletion error", err);
       }

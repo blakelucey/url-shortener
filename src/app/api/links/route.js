@@ -62,13 +62,13 @@ export async function DELETE(request) {
 
         // Get the shortHash from the query parameters
         const { searchParams } = new URL(request.url);
-        const shortHash = searchParams.get('shortHash');
-        if (!shortHash) {
-            return new Response(JSON.stringify({ error: 'shortHash is required' }), { status: 400 });
+        const shortUrl = searchParams.get('shortUrl');
+        if (!shortUrl) {
+            return new Response(JSON.stringify({ error: 'shortUrl is required' }), { status: 400 });
         }
 
         // Delete the link for the authenticated user and given shortHash
-        await Link.deleteOne({ userId, shortHash });
+        await Link.deleteOne({ userId, shortUrl });
         return new Response(JSON.stringify({ message: 'Link deleted successfully' }), { status: 200 });
     } catch (error) {
         return new Response(JSON.stringify({ error: error.message }), { status: 500 });

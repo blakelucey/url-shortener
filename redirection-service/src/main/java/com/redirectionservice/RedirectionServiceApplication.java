@@ -1,5 +1,5 @@
 // src/main/java/com/example/redirectionservice/RedirectionServiceApplication.java
-package com.example.redirectionservice;
+package com.redirectionservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

@@ -1,15 +1,16 @@
 // src/main/java/com/example/shorteningservice/model/UrlMapping.java
-package com.example.shorteningservice.model;
+package com.shorteningservice.model;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.bson.types.ObjectId;
 
 import java.util.Date;
 
 @Document(collection = "url_mappings")
 public class UrlMapping {
     @Id
-    private String id;
+    private ObjectId _id;
     private String userId;       // Added field for the user ID
     private String shortHash;
     private String originalUrl;
@@ -29,12 +30,12 @@ public class UrlMapping {
     }
 
     // Getters and Setters
-    public String getId() {
-        return id;
+    public ObjectId getId() {
+        return _id;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setId(ObjectId id) {
+        this._id = id;
     }
 
     public String getUserId() {

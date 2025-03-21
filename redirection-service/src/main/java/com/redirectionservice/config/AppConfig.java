@@ -1,5 +1,5 @@
 // src/main/java/com/example/redirectionservice/config/AppConfig.java
-package com.example.redirectionservice.config;
+package com.redirectionservice.config;
 
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Configuration;

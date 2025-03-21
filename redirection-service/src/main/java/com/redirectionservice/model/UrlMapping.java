@@ -1,14 +1,15 @@
 // src/main/java/com/example/redirectionservice/model/UrlMapping.java
-package com.example.redirectionservice.model;
+package com.redirectionservice.model;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.Date;
+import org.bson.types.ObjectId;
 
 @Document(collection = "url_mappings")
 public class UrlMapping {
     @Id
-    private String id;
+    private ObjectId _id;
     private String userId;       // added so we know which user owns this link
     private String shortHash;
     private String originalUrl;
@@ -26,12 +27,10 @@ public class UrlMapping {
     }
 
     // Getters and Setters
-    public String getId() {
-        return id;
-    }
-    public void setId(String id) {
-        this.id = id;
-    }
+    public ObjectId get_id() { return _id; }
+
+    public void set_id(ObjectId id) { this._id = id; }
+    
     public String getUserId() {
         return userId;
     }
