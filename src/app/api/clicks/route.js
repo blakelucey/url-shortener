@@ -80,7 +80,7 @@ export async function GET(request) {
         const linkId = searchParams.get('linkId')
         console.log('linkId', linkId)
 
-        const clicks = await Click.findOne({ linkId: linkId });
+        const clicks = await Click.find({ linkId: linkId });
         console.log('clicks', clicks)
         return new Response(JSON.stringify(clicks), { status: 200 });
     } catch (error) {

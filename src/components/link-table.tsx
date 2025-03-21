@@ -153,9 +153,8 @@ export function LinkDataTable() {
   const { links: fetchedLinks, loading, error } = useAppSelector(
     (state) => state.links
   );
-  const { clicks } = useAppSelector((state) => state.clicks);
-  const [linkData, setLinkData] = useState([])
-
+  const [clickCounts, setClickCounts] = useState<{ [key: string]: number }>({});
+  console.log('clickCounts', clickCounts)
 
   // Declare table state variables first.
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -170,20 +169,45 @@ export function LinkDataTable() {
     }
   }, [dispatch, userId]);
 
-  // Once links are fetched, dispatch fetchClicks for each link.
   useEffect(() => {
-    (async () => {
+    const fetchClickCounts = async () => {
       if (userId && fetchedLinks.length > 0) {
-        console.log('hit')
-        fetchedLinks.forEach((link: any) => {
-          console.log('link', link)
-          dispatch(fetchClicks({ userId, linkId: link._id }));
-        });
+        // Temporary object to hold the counts.
+        const counts: { [linkId: string]: number } = {};
+  
+        await Promise.all(
+          fetchedLinks.map(async (link: any) => {
+            // Convert the link ID to a string
+            const linkId = link._id ? link._id.toString() : link.id;
+            try {
+              // Dispatch the thunk to fetch clicks for this link.
+              const result = await dispatch(fetchClicks({ userId, linkId })).unwrap();
+              console.log('result', result);
+  
+              // Ensure result is an array. (If it's not, convert it via Object.values)
+              const clicksArray = Array.isArray(result) ? result : Object.values(result);
+  
+              // Create a Set of unique click IDs.
+              const uniqueClickIds = new Set(clicksArray.map((click: any) => click._id));
+              console.log('unique click count for', linkId, uniqueClickIds.size);
+  
+              counts[linkId] = uniqueClickIds.size;
+            } catch (error) {
+              console.error("Error fetching clicks for link", linkId, error);
+              counts[linkId] = 0;
+            }
+          })
+        );
+  
+        // Update state with the counts to trigger a re-render.
+        setClickCounts(counts);
+        console.log('Final counts', counts);
       }
-    })()
-
-    console.log('clicks', clicks)
-
+    };
+  
+    fetchClickCounts().catch((e) => {
+      console.error(e);
+    });
   }, [dispatch, userId, fetchedLinks]);
 
 
@@ -191,14 +215,17 @@ export function LinkDataTable() {
   // Memoize the derived table data.
   const tableData: LinkData[] = useMemo(() => {
     if (!Array.isArray(fetchedLinks)) return [];
-    return fetchedLinks.map((l: any) => ({
-      id: l._id, // Make sure _id is available or use a fallback.
-      link: l.originalUrl,
-      shortUrl: l.shortUrl,
-      clicks: 0,
-      createdAt: l.createdAt ? new Date(l.createdAt).toLocaleString() : "",
-    }));
-  }, [fetchedLinks]);
+    return fetchedLinks.map((l: any) => {
+      const linkId = l._id ? l._id.toString() : l.id;
+      return {
+        id: linkId,
+        link: l.originalUrl,
+        shortUrl: l.shortUrl,
+        clicks: clickCounts[linkId] ?? 0,
+        createdAt: l.createdAt ? new Date(l.createdAt).toLocaleString() : "",
+      };
+    });
+  }, [fetchedLinks, clickCounts]);
 
   // Now create the table instance.
   const table = useReactTable({
