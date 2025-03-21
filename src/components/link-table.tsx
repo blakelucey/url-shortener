@@ -267,7 +267,7 @@ export function LinkDataTable() {
       const deletePromises = selectedRows.map((row) => {
         const link: any = row.original as LinkData;
         return dispatch(
-          deleteLinkAsync({ userId, shortUrl: link.shortUrl, linkId: link.id })
+          deleteLinkAsync({ userId, shortUrl: link.shortUrl, linkId: link.id, originalUrl: link.link  })
         ).unwrap();
       });
 

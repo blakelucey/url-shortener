@@ -2,6 +2,7 @@ import dbConnect from '../../../lib/dbConnect';
 import Link from '../../../models/link';
 import { verifyToken } from '../../../lib/auth';
 import Clicks from '@/models/click';
+import UrlMapping from '@/models/urlMapping';
 
 export async function POST(request) {
     try {
@@ -68,13 +69,11 @@ export async function DELETE(request) {
         const { searchParams } = new URL(request.url);
         const shortUrl = searchParams.get("shortUrl");
         const linkId = searchParams.get("linkId");
+        const originalUrl = searchParams.get("originalUrl");
 
-        console.log('linkId', linkId)
-        console.log('shortUrl', shortUrl)
-
-        if (!shortUrl || !linkId) {
+        if (!shortUrl || !linkId || !originalUrl) {
             return new Response(
-                JSON.stringify({ error: "shortUrl and linkId are required" }),
+                JSON.stringify({ error: "shortUrl and linkId and originalUrl are required" }),
                 { status: 400 }
             );
         }
@@ -84,6 +83,8 @@ export async function DELETE(request) {
 
         // Delete all clicks associated with the given linkId and userId
         await Clicks.deleteMany({ linkId });
+
+        await UrlMapping.deleteOne({ originalUrl: originalUrl })
 
         return new Response(
             JSON.stringify({ message: "Link and its clicks deleted successfully" }),
