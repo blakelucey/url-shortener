@@ -3,11 +3,7 @@
 import * as React from "react"
 import { useEffect, useState } from "react"
 import {
-  Component,
-  Frame,
   GalleryVerticalEnd,
-  Map,
-  PieChart,
 } from "lucide-react"
 import { NavMain } from "@/components/nav-main"
 import {

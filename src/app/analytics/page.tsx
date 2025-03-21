@@ -19,9 +19,15 @@ import {
 import { useAccount } from "wagmi"
 import { useAppKitAccount } from "@reown/appkit/react";
 import { OnboardingDialog } from "@/components/finish-onboarding"
-import { LinkDataTable } from "@/components/link-table"
 import { selectUser } from "@/store/slices/userSlice"
 import { useAppSelector } from "@/store/hooks"
+import { AreaChartInteractive } from "@/components/charts/AreaChartInteractive/page"
+import { DonutChart } from "@/components/charts/DonutChart/page"
+import { RadialChart } from "@/components/charts/RadialChart/page"
+import { PieChartInteractive } from "@/components/charts/PieChartInteractive/page"
+import { BarChartInteractive } from "@/components/charts/BarChartInteractive/page"
+import { TotalClicks } from "@/components/charts/TotalClicks/page"
+import { MostPopularOS } from "@/components/charts/PopularOS/page"
 
 export default function Dashboard() {
     const { embeddedWalletInfo, caipAddress } = useAppKitAccount();
@@ -69,11 +75,11 @@ export default function Dashboard() {
                             <Breadcrumb>
                                 <BreadcrumbList>
                                     <BreadcrumbItem className="hidden md:block">
-                                        <BreadcrumbLink href="#">Links</BreadcrumbLink>
+                                        <BreadcrumbLink href="/analytics">Analytics</BreadcrumbLink>
                                     </BreadcrumbItem>
                                     <BreadcrumbSeparator className="hidden md:block" />
                                     <BreadcrumbItem>
-                                        <BreadcrumbPage>Create a new Link</BreadcrumbPage>
+                                        <BreadcrumbPage></BreadcrumbPage>
                                     </BreadcrumbItem>
                                 </BreadcrumbList>
                             </Breadcrumb>
@@ -81,7 +87,17 @@ export default function Dashboard() {
                     </header>
                     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
                         <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min">
-                            <LinkDataTable />
+                            <AreaChartInteractive />
+                        </div>
+                        <div className="flex flex-1 flex-row gap-4 p-4">
+                            <DonutChart />
+                            <RadialChart />
+                            <BarChartInteractive />
+                            <TotalClicks />
+                            <MostPopularOS />
+                        </div>
+                        <div>
+                            <PieChartInteractive />
                         </div>
                     </div>
                 </SidebarInset>
