@@ -64,7 +64,7 @@ export default function Dashboard() {
     }, [isConnected, caipAddress!]);
 
     return (
-        <div>
+        <div className="analytics-page">
             <SidebarProvider>
                 <AppSidebar />
                 <SidebarInset>

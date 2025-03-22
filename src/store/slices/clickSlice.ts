@@ -34,12 +34,12 @@ const initialState: ClickState = {
   error: null,
 };
 
-// Async thunk to fetch clicks.
-export const fetchClicks = createAsyncThunk<Click[], { userId: string; linkId?: string }>(
+// In clickSlice.ts
+export const fetchClicks = createAsyncThunk(
   'clicks/fetchClicks',
-  async ({ userId, linkId }, { rejectWithValue }) => {
+  async (userId: string, { rejectWithValue }) => {
     try {
-      // Get token using userId.
+      // Get authentication token
       const signResponse = await fetch(`/api/signToken?userId=${encodeURIComponent(userId)}`, {
         method: 'GET',
       });
@@ -48,17 +48,14 @@ export const fetchClicks = createAsyncThunk<Click[], { userId: string; linkId?: 
         return rejectWithValue(errorData.error || 'Failed to sign token');
       }
       const signData = await signResponse.json();
-      const token = signData.data; // Assuming token is in signData.data
+      const token = signData.data;
       if (!token) {
         throw new Error('Token not found');
       }
 
-      let url = `/api/clicks`;
-      if (linkId) {
-        url += `?linkId=${encodeURIComponent(linkId)}`;
-      }
-      const response = await fetch(url, {
-        method: "GET",
+      // Fetch all clicks for the user
+      const response = await fetch(`/api/clicks?userId=${encodeURIComponent(userId)}`, {
+        method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -67,7 +64,7 @@ export const fetchClicks = createAsyncThunk<Click[], { userId: string; linkId?: 
       if (!response.ok) {
         return rejectWithValue(data.error || 'Failed to fetch clicks');
       }
-      return data;
+      return data; // Expecting an array of clicks
     } catch (error: any) {
       return rejectWithValue(error.message);
     }

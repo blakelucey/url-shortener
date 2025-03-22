@@ -43,6 +43,7 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { useAppKitAccount } from "@reown/appkit/react";
 import { useEffect, useMemo, useState } from "react";
 import { fetchClicks } from "@/store/slices/clickSlice"
+import { selectUniqueClicksByLink } from "@/store/selectors/clickSelectors";
 // Define the type used for rendering data in the table.
 export type LinkData = {
   id: string;
@@ -148,12 +149,12 @@ export const columns: ColumnDef<LinkData>[] = [
 
 export function LinkDataTable() {
   const dispatch = useAppDispatch();
+  const clickCounts = useAppSelector(selectUniqueClicksByLink)
   const { caipAddress } = useAppKitAccount(); // User ID from AppKit
   const userId = caipAddress!;
   const { links: fetchedLinks, loading, error } = useAppSelector(
     (state) => state.links
   );
-  const [clickCounts, setClickCounts] = useState<{ [key: string]: number }>({});
   console.log('clickCounts', clickCounts)
 
   // Declare table state variables first.
@@ -170,45 +171,10 @@ export function LinkDataTable() {
   }, [dispatch, userId]);
 
   useEffect(() => {
-    const fetchClickCounts = async () => {
-      if (userId && fetchedLinks.length > 0) {
-        // Temporary object to hold the counts.
-        const counts: { [linkId: string]: number } = {};
-  
-        await Promise.all(
-          fetchedLinks.map(async (link: any) => {
-            // Convert the link ID to a string
-            const linkId = link._id ? link._id.toString() : link.id;
-            try {
-              // Dispatch the thunk to fetch clicks for this link.
-              const result = await dispatch(fetchClicks({ userId, linkId })).unwrap();
-              console.log('result', result);
-  
-              // Ensure result is an array. (If it's not, convert it via Object.values)
-              const clicksArray = Array.isArray(result) ? result : Object.values(result);
-  
-              // Create a Set of unique click IDs.
-              const uniqueClickIds = new Set(clicksArray.map((click: any) => click._id));
-              console.log('unique click count for', linkId, uniqueClickIds.size);
-  
-              counts[linkId] = uniqueClickIds.size;
-            } catch (error) {
-              console.error("Error fetching clicks for link", linkId, error);
-              counts[linkId] = 0;
-            }
-          })
-        );
-  
-        // Update state with the counts to trigger a re-render.
-        setClickCounts(counts);
-        console.log('Final counts', counts);
-      }
-    };
-  
-    fetchClickCounts().catch((e) => {
-      console.error(e);
-    });
-  }, [dispatch, userId, fetchedLinks]);
+    if (userId) {
+      dispatch(fetchClicks(userId));
+    }
+  }, [dispatch, userId]);
 
 
 
@@ -267,7 +233,7 @@ export function LinkDataTable() {
       const deletePromises = selectedRows.map((row) => {
         const link: any = row.original as LinkData;
         return dispatch(
-          deleteLinkAsync({ userId, shortUrl: link.shortUrl, linkId: link.id, originalUrl: link.link  })
+          deleteLinkAsync({ userId, shortUrl: link.shortUrl, linkId: link.id, originalUrl: link.link })
         ).unwrap();
       });
 
