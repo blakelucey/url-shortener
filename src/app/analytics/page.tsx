@@ -28,6 +28,7 @@ import { PieChartInteractive } from "@/components/charts/PieChartInteractive/pag
 import { BarChartInteractive } from "@/components/charts/BarChartInteractive/page"
 import { TotalClicks } from "@/components/charts/TotalClicks/page"
 import { MostPopularOS } from "@/components/charts/PopularOS/page"
+import { ModeToggle } from "@/components/themeToggle"
 
 export default function Dashboard() {
     const { embeddedWalletInfo, caipAddress } = useAppKitAccount();
@@ -84,7 +85,11 @@ export default function Dashboard() {
                                 </BreadcrumbList>
                             </Breadcrumb>
                         </div>
+                            <div className="absolute top-2 right-5">
+                                <ModeToggle />
+                            </div>
                     </header>
+
                     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
                         <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min">
                             <AreaChartInteractive />

@@ -22,6 +22,7 @@ import { OnboardingDialog } from "@/components/finish-onboarding"
 import { LinkDataTable } from "@/components/link-table"
 import { selectUser } from "@/store/slices/userSlice"
 import { useAppSelector } from "@/store/hooks"
+import { ModeToggle } from "@/components/themeToggle"
 
 export default function Dashboard() {
   const { embeddedWalletInfo, caipAddress } = useAppKitAccount();
@@ -77,6 +78,9 @@ export default function Dashboard() {
                   </BreadcrumbItem>
                 </BreadcrumbList>
               </Breadcrumb>
+            </div>
+            <div className="absolute top-2 right-5">
+              <ModeToggle />
             </div>
           </header>
           <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
