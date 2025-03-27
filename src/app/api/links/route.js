@@ -20,12 +20,23 @@ export async function POST(request) {
             shortUrl,
             shortHash,
             channels,
-            campaigns } = await request.json();
+            campaigns, utm_source,
+            utm_medium,
+            utm_campaign,
+            utm_term,
+            utm_content, } = await request.json();
+
         if (!originalUrl) {
             return new Response(JSON.stringify({ error: 'originalUrl is required' }), { status: 400 });
         }
 
-        const link = new Link({ userId, originalUrl, shortUrl, shortHash, channels, campaigns });
+        const link = new Link({
+            userId, originalUrl, shortUrl, shortHash, channels, campaigns, utm_source,
+            utm_medium,
+            utm_campaign,
+            utm_term,
+            utm_content,
+        });
         await link.save();
 
         return new Response(JSON.stringify({ message: 'Link created', link }), { status: 201 });

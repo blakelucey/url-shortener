@@ -45,7 +45,7 @@ export function NavUser({
   const [userData, setUserData] = useState<User>(user?.user)
 
   console.log('user data', userData)
-  console.log('initials', userData.firstName[0] + userData.lastName[0])
+  console.log('initials', userData?.firstName[0] + userData?.lastName[0])
 
   useEffect(() => {
     if (!isConnected) {
@@ -70,7 +70,7 @@ export function NavUser({
             >
               <Avatar className="h-8 w-8 rounded-lg">
                 <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-                <AvatarFallback className="rounded-lg">{userData.firstName[0] + userData.lastName[0]}</AvatarFallback>
+                <AvatarFallback className="rounded-lg">{userData?.firstName[0] + userData?.lastName[0]}</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{userData?.firstName}</span>
@@ -89,7 +89,7 @@ export function NavUser({
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
                   <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-                  <AvatarFallback className="rounded-lg">{userData.firstName[0] + userData.lastName[0]}</AvatarFallback>
+                  <AvatarFallback className="rounded-lg">{userData?.firstName[0] + userData?.lastName[0]}</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{userData?.firstName}</span>

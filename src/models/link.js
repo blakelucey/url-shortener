@@ -29,7 +29,22 @@ const linkSchema = new Schema({
     type: [String],
     unique: false,
     required: false
-  }
+  },
+  utm_source: {
+    type: String,
+  },
+  utm_medium: {
+    type: String,
+  },
+  utm_campaign: {
+    type: String,
+  },
+  utm_term: {
+    type: String,
+  },
+  utm_content: {
+    type: String,
+  },
 }, { timestamps: true });
 
 const Link = models.Link || model('Link', linkSchema);

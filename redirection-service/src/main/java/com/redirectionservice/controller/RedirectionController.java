@@ -12,7 +12,6 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
@@ -35,7 +34,7 @@ public class RedirectionController {
     private AsyncClickService asyncClickService;
 
     @Autowired
-    private MongoTemplate mongoTemplate; // For querying the 'links' collection
+    private MongoTemplate mongoTemplate; // For querying the "links" collection
 
     // In-memory cache for geolocation data keyed by IP address.
     private static final ConcurrentHashMap<String, CacheEntry> geoCache = new ConcurrentHashMap<>();
@@ -44,7 +43,7 @@ public class RedirectionController {
 
     @GetMapping("/{shortHash}")
     public RedirectView redirect(@PathVariable String shortHash, HttpServletRequest request) {
-        // Retrieve the URL mapping by short code from the shorteningservice collection.
+        // Retrieve the URL mapping from your redirection service.
         UrlMapping mapping = urlRepository.findByShortHash(shortHash);
         System.out.println("Redirect request for short code: " + shortHash);
         if (mapping == null) {
@@ -52,31 +51,32 @@ public class RedirectionController {
             return new RedirectView("/404");
         }
 
-        // Query the 'links' collection to get the _id for the Click object
+        // Query the "links" collection (created by your Java microservice)
         Query query = new Query(Criteria.where("shortHash").is(shortHash));
         Document linkDoc = mongoTemplate.findOne(query, Document.class, "links");
         ObjectId linkId = null;
         if (linkDoc != null && linkDoc.get("_id") != null) {
-            linkId = linkDoc.getObjectId("_id"); // Use the _id from 'links' collection
+            linkId = linkDoc.getObjectId("_id");
             System.out.println("Links _id: " + linkId.toHexString());
         } else {
             System.out.println("No matching link found in links collection for shortHash: " + shortHash);
         }
 
-        // Extract request data for analytics.
+        // Extract request data.
         String userAgent = request.getHeader("User-Agent");
         String ipAddress = request.getRemoteAddr();
-        String referrer = (request.getHeader("Referer") != null) ? request.getHeader("Referer") : "Direct";
+        String referrer = request.getHeader("Referer") != null ? request.getHeader("Referer") : "Direct";
 
-        // Extract UTM parameters from the query string, if present.
-        String utm_source = request.getParameter("utm_source");
-        String utm_medium = request.getParameter("utm_medium");
-        String utm_campaign = request.getParameter("utm_campaign");
-        String utm_term = request.getParameter("utm_term");
-        String utm_content = request.getParameter("utm_content");
-
-        // Retrieve geolocation data using caching.
+        // Retrieve geolocation data.
         Map<String, String> geoData = getGeoLocation(ipAddress);
+
+        // Extract UTM parameters from the link document.
+        // (Assuming the document keys match exactly, e.g., "utm_source", "utm_medium", etc.)
+        String utm_source = linkDoc != null ? linkDoc.getString("utm_source") : null;
+        String utm_medium = linkDoc != null ? linkDoc.getString("utm_medium") : null;
+        String utm_campaign = linkDoc != null ? linkDoc.getString("utm_campaign") : null;
+        String utm_term = linkDoc != null ? linkDoc.getString("utm_term") : null;
+        String utm_content = linkDoc != null ? linkDoc.getString("utm_content") : null;
 
         // Build a new Click record.
         Click click = new Click();
@@ -90,17 +90,17 @@ public class RedirectionController {
         click.setCountry(geoData.getOrDefault("country", "Unknown"));
         click.setRegion(geoData.getOrDefault("region", "Unknown"));
         click.setCity(geoData.getOrDefault("city", "Unknown"));
-        // Set UTM parameters if they are present.
+        // Set UTM parameters retrieved from the link document.
         click.setUtm_source(utm_source);
         click.setUtm_medium(utm_medium);
         click.setUtm_campaign(utm_campaign);
         click.setUtm_term(utm_term);
         click.setUtm_content(utm_content);
 
-        // Log the click asynchronously to avoid delaying the redirect.
+        // Log the click asynchronously.
         asyncClickService.logClick(click);
 
-        // Redirect to the original long URL.
+        // Redirect to the original URL.
         return new RedirectView(mapping.getOriginalUrl());
     }
 
@@ -112,14 +112,12 @@ public class RedirectionController {
         Map<String, String> geoData = new HashMap<>();
         try {
             RestTemplate restTemplate = new RestTemplate();
-            // Using ip-api.com free endpoint for geolocation data.
             String url = "http://ip-api.com/json/" + ipAddress;
-            ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
-            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
-                Map<String, Object> data = response.getBody();
-                geoData.put("country", (String) data.getOrDefault("country", "Unknown"));
-                geoData.put("region", (String) data.getOrDefault("regionName", "Unknown"));
-                geoData.put("city", (String) data.getOrDefault("city", "Unknown"));
+            Map response = restTemplate.getForObject(url, Map.class);
+            if (response != null) {
+                geoData.put("country", (String) response.getOrDefault("country", "Unknown"));
+                geoData.put("region", (String) response.getOrDefault("regionName", "Unknown"));
+                geoData.put("city", (String) response.getOrDefault("city", "Unknown"));
             }
         } catch (Exception e) {
             e.printStackTrace();
