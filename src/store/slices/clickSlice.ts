@@ -15,6 +15,7 @@ export interface Click {
   country?: string;
   region?: string;
   city?: string;
+  postal?: string;
   utm_source?: string;
   utm_medium?: string;
   utm_campaign?: string;

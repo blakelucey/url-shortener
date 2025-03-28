@@ -8,16 +8,23 @@ import com.redirectionservice.service.AsyncClickService;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.HttpStatus;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.view.RedirectView;
-
+import io.ipinfo.api.IPinfo;
+import io.ipinfo.api.model.IPResponse;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,10 +43,22 @@ public class RedirectionController {
     @Autowired
     private MongoTemplate mongoTemplate; // For querying the "links" collection
 
+      // Inject the token from your environment (loaded via Dotenv)
+    @Value("${NEXT_IPINFO_TOKEN}")
+    private String ipinfoToken;
+
     // In-memory cache for geolocation data keyed by IP address.
     private static final ConcurrentHashMap<String, CacheEntry> geoCache = new ConcurrentHashMap<>();
     // Cache TTL: 1 hour.
     private static final long CACHE_TTL_MS = TimeUnit.HOURS.toMillis(1);
+
+      // Utility method to fetch the server's public IP
+    public static String getIp() throws IOException {
+        URL whatismyip = new URL("http://checkip.amazonaws.com");
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(whatismyip.openStream()))) {
+            return in.readLine();
+        }
+    }
 
     @GetMapping("/{shortHash}")
     public RedirectView redirect(@PathVariable String shortHash, HttpServletRequest request) {
@@ -62,9 +81,16 @@ public class RedirectionController {
             System.out.println("No matching link found in links collection for shortHash: " + shortHash);
         }
 
+        // Extract ipAddress
+        String ipAddress;
+        try {
+            ipAddress = getIp();
+        } catch (IOException e) {
+            e.printStackTrace();
+            ipAddress = null;
+        }
         // Extract request data.
         String userAgent = request.getHeader("User-Agent");
-        String ipAddress = request.getRemoteAddr();
         String referrer = request.getHeader("Referer") != null ? request.getHeader("Referer") : "Direct";
 
         // Retrieve geolocation data.
@@ -90,6 +116,7 @@ public class RedirectionController {
         click.setCountry(geoData.getOrDefault("country", "Unknown"));
         click.setRegion(geoData.getOrDefault("region", "Unknown"));
         click.setCity(geoData.getOrDefault("city", "Unknown"));
+        click.setPostal(geoData.getOrDefault("postal", "unknown"));
         // Set UTM parameters retrieved from the link document.
         click.setUtm_source(utm_source);
         click.setUtm_medium(utm_medium);
@@ -104,28 +131,41 @@ public class RedirectionController {
         return new RedirectView(mapping.getOriginalUrl());
     }
 
-    private Map<String, String> getGeoLocation(String ipAddress) {
+       private Map<String, String> getGeoLocation(String ipAddress) {
         CacheEntry entry = geoCache.get(ipAddress);
         if (entry != null && !entry.isExpired()) {
+            System.out.println("[GeoLookup] Using cached geo data for IP: " + ipAddress);
             return entry.getGeoData();
         }
         Map<String, String> geoData = new HashMap<>();
         try {
-            RestTemplate restTemplate = new RestTemplate();
-            String url = "http://ip-api.com/json/" + ipAddress;
-            Map response = restTemplate.getForObject(url, Map.class);
+            // Use the IPinfo library with its builder API.
+            IPinfo ipInfo = new IPinfo.Builder().setToken(ipinfoToken).build();
+            IPResponse response = ipInfo.lookupIP(ipAddress);
+            System.out.println("[GeoLookup] IPinfo response: " + response);
             if (response != null) {
-                geoData.put("country", (String) response.getOrDefault("country", "Unknown"));
-                geoData.put("region", (String) response.getOrDefault("regionName", "Unknown"));
-                geoData.put("city", (String) response.getOrDefault("city", "Unknown"));
+                // Adjust these getters if your version of IPResponse uses different names
+                geoData.put("country", response.getCountryCode() != null ? response.getCountryCode() : "Unknown");
+                geoData.put("region", response.getRegion() != null ? response.getRegion() : "Unknown");
+                geoData.put("city", response.getCity() != null ? response.getCity() : "Unknown");
+                geoData.put("postal", response.getPostal() != null ? response.getPostal() : "Unknown");
+            } else {
+                System.out.println("[GeoLookup] IPinfo response was null for IP: " + ipAddress);
+                geoData.put("country", "Unknown");
+                geoData.put("region", "Unknown");
+                geoData.put("city", "Unknown");
+                geoData.put("postal", "Unknown");
             }
-        } catch (Exception e) {
+        } catch (Exception e) { // Catch any exceptions (e.g. rate limiting)
+            System.err.println("[GeoLookup] Exception while fetching geo data for IP " + ipAddress + ": " + e.getMessage());
             e.printStackTrace();
             geoData.put("country", "Unknown");
             geoData.put("region", "Unknown");
             geoData.put("city", "Unknown");
+            geoData.put("postal", "Unknown");
         }
         geoCache.put(ipAddress, new CacheEntry(geoData, System.currentTimeMillis()));
+        System.out.println("[GeoLookup] Cached geo data for IP " + ipAddress + ": " + geoData);
         return geoData;
     }
 
