@@ -11,7 +11,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAppKitAccount } from "@reown/appkit/react";
-import axios from 'axios'
+import { createUserAsync } from "@/store/slices/userSlice";
+import { useAppDispatch } from "@/store/hooks";
+
 
 interface OnboardingDialogProps {
   open: boolean;
@@ -24,16 +26,21 @@ export function OnboardingDialog({ open, onOpenChange }: OnboardingDialogProps) 
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { caipAddress, embeddedWalletInfo } = useAppKitAccount();
+  const dispatch = useAppDispatch()
 
-  const userId = caipAddress;
+  const userId = caipAddress!;
   const authType = embeddedWalletInfo?.authProvider
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const response = await axios.post("http://localhost:3000/api/users", { userId, firstName, lastName, email, authType });
-      if (response.status === 200) {
+      const userData = { userId, firstName, lastName, email, authType }
+      const response = await dispatch(createUserAsync(userData)).unwrap().catch((e) => {
+        console.error(e)
+      })
+      console.log('response', response?._id)
+      if (response?._id) {
         onOpenChange(false); // Close dialog on success
       } else {
         console.error("Failed to submit onboarding data");

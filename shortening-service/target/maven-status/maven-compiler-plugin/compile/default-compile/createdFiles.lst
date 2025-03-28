@@ -1,4 +1,4 @@
-com/example/shorteningservice/ShorteningServiceApplication.class
-com/example/shorteningservice/model/UrlMapping.class
-com/example/shorteningservice/controller/ShorteningController.class
-com/example/shorteningservice/repository/UrlMappingRepository.class
+com/shorteningservice/model/UrlMapping.class
+com/shorteningservice/ShorteningServiceApplication.class
+com/shorteningservice/repository/UrlMappingRepository.class
+com/shorteningservice/controller/ShorteningController.class

@@ -1,6 +1,8 @@
 import mongoose from 'mongoose';
-
-const MONGODB_URI = process.env.MONGODB_URI;
+import dotenv from 'dotenv/config';
+// dotenv.config({ path: '../../.env' });
+const MONGODB_URI = process.env.NEXT_MONGODB_URI;
+console.log('MONGODB_URI:', MONGODB_URI); // Add this line
 
 if (!MONGODB_URI) {
   throw new Error('Please define MONGODB_URI in .env.local');

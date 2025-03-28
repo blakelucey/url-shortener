@@ -1,23 +1,71 @@
-import dbConnect from '../../../lib/dbConnect';
-import Click from '../../../models/click';
+// src/main/java/com/example/redirectionservice/controller/ClickController.js
+import dbConnect from "../../../lib/dbConnect";
+import Click from "../../../models/click";
+import { verifyToken } from "../../../lib/auth";
 
+// POST: Create a new click.
 export async function POST(request) {
     try {
         await dbConnect();
-        const { linkId, referrer, ip } = await request.json();
+        // Destructure all possible fields from the request body.
+        const {
+            linkId,
+            referrer,
+            utm_source,
+            utm_medium,
+            utm_campaign,
+            utm_term,
+            utm_content,
+            deviceType,
+            browser,
+            operatingSystem
+        } = await request.json();
+
         if (!linkId) {
-            return new Response(JSON.stringify({ error: 'linkId is required' }), { status: 400 });
+            return new Response(
+                JSON.stringify({ error: "linkId is required" }),
+                { status: 400 }
+            );
         }
 
-        const click = new Click({ linkId, referrer, ip });
+        // Capture request headers for analytics.
+        const ip =
+            request.headers.get("x-forwarded-for") ||
+            request.headers.get("x-real-ip") ||
+            request.headers.get("host") ||
+            "unknown";
+        const userAgent = request.headers.get("User-Agent") || "unknown";
+
+        // Create the click record with all available metadata.
+        const click = new Click({
+            linkId,
+            referrer,
+            ip,
+            userAgent,
+            deviceType,
+            browser,
+            operatingSystem,
+            utm_source,
+            utm_medium,
+            utm_campaign,
+            utm_term,
+            utm_content
+        });
         await click.save();
 
-        return new Response(JSON.stringify({ message: 'Click logged' }), { status: 201 });
+        return new Response(
+            JSON.stringify({ message: "Click logged", click }),
+            { status: 201 }
+        );
     } catch (error) {
-        return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+        return new Response(
+            JSON.stringify({ error: error.message }),
+            { status: 500 }
+        );
     }
 }
 
+// GET: Retrieve clicks, optionally filtered by linkId.
 export async function GET(request) {
     try {
         await dbConnect();
@@ -28,15 +76,7 @@ export async function GET(request) {
         const decoded = verifyToken(token);
         const userId = decoded.userId;
 
-        const { searchParams } = new URL(request.url);
-        const linkId = searchParams.get('linkId');
-
-        let query = { 'link.userId': userId };
-        if (linkId) {
-            query.linkId = linkId;
-        }
-
-        const clicks = await Click.find(query).populate('linkId');
+        const clicks = await Click.find({ userId: userId });
         return new Response(JSON.stringify(clicks), { status: 200 });
     } catch (error) {
         return new Response(JSON.stringify({ error: error.message }), { status: 500 });

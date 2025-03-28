@@ -1,13 +1,9 @@
 "use client"
 
 import * as React from "react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import {
-  Component,
-  Frame,
   GalleryVerticalEnd,
-  Map,
-  PieChart,
 } from "lucide-react"
 import { NavMain } from "@/components/nav-main"
 import {
@@ -19,6 +15,12 @@ import {
 } from "@/components/ui/sidebar"
 import { Icons } from "./icons"
 import { OnboardingDialog } from "./contact-dialog" // Adjust path
+import { NavUser } from "./nav-user"
+import { fetchUser, selectUser, User } from "@/store/slices/userSlice"
+import { useAppDispatch, useAppSelector } from "@/store/hooks"
+import { useAppKitAccount } from "@reown/appkit/react"
+
+
 
 // Sample data (unchanged)
 const data = {
@@ -28,28 +30,26 @@ const data = {
   navMain: [
     {
       title: "Links",
-      url: "#",
+      url: "/dashboard",
       icon: Icons.LucideLink,
       isActive: true,
       items: [
-        { title: "Create a new link", url: "#" },
-        { title: "View all links", url: "#" },
+        { title: "View all links", url: "/dashboard" },
       ],
     },
     {
       title: "Analytics",
-      url: "#",
+      url: "/analytics",
       icon: Icons.LucideChartNetwork,
-      items: [{ title: "View", url: "#" }],
+      items: [{ title: "View your analytics", url: "/analytics" }],
     },
     {
       title: "Contact",
-      url: "#",
       icon: Icons.LucideBadgeHelp,
       items: [
-        { title: "Help", url: "#" },
-        { title: "Suggest a new feature", url: "#" },
-        { title: "Report a bug", url: "#" },
+        { title: "Help" },
+        { title: "Suggest a new feature" },
+        { title: "Report a bug" },
       ],
     },
     {
@@ -59,15 +59,24 @@ const data = {
       items: [{ title: "General", url: "#" }],
     },
   ],
-  projects: [
-    { name: "Design Engineering", url: "#", icon: Frame },
-    { name: "Sales & Marketing", url: "#", icon: PieChart },
-    { name: "Travel", url: "#", icon: Map },
-  ],
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [isContactDialogOpen, setIsContactDialogOpen] = useState(false);
+  const { embeddedWalletInfo, caipAddress } = useAppKitAccount();
+  const dispatch = useAppDispatch()
+  const user = useAppSelector(selectUser)
+  const [userData, setUserData] = useState<User>(user!)
+
+  useEffect(() => {
+    if (caipAddress) {
+      dispatch(fetchUser(caipAddress)).catch((e) => {
+        console.error(e)
+      })
+    }
+  }, [])
+
+  console.log('user', user)
 
   console.log('open', isContactDialogOpen)
 
@@ -75,7 +84,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     ...item,
     items: item.items?.map(subItem => ({
       ...subItem,
-      onClick: item.title === "Contact" ? () => setIsContactDialogOpen(true) : () => {}, // No-op for others
+      onClick: item.title === "Contact" ? () => setIsContactDialogOpen(true) : () => { }, // No-op for others
     })),
   }));
 
@@ -86,10 +95,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={modifiedNavMain} />
-        {/* <NavProjects projects={data.projects} /> */}
       </SidebarContent>
       <SidebarFooter>
-        {/* <NavUser user={data.user} /> */}
+        <NavUser user={userData} />
       </SidebarFooter>
       <SidebarRail />
       <OnboardingDialog

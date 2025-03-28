@@ -27,6 +27,17 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-mongodb</artifactId>
         </dependency>
+    <dependency>
+        <groupId>io.ipinfo</groupId>
+        <artifactId>ipinfo-api</artifactId>
+        <version>3.0.2</version>
+        <scope>compile</scope>
+    </dependency>
+    <dependency>
+        <groupId>io.github.cdimascio</groupId>
+        <artifactId>dotenv-java</artifactId>
+        <version>2.2.0</version>
+        </dependency>
         <!-- Add more dependencies (e.g., spring-boot-starter-data-mongodb) as needed -->
     </dependencies>
 

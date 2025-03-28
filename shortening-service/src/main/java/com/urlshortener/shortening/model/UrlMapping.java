@@ -1,55 +1,65 @@
 // src/main/java/com/example/shorteningservice/model/UrlMapping.java
-package com.example.shorteningservice.model;
+package com.shorteningservice.model;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.bson.types.ObjectId;
 
 import java.util.Date;
 
 @Document(collection = "url_mappings")
 public class UrlMapping {
     @Id
-    private String id;
-    private String userId;
-    private String shortCode;
-    private String longUrl;
+    private ObjectId _id;
+    private String userId;       // Added field for the user ID
+    private String shortHash;
+    private String originalUrl;
     private Date createdAt;
 
-    // Constructors
+    // Default constructor
     public UrlMapping() {
         this.createdAt = new Date();
     }
 
-    public UrlMapping(String userId, String shortCode, String longUrl) {
+    // Update the constructor to accept userId as well
+    public UrlMapping(String userId, String shortHash, String originalUrl) {
         this.userId = userId;
-        this.shortCode = shortCode;
-        this.longUrl = longUrl;
+        this.shortHash = shortHash;
+        this.originalUrl = originalUrl;
         this.createdAt = new Date();
     }
 
     // Getters and Setters
-    public String getId() {
-        return id;
+    public ObjectId getId() {
+        return _id;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setId(ObjectId id) {
+        this._id = id;
     }
 
-    public String getShortCode() {
-        return shortCode;
+    public String getUserId() {
+        return userId;
     }
 
-    public void setShortCode(String shortCode) {
-        this.shortCode = shortCode;
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
-    public String getLongUrl() {
-        return longUrl;
+    public String getShortHash() {
+        return shortHash;
     }
 
-    public void setLongUrl(String longUrl) {
-        this.longUrl = longUrl;
+    public void setShortHash(String shortHash) {
+        this.shortHash = shortHash;
+    }
+
+    public String getOriginalUrl() {
+        return originalUrl;
+    }
+
+    public void setOriginalUrl(String originalUrl) {
+        this.originalUrl = originalUrl;
     }
 
     public Date getCreatedAt() {
