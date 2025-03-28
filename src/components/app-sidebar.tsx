@@ -59,7 +59,7 @@ const data = {
       title: "Settings",
       url: "#",
       icon: Icons.LucideSettings,
-      items: [{ title: "Account", url: "" }, { title: "Billing", url: "" }, { title: "Notifications", url: "" }, { title: "Log out", url: "" }],
+      items: [{ title: "Account", url: "/account" }, { title: "Billing", url: "" }, { title: "Notifications", url: "" }, { title: "Log out", url: "" }],
     },
   ],
 }

@@ -1,0 +1,118 @@
+"use client"
+
+import { AppSidebar } from "@/components/app-sidebar"
+import React, { useState, useEffect } from 'react'
+import {
+    Breadcrumb,
+    BreadcrumbItem,
+    BreadcrumbLink,
+    BreadcrumbList,
+    BreadcrumbPage,
+    BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
+import { Separator } from "@/components/ui/separator"
+import {
+    SidebarInset,
+    SidebarProvider,
+    SidebarTrigger,
+} from "@/components/ui/sidebar"
+import { useAccount } from "wagmi"
+import { useAppKitAccount } from "@reown/appkit/react";
+import { OnboardingDialog } from "@/components/finish-onboarding"
+import { LinkDataTable } from "@/components/link-table"
+import { useAppDispatch, useAppSelector } from "@/store/hooks"
+import { ModeToggle } from "@/components/themeToggle"
+import { fetchUser, selectUser, User } from "@/store/slices/userSlice"
+import { BarChartInteractive } from "@/components/charts/BarChartInteractive/page"
+import { DonutChart } from "@/components/charts/DonutChart/page"
+import { MostPopularOS } from "@/components/charts/PopularOS/page"
+import { RadialChart } from "@/components/charts/RadialChart/page"
+import { TotalClicks } from "@/components/charts/TotalClicks/page"
+import UpdateEmail from "@/components/update-email"
+
+
+export default function Account() {
+    const { embeddedWalletInfo, caipAddress } = useAppKitAccount();
+    const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(false);
+    const { isConnected, address } = useAccount();
+    const user: any = useAppSelector(selectUser)
+    const [userData, setUserData] = useState<User>(user?.user)
+
+    const createdDate = new Date(userData?.createdAt).toDateString()
+
+    console.log('userData', userData)
+
+    const dispatch = useAppDispatch()
+
+
+    useEffect(() => {
+        console.log('isConnected:', isConnected);
+        console.log('caipAddress:', caipAddress);
+
+        try {
+            if (caipAddress) {
+                dispatch(fetchUser(caipAddress)).catch((e) => {
+                    console.error(e)
+                })
+            }
+        }
+        catch (e) {
+            console.error(e)
+        }
+
+    }, [isConnected, caipAddress!]);
+
+    return (
+        <div>
+            <SidebarProvider>
+                <AppSidebar />
+                <SidebarInset>
+                    <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+                        <div className="flex items-center gap-2 px-4">
+                            <SidebarTrigger className="-ml-1" />
+                            <Separator orientation="vertical" className="mr-2 data-[orientation=vertical]:h-4" />
+                            <Breadcrumb>
+                                <BreadcrumbList>
+                                    <BreadcrumbItem className="hidden md:block">
+                                        <BreadcrumbLink href="/Account">Account</BreadcrumbLink>
+                                    </BreadcrumbItem>
+                                    <BreadcrumbSeparator className="hidden md:block" />
+                                    <BreadcrumbItem>
+                                        <BreadcrumbPage>{userData?.firstName} {userData?.lastName}</BreadcrumbPage>
+                                    </BreadcrumbItem>
+                                    <BreadcrumbSeparator className="hidden md:block" />
+                                    <BreadcrumbItem>
+                                        <BreadcrumbPage>Account Created: {createdDate}</BreadcrumbPage>
+                                    </BreadcrumbItem>
+                                </BreadcrumbList>
+                            </Breadcrumb>
+                        </div>
+                        <div className="absolute top-2 right-5">
+                            <ModeToggle />
+                        </div>
+                    </header>
+                    <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+                        <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min">
+                            <div>
+                                <UpdateEmail />
+                            </div>
+                        <div className="flex flex-1 flex-row gap-4 p-4">
+                            <DonutChart />
+                            <RadialChart />
+                            <BarChartInteractive />
+                            <TotalClicks />
+                            <MostPopularOS />
+                        </div>
+                        </div>
+                    </div>
+                </SidebarInset>
+            </SidebarProvider>
+            {isOnboardingOpen && (
+                <OnboardingDialog
+                    open={isOnboardingOpen}
+                    onOpenChange={setIsOnboardingOpen}
+                />
+            )}
+        </div>
+    );
+}
