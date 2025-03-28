@@ -38,6 +38,7 @@
     "cmdk": "1.0.0",
     "crypto": "^1.0.1",
     "dotenv": "^16.4.7",
+    "embla-carousel-react": "^8.5.2",
     "html-loader": "^5.1.0",
     "ignore-loader": "^0.1.2",
     "jsonwebtoken": "^9.0.2",

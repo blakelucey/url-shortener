@@ -32,7 +32,7 @@ import UpdateEmail from "@/components/update-email"
 import { AccountDropdownMenu } from "@/components/account-dropdown"
 
 
-export default function Account() {
+export default function Billing() {
     const { embeddedWalletInfo, caipAddress } = useAppKitAccount();
     const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(false);
     const { isConnected, address } = useAccount();
@@ -40,6 +40,7 @@ export default function Account() {
     const [userData, setUserData] = useState<User>(user?.user)
 
     const createdDate = new Date(userData?.createdAt).toDateString()
+
 
     console.log('userData', userData)
 
@@ -75,7 +76,7 @@ export default function Account() {
                             <Breadcrumb>
                                 <BreadcrumbList>
                                     <BreadcrumbItem className="hidden md:block">
-                                        <BreadcrumbLink href="/Account">Account</BreadcrumbLink>
+                                        <BreadcrumbLink href="/billing">Billing</BreadcrumbLink>
                                     </BreadcrumbItem>
                                     <BreadcrumbSeparator className="hidden md:block" />
                                     <BreadcrumbItem>
@@ -99,15 +100,6 @@ export default function Account() {
                     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
                         <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min">
                             <div className="rounded-xl p-2 ml-auto flex items-center space-x-2 gap-4">
-                                <UpdateEmail />
-                                <AccountDropdownMenu />
-                            </div>
-                            <div className="flex flex-1 flex-row gap-4 p-4">
-                                <DonutChart />
-                                <RadialChart />
-                                <BarChartInteractive />
-                                <TotalClicks />
-                                <MostPopularOS />
                             </div>
                         </div>
                     </div>
