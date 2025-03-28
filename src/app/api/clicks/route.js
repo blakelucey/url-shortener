@@ -76,12 +76,7 @@ export async function GET(request) {
         const decoded = verifyToken(token);
         const userId = decoded.userId;
 
-        const { searchParams } = new URL(request.url);
-        const linkId = searchParams.get('linkId')
-        console.log('linkId', linkId)
-
-        const clicks = await Click.find({ linkId: linkId });
-        console.log('clicks', clicks)
+        const clicks = await Click.find({ userId: userId });
         return new Response(JSON.stringify(clicks), { status: 200 });
     } catch (error) {
         return new Response(JSON.stringify({ error: error.message }), { status: 500 });

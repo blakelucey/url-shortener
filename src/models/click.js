@@ -7,7 +7,7 @@ const clickSchema = new Schema({
     required: true,
   },
   userId: {
-    type: Schema.Types.ObjectId,
+    type: String,
     ref: 'User',  // Assumes you have a User model defined elsewhere
     required: true,
   },

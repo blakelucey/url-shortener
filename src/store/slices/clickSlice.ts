@@ -55,7 +55,7 @@ export const fetchClicks = createAsyncThunk(
       }
 
       // Fetch all clicks for the user
-      const response = await fetch(`/api/clicks?userId=${encodeURIComponent(userId)}`, {
+      const response = await fetch(`/api/clicks`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,

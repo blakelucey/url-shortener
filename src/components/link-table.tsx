@@ -172,7 +172,14 @@ export function LinkDataTable() {
 
   useEffect(() => {
     if (userId) {
-      dispatch(fetchClicks(userId));
+      dispatch(fetchClicks(userId))
+        .unwrap()
+        .then((clicks) => {
+          console.log('Fetched clicks:', clicks);
+        })
+        .catch((e) => {
+          console.error('Error fetching clicks:', e);
+        });
     }
   }, [dispatch, userId]);
 
