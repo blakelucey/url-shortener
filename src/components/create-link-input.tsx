@@ -17,22 +17,44 @@ import {
 import { ChannelComboxInput } from './channel-input';
 import { CampaignComboInput } from './campaign-input';
 import Link from 'next/link';
+import { createLinkAsync } from '@/store/slices/linkSlice';
+import { useAppDispatch } from '@/store/hooks';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const CreateLinkInput = () => {
     const [link, setLink] = useState(""); // Original URL input
+    const [shortUrl, setShortUrl] = useState(""); // Short hash from Java service
     const [shortHash, setShortHash] = useState(""); // Short hash from Java service
     const [isFetchingHash, setIsFetchingHash] = useState(false); // Loading state for hash preview
     const [campaigns, setCampaigns] = useState<string[]>([]); // Selected campaigns
     const [channels, setChannels] = useState<string[]>([]); // Selected channels
+    const [addUtm, setAddUtm] = useState<boolean>(false)
+    const [utmParams, setUtmParams] = useState({
+        utm_source: "",
+        utm_medium: "",
+        utm_campaign: "",
+        utm_term: "",
+        utm_content: "",
+    });
+
+    const [utmErrors, setUtmErrors] = useState({
+        utm_source: "",
+        utm_medium: "",
+        utm_campaign: "",
+        utm_term: "",
+        utm_content: "",
+    });
+
     const [isSubmitting, setIsSubmitting] = useState(false); // Submission state
     const { caipAddress } = useAppKitAccount(); // User ID from AppKit
-    const userId = caipAddress;
+    const userId = caipAddress!;
+    const dispatch = useAppDispatch()
 
     // Fetch short hash from Java Shortening Service when the URL changes
     useEffect(() => {
-        const fetchShortHash = async () => {
+        const fetchShortUrl = async () => {
             if (!link) {
-                setShortHash("");
+                setShortUrl("");
                 return;
             }
             setIsFetchingHash(true);
@@ -40,17 +62,18 @@ const CreateLinkInput = () => {
                 const response = await axios.post("http://localhost:8080/shorten", { url: link, userId: userId });
                 console.log('response', response)
                 const shortUrl = response.data.shortUrl; // e.g., "http://localhost:8081/abc123"
-                // const hash = shortUrl.split('/').pop(); // Extract "abc123" from the URL
-                setShortHash(shortUrl);
+                const shortHash = response.data.shortHash
+                setShortUrl(shortUrl);
+                setShortHash(shortHash);
             } catch (error) {
                 console.error("Error fetching short hash:", error);
-                setShortHash("Error");
+                setShortUrl("Error");
             } finally {
                 setIsFetchingHash(false);
             }
         };
-        fetchShortHash();
-    }, [link]);
+        fetchShortUrl();
+    }, [link, userId]);
 
     // Handle campaign selection
     const handleCampaignSelection = (values: string[]) => {
@@ -66,33 +89,23 @@ const CreateLinkInput = () => {
     // Handle form submission
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!userId || !shortHash || shortHash === "Error") {
+        if (!userId || !shortUrl || shortUrl === "Error") {
             console.error("Missing required fields or invalid short hash");
             return;
         }
         setIsSubmitting(true);
         try {
 
-            const signResponse = await axios.get(`${process.env.NEXT_PUBLIC_FRONTEND_URL!}/api/signToken`, {
-                params: { userId } // Pass any required data here
-            });
-            const token = signResponse.data.data;
+            const linkData = { userId, originalUrl: link, shortUrl, shortHash, channels, campaigns, ...utmParams }
 
-            const response = await axios.post("http://localhost:3000/api/links", {
-                userId,
-                originalUrl: link,
-                shortHash,
-                channels,
-                campaigns
-            }, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
+            console.log('linkData', linkData)
 
-            console.log('response', response)
-            if (response.statusText === 'Created') {
-                console.log('Success:', response.data);
+            const response: any = await dispatch(createLinkAsync({ linkData })).unwrap().catch((e) => {
+                console.error(e)
+            })
+
+            if (response.status === 200 || 201) {
+                console.log('Success:', response);
             } else {
                 console.error("Failed to submit link data");
             }
@@ -103,10 +116,28 @@ const CreateLinkInput = () => {
         }
     };
 
+    // Generic onBlur that cleans whitespace and sets an error if changed.
+    const handleUtmBlur = (field: keyof typeof utmParams) => (e: React.FocusEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        const cleanedValue = value.replace(/\s/g, "");
+        if (cleanedValue !== value) {
+            setUtmErrors(prev => ({ ...prev, [field]: "Whitespace has been removed" }));
+            setUtmParams(prev => ({ ...prev, [field]: cleanedValue }));
+        } else {
+            setUtmErrors(prev => ({ ...prev, [field]: "" }));
+        }
+    };
+
+    // Generic onChange for convenience.
+    const handleUtmChange = (field: keyof typeof utmParams) => (e: React.ChangeEvent<HTMLInputElement>) => {
+        setUtmParams(prev => ({ ...prev, [field]: e.target.value }));
+    };
+
+
     return (
         <Sheet>
             <SheetTrigger asChild>
-                <Button variant="outline">Add a new link</Button>
+                <Button variant="outline" onClick={() => setLink("")}>Add a new link</Button>
             </SheetTrigger>
             <SheetContent>
                 <SheetHeader>
@@ -135,8 +166,8 @@ const CreateLinkInput = () => {
                                 {isFetchingHash ? (
                                     "Generating..."
                                 ) : (
-                                    <Link href={`http://localhost:8081/${shortHash}`} target="_blank">
-                                        {shortHash}
+                                    <Link href={`${shortUrl}`} target="_blank">
+                                        {shortUrl}
                                     </Link>
                                 )}
                             </p>
@@ -150,16 +181,48 @@ const CreateLinkInput = () => {
                         <Label htmlFor="campaigns" className="text-gray-700">What campaign(s) will you use?</Label>
                         <CampaignComboInput onSelectionChange={handleCampaignSelection} />
                     </div>
+                    <div className="space-y-1.5">
+                        <div className="items-top flex space-x-2">
+                            <Checkbox id="terms1" checked={addUtm} onCheckedChange={() => setAddUtm(!addUtm)} />
+                            <div className="grid gap-1.5 leading-none">
+                                <label
+                                    htmlFor="terms1"
+                                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                >
+                                    Add utm parameters to this link?
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    {addUtm &&
+                        (["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content"] as (keyof typeof utmParams)[]).map(field => (
+                            <div key={field} className="space-y-1.5">
+                                <Label htmlFor={field} className="text-gray-700">
+                                    Input your {field} here:
+                                </Label>
+                                <Input
+                                    type="text"
+                                    id={field}
+                                    placeholder={`${field} (optional)`}
+                                    value={utmParams[field]}
+                                    onChange={handleUtmChange(field)}
+                                    onBlur={handleUtmBlur(field)}
+                                    className="w-full"
+                                />
+                                {utmErrors[field] && <small style={{ color: "red" }}>{utmErrors[field]}</small>}
+                            </div>
+                        ))}
+
                     <SheetFooter>
                         <SheetClose asChild>
-                            <Button type="submit" className="w-full" disabled={isSubmitting || !shortHash || shortHash === "Error"}>
+                            <Button type="submit" className="w-full" disabled={(isSubmitting || !shortUrl || shortHash || utmErrors) === "Error"}>
                                 {isSubmitting ? "Submitting..." : "Submit"}
                             </Button>
                         </SheetClose>
                     </SheetFooter>
                 </form>
             </SheetContent>
-        </Sheet>
+        </Sheet >
     );
 };
 

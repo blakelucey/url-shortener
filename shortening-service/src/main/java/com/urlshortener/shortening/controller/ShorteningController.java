@@ -1,9 +1,10 @@
-package com.example.shorteningservice.controller;
+package com.shorteningservice.controller;
 
-import com.example.shorteningservice.model.UrlMapping;
-import com.example.shorteningservice.repository.UrlMappingRepository;
+import com.shorteningservice.model.UrlMapping;
+import com.shorteningservice.repository.UrlMappingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.Map;
 import java.util.Random;
@@ -15,30 +16,32 @@ public class ShorteningController {
     @Autowired
     private UrlMappingRepository repository;
 
+     @Value("${NEXT_PUBLIC_REDIRECTION_URL}")
+    private String redirectionUrl;
+
     @PostMapping("/shorten")
     public Map<String, String> shortenUrl(@RequestBody Map<String, String> request) {
-        String longUrl = request.get("url");
+        String originalUrl = request.get("url");
         String userId = request.get("userId");
 
-        if (longUrl == null || longUrl.trim().isEmpty()) {
+        if (originalUrl == null || originalUrl.trim().isEmpty()) {
             throw new IllegalArgumentException("URL cannot be empty");
         }
-        if (userId == null || userId.trim().isEmpty()) {
-            throw new IllegalArgumentException("User ID cannot be empty");
-        }
 
-        String shortCode = generateUniqueShortCode(userId);
-        UrlMapping mapping = new UrlMapping(userId, shortCode, longUrl);
+        // Generate a globally unique short code.
+        String shortHash = generateUniqueShortHash();
+        UrlMapping mapping = new UrlMapping(userId, shortHash, originalUrl);
         repository.save(mapping);
 
-        String shortUrl = "http://short-ly.link/" + shortCode; // Adjust base URL for production
-        return Map.of("shortUrl", shortUrl);
+        String shortUrl = redirectionUrl + shortHash;
+        Map<String, String> response = Map.of("shortUrl", shortUrl, "shortHash", shortHash);
+        return response;
     }
 
-    private String generateUniqueShortCode(String userId) {
+    private String generateUniqueShortHash() {
         String chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         Random random = new Random();
-        String shortCode;
+        String shortHash;
         int length = 6;
 
         do {
@@ -46,9 +49,9 @@ public class ShorteningController {
             for (int i = 0; i < length; i++) {
                 sb.append(chars.charAt(random.nextInt(chars.length())));
             }
-            shortCode = sb.toString();
-        } while (repository.existsByUserIdAndShortCode(userId, shortCode));
+            shortHash = sb.toString();
+        } while (repository.existsByShortHash(shortHash)); // Global uniqueness check
 
-        return shortCode;
+        return shortHash;
     }
 }

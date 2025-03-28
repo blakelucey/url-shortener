@@ -19,39 +19,44 @@ import {
 import { useAccount } from "wagmi"
 import { useAppKitAccount } from "@reown/appkit/react";
 import { OnboardingDialog } from "@/components/finish-onboarding"
-import axios from 'axios'
 import { LinkDataTable } from "@/components/link-table"
+import { selectUser } from "@/store/slices/userSlice"
+import { useAppSelector } from "@/store/hooks"
+import { ModeToggle } from "@/components/themeToggle"
 
 export default function Dashboard() {
   const { embeddedWalletInfo, caipAddress } = useAppKitAccount();
   const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(false);
   const { isConnected, address } = useAccount();
+  const user = useAppSelector(selectUser)
 
   useEffect(() => {
-    const checkUserStatus = async () => {
-      console.log('isConnected:', isConnected);
-      console.log('caipAddress:', caipAddress);
-      if (isConnected && caipAddress) {
-        try {
-          const response = await axios.get(`http://localhost:3000/api/users?userId=${caipAddress}`);
-          console.log('API response:', response.data, 'Status:', response.status);
-          if (response.status === 200 && response.data.exists) {
-            setIsOnboardingOpen(false);
-          } else {
+    console.log('isConnected:', isConnected);
+    console.log('caipAddress:', caipAddress);
+
+    try {
+      const checkUserStatus = async () => {
+        if (isConnected && caipAddress !== undefined) {
+          try {
+            if (user) {
+              setIsOnboardingOpen(false);
+            } else {
+              setIsOnboardingOpen(true);
+            }
+          } catch (error) {
+            console.error("Error checking user status:", error);
             setIsOnboardingOpen(true);
           }
-        } catch (error) {
-          console.error("Error checking user status:", error);
-          setIsOnboardingOpen(true);
+        } else {
+          setIsOnboardingOpen(false);
         }
-      } else {
-        setIsOnboardingOpen(false);
-      }
-    };
-    checkUserStatus().catch((e) => {
-      console.error(e);
-    });
-  }, [isConnected, caipAddress]);
+      };
+      checkUserStatus().catch((e) => {
+        console.error(e);
+      });
+    } catch (e) { console.error(e) }
+
+  }, [isConnected, caipAddress!]);
 
   return (
     <div>
@@ -73,6 +78,9 @@ export default function Dashboard() {
                   </BreadcrumbItem>
                 </BreadcrumbList>
               </Breadcrumb>
+            </div>
+            <div className="absolute top-2 right-5">
+              <ModeToggle />
             </div>
           </header>
           <div className="flex flex-1 flex-col gap-4 p-4 pt-0">

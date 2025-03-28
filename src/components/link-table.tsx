@@ -14,6 +14,8 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { ChevronDown, MoreHorizontal } from "lucide-react";
+import { toast } from "sonner"
+
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -36,42 +38,22 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import CreateLinkInput from "./create-link-input";
-
-// Define the new data type
+import { fetchLinks, deleteLinkAsync } from "@/store/slices/linkSlice";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { useAppKitAccount } from "@reown/appkit/react";
+import { useEffect, useMemo, useState } from "react";
+import { fetchClicks } from "@/store/slices/clickSlice"
+import { selectUniqueClicksByLink } from "@/store/selectors/clickSelectors";
+// Define the type used for rendering data in the table.
 export type LinkData = {
   id: string;
   link: string;
-  shortHash: string;
+  shortUrl: string;
   clicks: number;
   createdAt: string;
 };
 
-// Sample data with static shortHash values
-const data: LinkData[] = [
-  {
-    id: "link1",
-    link: "https://example.com/link1",
-    shortHash: "short.ly/abc123",
-    clicks: 100,
-    createdAt: "2023-10-01 12:00",
-  },
-  {
-    id: "link2",
-    link: "https://example.com/link2",
-    shortHash: "short.ly/def456",
-    clicks: 250,
-    createdAt: "2023-10-02 14:30",
-  },
-  {
-    id: "link3",
-    link: "https://example.com/link3",
-    shortHash: "short.ly/ghi789",
-    clicks: 75,
-    createdAt: "2023-10-03 09:15",
-  },
-];
-
-// Define the columns with shortHash added
+// Define the columns for the table.
 export const columns: ColumnDef<LinkData>[] = [
   {
     id: "select",
@@ -101,9 +83,22 @@ export const columns: ColumnDef<LinkData>[] = [
     cell: ({ row }) => <div>{row.getValue("link")}</div>,
   },
   {
-    accessorKey: "shortHash",
+    accessorKey: "shortUrl",
     header: "Short URL",
-    cell: ({ row }) => <div>{row.getValue("shortHash")}</div>,
+    cell: ({ row, getValue }) => {
+      const shortUrl = getValue() as string;
+      return (
+        <div
+          onClick={() => {
+            navigator.clipboard.writeText(shortUrl);
+            toast(`${shortUrl} copied to clipboard!`);
+          }}
+          style={{ cursor: "pointer" }}
+        >
+          {shortUrl}
+        </div>
+      );
+    },
   },
   {
     accessorKey: "createdAt",
@@ -133,10 +128,15 @@ export const columns: ColumnDef<LinkData>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuSeparator />
             <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(linkData.link)}
+              onClick={() => { navigator.clipboard.writeText(linkData.link); toast(`${linkData.link} copied to clipboard!`); }}
             >
               Copy link
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => { navigator.clipboard.writeText(linkData.shortUrl); toast(`${linkData.shortUrl} copied to clipboard!`); }}>
+              Copy short URL
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>View link details</DropdownMenuItem>
@@ -148,16 +148,61 @@ export const columns: ColumnDef<LinkData>[] = [
 ];
 
 export function LinkDataTable() {
-  const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
+  const dispatch = useAppDispatch();
+  const clickCounts = useAppSelector(selectUniqueClicksByLink)
+  const { caipAddress } = useAppKitAccount(); // User ID from AppKit
+  const userId = caipAddress!;
+  const { links: fetchedLinks, loading, error } = useAppSelector(
+    (state) => state.links
   );
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = React.useState({});
+  console.log('clickCounts', clickCounts)
 
+  // Declare table state variables first.
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [rowSelection, setRowSelection] = useState({});
+
+  // Fetch links on component mount.
+  useEffect(() => {
+    if (userId) {
+      dispatch(fetchLinks(userId));
+    }
+  }, [dispatch, userId]);
+
+  useEffect(() => {
+    if (userId) {
+      dispatch(fetchClicks(userId))
+        .unwrap()
+        .then((clicks) => {
+          console.log('Fetched clicks:', clicks);
+        })
+        .catch((e) => {
+          console.error('Error fetching clicks:', e);
+        });
+    }
+  }, [dispatch, userId]);
+
+
+
+  // Memoize the derived table data.
+  const tableData: LinkData[] = useMemo(() => {
+    if (!Array.isArray(fetchedLinks)) return [];
+    return fetchedLinks.map((l: any) => {
+      const linkId = l._id ? l._id.toString() : l.id;
+      return {
+        id: linkId,
+        link: l.originalUrl,
+        shortUrl: l.shortUrl,
+        clicks: clickCounts[linkId] ?? 0,
+        createdAt: l.createdAt ? new Date(l.createdAt).toLocaleString() : "",
+      };
+    });
+  }, [fetchedLinks, clickCounts]);
+
+  // Now create the table instance.
   const table = useReactTable({
-    data,
+    data: tableData,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -174,6 +219,46 @@ export function LinkDataTable() {
       rowSelection,
     },
   });
+
+  // Handler for deleting selected rows.
+  const handleDeleteSelected = async () => {
+    // Get selected rows from the filtered selected row model.
+    const selectedRows = table.getFilteredSelectedRowModel().rows;
+    if (selectedRows.length === 0) {
+      alert("No links selected for deletion.");
+      return;
+    }
+    if (
+      !window.confirm(
+        `Are you sure you want to delete ${selectedRows.length} link(s) and their associated clicks?`
+      )
+    ) {
+      return;
+    }
+    try {
+      // Map each selected row to a deletion promise.
+      const deletePromises = selectedRows.map((row) => {
+        const link: any = row.original as LinkData;
+        return dispatch(
+          deleteLinkAsync({ userId, shortUrl: link.shortUrl, linkId: link.id, originalUrl: link.link })
+        ).unwrap();
+      });
+
+      // Wait for all deletions to finish.
+      await Promise.all(deletePromises);
+
+      // Re-fetch the updated list of links so the table re-renders.
+      await dispatch(fetchLinks(userId));
+
+      // Clear the selected rows.
+      setRowSelection({});
+
+      toast("Selected links and their clicks have been deleted successfully.");
+    } catch (err) {
+      console.error("Deletion error", err);
+      toast.error("Error deleting selected links.");
+    }
+  };
 
   return (
     <div className="w-full">
@@ -200,31 +285,48 @@ export function LinkDataTable() {
               {table
                 .getAllColumns()
                 .filter((column) => column.getCanHide())
-                .map((column) => {
-                  return (
-                    <DropdownMenuCheckboxItem
-                      key={column.id}
-                      className="capitalize"
-                      checked={column.getIsVisible()}
-                      onCheckedChange={(value) =>
-                        column.toggleVisibility(!!value)
-                      }
-                    >
-                      {column.id}
-                    </DropdownMenuCheckboxItem>
-                  );
-                })}
+                .map((column) => (
+                  <DropdownMenuCheckboxItem
+                    key={column.id}
+                    className="capitalize"
+                    checked={column.getIsVisible()}
+                    onCheckedChange={(value) =>
+                      column.toggleVisibility(!!value)
+                    }
+                  >
+                    {column.id}
+                  </DropdownMenuCheckboxItem>
+                ))}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </div>
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
+
+      {/* Delete Selected Button */}
+      {Object.keys(rowSelection).length != 0 && (
+        <div className="mb-4">
+          <Button
+            variant="destructive"
+            onClick={handleDeleteSelected}
+            disabled={Object.keys(rowSelection).length === 0}
+          >
+            Delete Selected
+          </Button>
+        </div>
+      )}
+
+
+      {loading ? (
+        <div>Loading links...</div>
+      ) : error ? (
+        <div className="text-red-500">Error: {error}</div>
+      ) : (
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
                     <TableHead key={header.id}>
                       {header.isPlaceholder
                         ? null
@@ -233,41 +335,38 @@ export function LinkDataTable() {
                           header.getContext()
                         )}
                     </TableHead>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
                   ))}
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  No results.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center"
+                  >
+                    No results.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      )}
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground">
           {table.getFilteredSelectedRowModel().rows.length} of{" "}

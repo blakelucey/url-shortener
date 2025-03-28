@@ -1,4 +1,4 @@
-import { Schema, model } from 'mongoose';
+import { Schema, model, models } from 'mongoose';
 
 const clickSchema = new Schema({
   linkId: {
@@ -7,7 +7,7 @@ const clickSchema = new Schema({
     required: true,
   },
   userId: {
-    type: Schema.Types.ObjectId,
+    type: String,
     ref: 'User',  // Assumes you have a User model defined elsewhere
     required: true,
   },
@@ -42,6 +42,9 @@ const clickSchema = new Schema({
   city: {
     type: String,
   },
+  postal: {
+    type: String,
+  },
   // Additional marketing parameters
   utm_source: {
     type: String,
@@ -64,9 +67,11 @@ const clickSchema = new Schema({
 clickSchema.index({ linkId: 1, timestamp: -1 });
 clickSchema.index({ userId: 1 });
 clickSchema.index({ ip: 1 });
-clickSchema.index({ country: 1, region: 1, city: 1 });
+clickSchema.index({ country: 1, region: 1, city: 1, postal: 1, });
 clickSchema.index({ utm_source: 1 });
 clickSchema.index({ utm_medium: 1 });
 clickSchema.index({ utm_campaign: 1 });
 
-export default model('Click', clickSchema);
+const Clicks =  models.Click || model('Click', clickSchema);
+
+export default Clicks

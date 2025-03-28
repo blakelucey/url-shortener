@@ -1,4 +1,4 @@
-package com.example.shorteningservice;
+package com.shorteningservice;
 
 import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.boot.SpringApplication;

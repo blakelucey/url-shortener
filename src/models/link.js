@@ -1,4 +1,4 @@
-import { Schema, model } from 'mongoose';
+import { Schema, model, models } from 'mongoose';
 
 const linkSchema = new Schema({
   userId: {
@@ -10,6 +10,10 @@ const linkSchema = new Schema({
   originalUrl: {
     type: String,
     required: true,
+  },
+  shortUrl: {
+    type: String,
+    required: true
   },
   shortHash: {
     type: String,
@@ -25,7 +29,24 @@ const linkSchema = new Schema({
     type: [String],
     unique: false,
     required: false
-  }
+  },
+  utm_source: {
+    type: String,
+  },
+  utm_medium: {
+    type: String,
+  },
+  utm_campaign: {
+    type: String,
+  },
+  utm_term: {
+    type: String,
+  },
+  utm_content: {
+    type: String,
+  },
 }, { timestamps: true });
 
-export default model('Link', linkSchema);
+const Link = models.Link || model('Link', linkSchema);
+
+export default Link;
