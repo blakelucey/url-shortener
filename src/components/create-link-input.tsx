@@ -137,7 +137,7 @@ const CreateLinkInput = () => {
     return (
         <Sheet>
             <SheetTrigger asChild>
-                <Button variant="outline">Add a new link</Button>
+                <Button variant="outline" onClick={() => setLink("")}>Add a new link</Button>
             </SheetTrigger>
             <SheetContent>
                 <SheetHeader>
