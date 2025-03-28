@@ -44,8 +44,6 @@ export function NavUser({
   const router = useRouter();
   const [userData, setUserData] = useState<User>(user?.user)
 
-  console.log('user data', userData)
-  console.log('initials', userData?.firstName[0] + userData?.lastName[0])
 
   useEffect(() => {
     if (!isConnected) {
@@ -98,13 +96,13 @@ export function NavUser({
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuGroup>
+            {userData.isPro === false && <><DropdownMenuGroup>
               <DropdownMenuItem>
                 <Sparkles />
                 Upgrade to Pro
               </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
+            </DropdownMenuGroup><DropdownMenuSeparator /></>}
+
             <DropdownMenuGroup>
               <DropdownMenuItem>
                 <BadgeCheck />

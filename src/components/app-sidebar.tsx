@@ -4,6 +4,7 @@ import * as React from "react"
 import { useEffect, useState } from "react"
 import {
   GalleryVerticalEnd,
+  LogOutIcon,
 } from "lucide-react"
 import { NavMain } from "@/components/nav-main"
 import {
@@ -19,7 +20,9 @@ import { NavUser } from "./nav-user"
 import { fetchUser, selectUser, User } from "@/store/slices/userSlice"
 import { useAppDispatch, useAppSelector } from "@/store/hooks"
 import { useAppKitAccount } from "@reown/appkit/react"
-
+import { useDisconnect } from "@reown/appkit/react";
+import { useRouter } from "next/navigation";
+import { useAccount } from "wagmi"
 
 
 // Sample data (unchanged)
@@ -56,7 +59,7 @@ const data = {
       title: "Settings",
       url: "#",
       icon: Icons.LucideSettings,
-      items: [{ title: "General", url: "#" }],
+      items: [{ title: "Account", url: "" }, { title: "Billing", url: "" }, { title: "Notifications", url: "" }, { title: "Log out", url: "" }],
     },
   ],
 }
@@ -67,14 +70,25 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const dispatch = useAppDispatch()
   const user = useAppSelector(selectUser)
   const [userData, setUserData] = useState<User>(user!)
+  const { disconnect } = useDisconnect();
+  const { isConnected } = useAccount();
+  const router = useRouter();
+
+  const handleDisconnect = () => {
+    console.log("Disconnecting wallet...");
+    disconnect();
+  };
 
   useEffect(() => {
+    if (!isConnected) {
+      router.push('/')
+    }
     if (caipAddress) {
       dispatch(fetchUser(caipAddress)).catch((e) => {
         console.error(e)
       })
     }
-  }, [])
+  }, [isConnected, router])
 
   console.log('user', user)
 
@@ -82,10 +96,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const modifiedNavMain = data.navMain.map(item => ({
     ...item,
-    items: item.items?.map(subItem => ({
-      ...subItem,
-      onClick: item.title === "Contact" ? () => setIsContactDialogOpen(true) : () => { }, // No-op for others
-    })),
+    items: item.items?.map(subItem => {
+      if (item.title === "Contact") {
+        return { ...subItem, onClick: () => setIsContactDialogOpen(true) };
+      }
+      if (item.title === "Settings" && subItem.title === "Log out") {
+        return { ...subItem, onClick: handleDisconnect };
+      }
+      return { ...subItem, onClick: () => { } };
+    }),
   }));
 
   return (
