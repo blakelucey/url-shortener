@@ -98,8 +98,8 @@ export default function Dashboard() {
                             <DonutChart />
                             <RadialChart />
                             <BarChartInteractive />
-                            <TotalClicks />
-                            <MostPopularOS />
+                            <TotalClicks totalClicks={0} />
+                            <MostPopularOS os={{}} />
                         </div>
                         <div>
                             <PieChartInteractive />

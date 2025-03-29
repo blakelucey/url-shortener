@@ -12,23 +12,23 @@ import {
 import { useAppSelector } from "@/store/hooks";
 import { selectUser, User } from "@/store/slices/userSlice"
 
-interface TotalClicksProps {
-    totalClicks: number
+interface AverageClicksProps {
+    averageClicks: number
 }
 
-export function TotalClicks({totalClicks}: TotalClicksProps) {
+export function AverageClicks({averageClicks}: AverageClicksProps) {
     const user: any = useAppSelector(selectUser)
 
     const createdAt = new Date(user?.user?.createdAt).toDateString()
     return (
         <Card className="flex flex-col">
             <CardHeader className="items-center flex-col gap-4 pb-0">
-                <CardTitle>Total Clicks</CardTitle>
+                <CardTitle>Average Clicks per Link</CardTitle>
                 <CardDescription>All Time</CardDescription>
             </CardHeader>
             <CardContent className="flex-1 pb-0">
                 <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
-                    {totalClicks}
+                    {averageClicks}
                 </h1>
             </CardContent>
             <CardFooter className="flex-col gap-2 text-sm">

@@ -19,17 +19,21 @@ import {
 import { useAccount } from "wagmi"
 import { useAppKitAccount } from "@reown/appkit/react";
 import { OnboardingDialog } from "@/components/finish-onboarding"
-import { LinkDataTable } from "@/components/link-table"
 import { useAppDispatch, useAppSelector } from "@/store/hooks"
 import { ModeToggle } from "@/components/themeToggle"
 import { fetchUser, selectUser, User } from "@/store/slices/userSlice"
-import { BarChartInteractive } from "@/components/charts/BarChartInteractive/page"
-import { DonutChart } from "@/components/charts/DonutChart/page"
 import { MostPopularOS } from "@/components/charts/PopularOS/page"
-import { RadialChart } from "@/components/charts/RadialChart/page"
 import { TotalClicks } from "@/components/charts/TotalClicks/page"
 import UpdateEmail from "@/components/update-email"
 import { AccountDropdownMenu } from "@/components/account-dropdown"
+import { selectUserAnalyticsSummary, selectClicksByOperatingSystem, selectClicksByBrowser, selectTopReferrers, selectTopCountry, selectTopRegion, selectTopCity, selectTopUTMSource, selectTopUTMMedium, selectTopUTMCampaign, selectTopUTMTerm, selectTopUTMContent } from "@/store/selectors/clickSelectors"
+import { AverageClicks } from "@/components/charts/AverageClicksPerLink/page"
+import { MostPopularLink } from "@/components/charts/MostPopularLink/page"
+import { UniqueLinks } from "@/components/charts/UniqueLinks/page"
+import { MostPopularBrowser } from "@/components/charts/PopularBrowser/page"
+import { TopReferrers } from "@/components/charts/TopReferrers/page"
+import { TopCountry } from "@/components/charts/TopCountry/page"
+
 
 
 export default function Account() {
@@ -38,6 +42,25 @@ export default function Account() {
     const { isConnected, address } = useAccount();
     const user: any = useAppSelector(selectUser)
     const [userData, setUserData] = useState<User>(user?.user)
+    const userAnalytics = useAppSelector(selectUserAnalyticsSummary);
+    const osCounts = useAppSelector(selectClicksByOperatingSystem);
+    const browserCounts = useAppSelector(selectClicksByBrowser)
+    const topReferrers = useAppSelector(selectTopReferrers)
+    const topCountry = useAppSelector(selectTopCountry);
+    const topRegion = useAppSelector(selectTopRegion);
+    const topCity = useAppSelector(selectTopCity);
+    const topUTMSource = useAppSelector(selectTopUTMSource);
+    const topUTMMedium = useAppSelector(selectTopUTMMedium);
+    const topUTMCTerm = useAppSelector(selectTopUTMTerm);
+    const topUTMCContent = useAppSelector(selectTopUTMContent);
+    const topUTMCampaign = useAppSelector(selectTopUTMCampaign);
+
+
+
+    console.log('osCounts', osCounts);
+    console.log('browserCounts', browserCounts)
+
+    console.log('userAnalytics', userAnalytics)
 
     const createdDate = new Date(userData?.createdAt).toDateString()
 
@@ -103,11 +126,17 @@ export default function Account() {
                                 <AccountDropdownMenu />
                             </div>
                             <div className="flex flex-1 flex-row gap-4 p-4">
-                                <DonutChart />
-                                <RadialChart />
-                                <BarChartInteractive />
-                                <TotalClicks />
-                                <MostPopularOS />
+
+                                <TotalClicks totalClicks={userAnalytics?.totalClicks} />
+                                <MostPopularOS os={osCounts} />
+                                <AverageClicks averageClicks={userAnalytics?.averageClicksPerLink} />
+                                <MostPopularLink mostPopularLink={userAnalytics?.mostPopular} />
+                            </div>
+                            <div className="flex flex-1 flex-row gap-4 p-4">
+                                <UniqueLinks uniqueLinks={userAnalytics?.uniqueLinks} />
+                                <MostPopularBrowser MostPopularBrowser={browserCounts} />
+                                <TopReferrers topReferrers={topReferrers} />
+                                <TopCountry topCountry={topCountry} />
                             </div>
                         </div>
                     </div>
