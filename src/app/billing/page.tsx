@@ -18,18 +18,9 @@ import {
 } from "@/components/ui/sidebar"
 import { useAccount } from "wagmi"
 import { useAppKitAccount } from "@reown/appkit/react";
-import { OnboardingDialog } from "@/components/finish-onboarding"
-import { LinkDataTable } from "@/components/link-table"
 import { useAppDispatch, useAppSelector } from "@/store/hooks"
 import { ModeToggle } from "@/components/themeToggle"
 import { fetchUser, selectUser, User } from "@/store/slices/userSlice"
-import { BarChartInteractive } from "@/components/charts/BarChartInteractive/page"
-import { DonutChart } from "@/components/charts/DonutChart/page"
-import { MostPopularOS } from "@/components/charts/AccountPage/PopularOS/page"
-import { RadialChart } from "@/components/charts/RadialChart/page"
-import { TotalClicks } from "@/components/charts/AccountPage/TotalClicks/page"
-import UpdateEmail from "@/components/update-email"
-import { AccountDropdownMenu } from "@/components/account-dropdown"
 
 
 export default function Billing() {
@@ -105,12 +96,6 @@ export default function Billing() {
                     </div>
                 </SidebarInset>
             </SidebarProvider>
-            {isOnboardingOpen && (
-                <OnboardingDialog
-                    open={isOnboardingOpen}
-                    onOpenChange={setIsOnboardingOpen}
-                />
-            )}
         </div>
     );
 }

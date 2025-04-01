@@ -18,7 +18,6 @@ import {
 } from "@/components/ui/sidebar"
 import { useAccount } from "wagmi"
 import { useAppKitAccount } from "@reown/appkit/react";
-import { OnboardingDialog } from "@/components/finish-onboarding"
 import { selectUser } from "@/store/slices/userSlice"
 import { useAppSelector } from "@/store/hooks"
 import { AreaChartInteractive } from "@/components/charts/AreaChartInteractive/page"
@@ -107,12 +106,6 @@ export default function Dashboard() {
                     </div>
                 </SidebarInset>
             </SidebarProvider>
-            {isOnboardingOpen && (
-                <OnboardingDialog
-                    open={isOnboardingOpen}
-                    onOpenChange={setIsOnboardingOpen}
-                />
-            )}
         </div>
     );
 }

@@ -1,18 +1,5 @@
 import {
-    Cloud,
     CreditCard,
-    Github,
-    Keyboard,
-    LifeBuoy,
-    LogOut,
-    Mail,
-    MessageSquare,
-    Plus,
-    PlusCircle,
-    Router,
-    Settings,
-    User,
-    UserPlus,
     Users,
 } from "lucide-react"
 
@@ -25,18 +12,47 @@ import {
     DropdownMenuLabel,
     DropdownMenuPortal,
     DropdownMenuSeparator,
-    DropdownMenuShortcut,
     DropdownMenuSub,
     DropdownMenuSubContent,
     DropdownMenuSubTrigger,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Icons } from "./icons"
+import { useEffect } from "react";
+import { useAppKitAccount, useDisconnect } from "@reown/appkit/react";
 import { useRouter } from "next/navigation";
-
+import { useAccount } from "wagmi"
+import { deleteUserAsync } from "@/store/slices/userSlice";
+import { useAppDispatch } from "@/store/hooks";
 
 export function AccountDropdownMenu() {
     const router = useRouter();
+    const dispatch = useAppDispatch()
+    const { caipAddress } = useAppKitAccount();
+    const { disconnect } = useDisconnect();
+    const { isConnected } = useAccount();
+    const userId = caipAddress!
+
+    useEffect(() => {
+        if (!isConnected) {
+            router.push('/')
+        }
+    }, [isConnected, router])
+
+    const handleDisconnect = () => {
+        console.log("Disconnecting wallet...");
+        disconnect();
+    };
+
+    const handleUserDeletion = async () => {
+        const response = await dispatch(deleteUserAsync(userId)).unwrap().then(() => {
+            disconnect();
+            router.push("/")
+        }).catch((e) => {
+            console.error(e)
+        })
+        console.log('response', response)
+    }
 
     return (
         <DropdownMenu>
@@ -49,25 +65,25 @@ export function AccountDropdownMenu() {
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
-                <DropdownMenuItem onClick={() => router.push('/billing')}>
+                    <DropdownMenuItem onClick={() => router.push('/billing')}>
                         <CreditCard />
                         <span>Billing</span>
                     </DropdownMenuItem>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
-                    <DropdownMenuItem onClick={() => console.log("user logged out of their account")}>
+                    <DropdownMenuItem onClick={handleDisconnect}>
                         <Users />
                         <span>Log Out</span>
                     </DropdownMenuItem>
                     <DropdownMenuSub>
                         <DropdownMenuSubTrigger>
-                            <UserPlus />
+                            <Icons.LucideUserX />
                             <span>Delete Account</span>
                         </DropdownMenuSubTrigger>
                         <DropdownMenuPortal>
                             <DropdownMenuSubContent>
-                                <DropdownMenuItem onClick={() => console.log("user deleted their account")}>
+                                <DropdownMenuItem onClick={handleUserDeletion}>
                                     <Icons.LucideUserX />
                                     <span>Yes, I'm sure</span>
                                 </DropdownMenuItem >

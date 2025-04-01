@@ -3,6 +3,7 @@
 import * as React from "react"
 import { useEffect, useState } from "react"
 import {
+  Contact,
   GalleryVerticalEnd,
   LogOutIcon,
 } from "lucide-react"
@@ -15,7 +16,7 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar"
 import { Icons } from "./icons"
-import { OnboardingDialog } from "./contact-dialog" // Adjust path
+import { ContactDialog } from "./contact-dialog" // Adjust path
 import { NavUser } from "./nav-user"
 import { fetchUser, selectUser, User } from "@/store/slices/userSlice"
 import { fetchLinks } from "@/store/slices/linkSlice";
@@ -132,7 +133,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavUser user={userData} />
       </SidebarFooter>
       <SidebarRail />
-      <OnboardingDialog
+      <ContactDialog
         open={isContactDialogOpen}
         onOpenChange={setIsContactDialogOpen}
       />

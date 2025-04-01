@@ -18,7 +18,6 @@ import {
 } from "@/components/ui/sidebar"
 import { useAccount } from "wagmi"
 import { useAppKitAccount } from "@reown/appkit/react";
-import { OnboardingDialog } from "@/components/finish-onboarding"
 import { useAppDispatch, useAppSelector } from "@/store/hooks"
 import { ModeToggle } from "@/components/themeToggle"
 import { fetchUser, selectUser, User } from "@/store/slices/userSlice"
@@ -157,12 +156,6 @@ export default function Account() {
                     </div>
                 </SidebarInset>
             </SidebarProvider>
-            {isOnboardingOpen && (
-                <OnboardingDialog
-                    open={isOnboardingOpen}
-                    onOpenChange={setIsOnboardingOpen}
-                />
-            )}
         </div>
     );
 }
