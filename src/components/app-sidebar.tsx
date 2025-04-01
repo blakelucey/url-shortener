@@ -18,6 +18,8 @@ import { Icons } from "./icons"
 import { OnboardingDialog } from "./contact-dialog" // Adjust path
 import { NavUser } from "./nav-user"
 import { fetchUser, selectUser, User } from "@/store/slices/userSlice"
+import { fetchLinks } from "@/store/slices/linkSlice";
+import { fetchClicks } from "@/store/slices/clickSlice"
 import { useAppDispatch, useAppSelector } from "@/store/hooks"
 import { useAppKitAccount } from "@reown/appkit/react"
 import { useDisconnect } from "@reown/appkit/react";
@@ -84,9 +86,20 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       router.push('/')
     }
     if (caipAddress) {
-      dispatch(fetchUser(caipAddress)).catch((e) => {
+      dispatch(fetchUser(caipAddress)).unwrap().catch((e) => {
         console.error(e)
       })
+      dispatch(fetchLinks(caipAddress)).unwrap().catch((e) => {
+        console.error(e)
+      });
+      dispatch(fetchClicks(caipAddress))
+        .unwrap()
+        .then((clicks) => {
+          console.log('Fetched clicks:', clicks);
+        })
+        .catch((e) => {
+          console.error('Error fetching clicks:', e);
+        });
     }
   }, [isConnected, router])
 

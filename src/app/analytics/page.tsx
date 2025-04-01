@@ -26,8 +26,8 @@ import { DonutChart } from "@/components/charts/DonutChart/page"
 import { RadialChart } from "@/components/charts/RadialChart/page"
 import { PieChartInteractive } from "@/components/charts/PieChartInteractive/page"
 import { BarChartInteractive } from "@/components/charts/BarChartInteractive/page"
-import { TotalClicks } from "@/components/charts/TotalClicks/page"
-import { MostPopularOS } from "@/components/charts/PopularOS/page"
+import { TotalClicks } from "@/components/charts/AccountPage/TotalClicks/page"
+import { MostPopularOS } from "@/components/charts/AccountPage/PopularOS/page"
 import { ModeToggle } from "@/components/themeToggle"
 
 export default function Dashboard() {

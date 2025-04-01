@@ -22,17 +22,24 @@ import { OnboardingDialog } from "@/components/finish-onboarding"
 import { useAppDispatch, useAppSelector } from "@/store/hooks"
 import { ModeToggle } from "@/components/themeToggle"
 import { fetchUser, selectUser, User } from "@/store/slices/userSlice"
-import { MostPopularOS } from "@/components/charts/PopularOS/page"
-import { TotalClicks } from "@/components/charts/TotalClicks/page"
+import { MostPopularOS } from "@/components/charts/AccountPage/PopularOS/page"
+import { TotalClicks } from "@/components/charts/AccountPage/TotalClicks/page"
 import UpdateEmail from "@/components/update-email"
 import { AccountDropdownMenu } from "@/components/account-dropdown"
 import { selectUserAnalyticsSummary, selectClicksByOperatingSystem, selectClicksByBrowser, selectTopReferrers, selectTopCountry, selectTopRegion, selectTopCity, selectTopUTMSource, selectTopUTMMedium, selectTopUTMCampaign, selectTopUTMTerm, selectTopUTMContent } from "@/store/selectors/clickSelectors"
-import { AverageClicks } from "@/components/charts/AverageClicksPerLink/page"
-import { MostPopularLink } from "@/components/charts/MostPopularLink/page"
-import { UniqueLinks } from "@/components/charts/UniqueLinks/page"
-import { MostPopularBrowser } from "@/components/charts/PopularBrowser/page"
-import { TopReferrers } from "@/components/charts/TopReferrers/page"
-import { TopCountry } from "@/components/charts/TopCountry/page"
+import { AverageClicks } from "@/components/charts/AccountPage/AverageClicksPerLink/page"
+import { MostPopularLink } from "@/components/charts/AccountPage/MostPopularLink/page"
+import { UniqueLinks } from "@/components/charts/AccountPage/UniqueLinks/page"
+import { MostPopularBrowser } from "@/components/charts/AccountPage/PopularBrowser/page"
+import { TopReferrers } from "@/components/charts/AccountPage/TopReferrers/page"
+import { TopCountry } from "@/components/charts/AccountPage/TopCountry/page"
+import { TopRegion } from "@/components/charts/AccountPage/TopRegion/page"
+import { TopCity } from "@/components/charts/AccountPage/TopCity/page"
+import { TopUTMSource } from "@/components/charts/AccountPage/TopUTMSource/page"
+import { TopUTMMedium } from "@/components/charts/AccountPage/TopUTMMedium/page"
+import { TopUTMTerm } from "@/components/charts/AccountPage/TopUTMTerm/page"
+import { TopUTMContent } from "@/components/charts/AccountPage/TopUTMContent/page"
+import { TopUTMCampaign } from "@/components/charts/AccountPage/TopUTMCampaign/page"
 
 
 
@@ -51,8 +58,8 @@ export default function Account() {
     const topCity = useAppSelector(selectTopCity);
     const topUTMSource = useAppSelector(selectTopUTMSource);
     const topUTMMedium = useAppSelector(selectTopUTMMedium);
-    const topUTMCTerm = useAppSelector(selectTopUTMTerm);
-    const topUTMCContent = useAppSelector(selectTopUTMContent);
+    const topUTMTerm = useAppSelector(selectTopUTMTerm);
+    const topUTMContent = useAppSelector(selectTopUTMContent);
     const topUTMCampaign = useAppSelector(selectTopUTMCampaign);
 
 
@@ -121,22 +128,30 @@ export default function Account() {
                     </header>
                     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
                         <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min">
-                            <div className="rounded-xl p-2 ml-auto flex items-center space-x-2 gap-4">
+                            <div className="rounded-xl flex flex-1 flex-row p-4 gap-4">
                                 <UpdateEmail />
                                 <AccountDropdownMenu />
                             </div>
                             <div className="flex flex-1 flex-row gap-4 p-4">
-
+                                <UniqueLinks uniqueLinks={userAnalytics?.uniqueLinks} />
                                 <TotalClicks totalClicks={userAnalytics?.totalClicks} />
-                                <MostPopularOS os={osCounts} />
                                 <AverageClicks averageClicks={userAnalytics?.averageClicksPerLink} />
                                 <MostPopularLink mostPopularLink={userAnalytics?.mostPopular} />
                             </div>
                             <div className="flex flex-1 flex-row gap-4 p-4">
-                                <UniqueLinks uniqueLinks={userAnalytics?.uniqueLinks} />
+                                <MostPopularOS os={osCounts} />
                                 <MostPopularBrowser MostPopularBrowser={browserCounts} />
                                 <TopReferrers topReferrers={topReferrers} />
                                 <TopCountry topCountry={topCountry} />
+                                <TopRegion topRegion={topRegion} />
+                                <TopCity topCity={topCity} />
+                            </div>
+                            <div className="flex flex-1 flex-row gap-4 p-4">
+                                <TopUTMSource topUTMSource={topUTMSource} />
+                                <TopUTMMedium topUTMMedium={topUTMMedium} />
+                                <TopUTMTerm topUTMTerm={topUTMTerm} />
+                                <TopUTMContent topUTMContent={topUTMContent} />
+                                <TopUTMCampaign topUTMCampaign={topUTMCampaign} />
                             </div>
                         </div>
                     </div>

@@ -96,7 +96,7 @@ export function NavUser({
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            {userData.isPro === false && <><DropdownMenuGroup>
+            {userData?.isPro === false && <><DropdownMenuGroup>
               <DropdownMenuItem>
                 <Sparkles />
                 Upgrade to Pro
