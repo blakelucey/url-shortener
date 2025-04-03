@@ -36,7 +36,7 @@ export function NavMain({
 }) {
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>URL Shortener</SidebarGroupLabel>
+      <SidebarGroupLabel>kliqly.link</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => (
           <Collapsible

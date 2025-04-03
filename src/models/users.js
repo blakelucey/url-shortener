@@ -1,6 +1,5 @@
 import { Schema, model, models } from 'mongoose';
 import { isEmail } from 'validator';
-import { hash } from 'bcryptjs';
 
 const userSchema = new Schema({
   userId: {
@@ -10,7 +9,6 @@ const userSchema = new Schema({
   },
   authType: {
     type: String,
-    enum: ['wallet', 'sso', 'email'],
     required: false,
   },
   email: {
@@ -32,14 +30,6 @@ const userSchema = new Schema({
     default: false,
   },
 }, { timestamps: true });
-
-// Hash password before saving if authType is 'email'
-userSchema.pre('save', async function (next) {
-  if (this.authType === 'email' && this.isModified('password')) {
-    this.password = await hash(this.password, 10);
-  }
-  next();
-});
 
 const User = models.User || model('User', userSchema)
 

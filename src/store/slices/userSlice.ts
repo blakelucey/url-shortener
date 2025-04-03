@@ -67,6 +67,45 @@ export const createUserAsync = createAsyncThunk<
   }
 );
 
+export const deleteUserAsync = createAsyncThunk<
+  string, // Return type: success message
+  string, // Argument type: userId
+  { rejectValue: string }
+>(
+  'user/deleteUser',
+  async (userId: string, { rejectWithValue }) => {
+    try {
+      const signResponse = await fetch(`/api/signToken?userId=${encodeURIComponent(userId)}`, {
+        method: 'GET',
+      });
+      if (!signResponse.ok) {
+        const errorData = await signResponse.json();
+        return rejectWithValue(errorData.error || 'Failed to sign token');
+      }
+      const signData = await signResponse.json();
+      const token = signData.data;
+      if (!token) {
+        throw new Error('Token not found');
+      }
+
+      const response = await fetch(`/api/delete`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        return rejectWithValue(data.error || 'Failed to delete user');
+      }
+      return data;
+    } catch (error: any) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
 const userSlice = createSlice({
   name: 'user',
   initialState,
@@ -114,6 +153,19 @@ const userSlice = createSlice({
       .addCase(createUserAsync.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || 'Failed to create user';
+      })
+      .addCase(deleteUserAsync.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteUserAsync.fulfilled, (state, action: PayloadAction<string>) => {
+        // Clear user data upon successful deletion.
+        state.user = null;
+        state.loading = false;
+      })
+      .addCase(deleteUserAsync.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || 'Failed to delete user';
       });
   },
 });

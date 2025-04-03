@@ -46,39 +46,50 @@ export async function POST(request) {
   try {
     console.log("Starting POST /api/users");
 
-    // Connect to the database (adjust based on your setup)
     await dbConnect();
     console.log("Database connected");
 
-    // Parse the incoming data
     const data = await request.json();
     console.log("Received data:", data);
 
-    const { userId, firstName, lastName, email, authType } = data;
-    console.log("Extracted fields:", { userId, firstName, lastName, email, authType });
+    // Destructure all necessary fields
+    const { userId, firstName, lastName, email, authType, type, newEmail } = data;
+    console.log("Extracted fields:", { userId, firstName, lastName, email, authType, type, newEmail });
 
-    // Check for an existing user (if applicable)
-    const existingUser = await User.findOne({ userId });
-    console.log("Existing user check:", existingUser);
-
-    if (existingUser) {
-      console.log("User already exists");
-      return new Response(JSON.stringify({ message: "User already exists" }), {
-        status: 200,
+    if (type === 'update') {
+      const existingUser = await User.findOne({ userId });
+      if (!existingUser) {
+        return new Response(JSON.stringify({ error: "User not found" }), { status: 404 });
+      }
+      try {
+        await User.updateOne({ userId }, { $set: { email: newEmail } });
+        return new Response(JSON.stringify({ message: "User email updated successfully", userId, newEmail }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      } catch (e) {
+        console.error(e);
+        return new Response(JSON.stringify({ error: "Update failed" }), { status: 500 });
+      }
+    } else {
+      // Creation branch if not updating
+      const existingUser = await User.findOne({ userId });
+      if (existingUser) {
+        console.log("User already exists");
+        return new Response(JSON.stringify({ message: "User already exists" }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      console.log("Creating new user");
+      const user = new User({ userId, firstName, lastName, email, authType });
+      await user.save();
+      console.log("User saved:", user);
+      return new Response(JSON.stringify({ message: "User created successfully", user }), {
+        status: 201,
         headers: { "Content-Type": "application/json" },
       });
     }
-
-    // Save the new user
-    console.log("Creating new user");
-    const user = new User({ userId, firstName, lastName, email, authType });
-    await user.save();
-    console.log("User saved:", user);
-
-    return new Response(JSON.stringify({ message: "User created successfully", user }), {
-      status: 201,
-      headers: { "Content-Type": "application/json" },
-    });
   } catch (error) {
     console.error("Error in POST /api/users:", error);
     return new Response(JSON.stringify({ error: error.message }), {

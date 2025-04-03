@@ -7,6 +7,7 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
+    DialogClose
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,7 +29,7 @@ interface ContactDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
 }
-export function OnboardingDialog({ open, onOpenChange }: ContactDialogProps) {
+export function ContactDialog({ open, onOpenChange }: ContactDialogProps) {
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
     const [email, setEmail] = useState("");
@@ -59,6 +60,9 @@ export function OnboardingDialog({ open, onOpenChange }: ContactDialogProps) {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent>
+                <div className="flex justify-end">
+                    <DialogClose onClick={() => onOpenChange(false)} className="transition-transform duration-300 hover:rotate-180" />
+                </div>
                 <DialogHeader>
                     <DialogTitle>Complete Your Profile</DialogTitle>
                     <DialogDescription>
