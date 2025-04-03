@@ -62,7 +62,7 @@ const data = {
       title: "Settings",
       url: "#",
       icon: Icons.LucideSettings,
-      items: [{ title: "Account", url: "/account" }, { title: "Billing", url: "/billing" }, { title: "Roadmap", url: "/roadmap" }, { title: "Log out", }],
+      items: [{ title: "Account", url: "/account" }, { title: "Billing", url: "/billing" }, { title: "Roadmap", url: "https://kliqlylink.canny.io/" }, { title: "Log out", }],
     },
   ],
 }

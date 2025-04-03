@@ -119,7 +119,7 @@ export function NavUser({
                   <CreditCard />
                   Billing
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => router.push('/roadmap')}>
+                <DropdownMenuItem onClick={() => router.push("https://kliqlylink.canny.io/")}>
                   <Icons.LucideMap />
                   Roadmap
                 </DropdownMenuItem>

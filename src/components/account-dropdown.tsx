@@ -72,7 +72,7 @@ export function AccountDropdownMenu() {
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
-                    <DropdownMenuItem onClick={() => router.push('/roadmap')}>
+                    <DropdownMenuItem onClick={() => router.push("https://kliqlylink.canny.io/")}>
                         <Icons.LucideMap />
                         <span>Roadmap</span>
                     </DropdownMenuItem>
