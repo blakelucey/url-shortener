@@ -1,8 +1,5 @@
 "use client"
 
-import { TrendingUp } from "lucide-react"
-import { LabelList, RadialBar, RadialBarChart } from "recharts"
-
 import {
     Card,
     CardContent,
@@ -10,28 +7,33 @@ import {
     CardFooter,
     CardHeader,
     CardTitle,
+
 } from "@/components/ui/card"
+import { useAppSelector } from "@/store/hooks";
+import { selectUser, User } from "@/store/slices/userSlice"
 
+interface AverageClicksProps {
+    averageClicks: number
+}
 
+export function AverageClicks({averageClicks}: AverageClicksProps) {
+    const user: any = useAppSelector(selectUser)
 
-export function MostPopularOS() {
+    const createdAt = new Date(user?.user?.createdAt).toDateString()
     return (
         <Card className="flex flex-col">
-            <CardHeader className="items-center pb-0">
-                <CardTitle>Most Popular OS</CardTitle>
+            <CardHeader className="items-center flex-col gap-4 pb-0">
+                <CardTitle>Average Clicks per Link</CardTitle>
                 <CardDescription>All Time</CardDescription>
             </CardHeader>
             <CardContent className="flex-1 pb-0">
                 <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
-                    android
+                    {averageClicks}
                 </h1>
             </CardContent>
             <CardFooter className="flex-col gap-2 text-sm">
-                <div className="flex items-center gap-2 font-medium leading-none">
-                    Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
-                </div>
                 <div className="leading-none text-muted-foreground">
-                    Showing data for the last 6 months
+                    Showing data since: {createdAt}
                 </div>
             </CardFooter>
         </Card>

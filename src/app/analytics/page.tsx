@@ -18,7 +18,6 @@ import {
 } from "@/components/ui/sidebar"
 import { useAccount } from "wagmi"
 import { useAppKitAccount } from "@reown/appkit/react";
-import { OnboardingDialog } from "@/components/finish-onboarding"
 import { selectUser } from "@/store/slices/userSlice"
 import { useAppSelector } from "@/store/hooks"
 import { AreaChartInteractive } from "@/components/charts/AreaChartInteractive/page"
@@ -26,8 +25,8 @@ import { DonutChart } from "@/components/charts/DonutChart/page"
 import { RadialChart } from "@/components/charts/RadialChart/page"
 import { PieChartInteractive } from "@/components/charts/PieChartInteractive/page"
 import { BarChartInteractive } from "@/components/charts/BarChartInteractive/page"
-import { TotalClicks } from "@/components/charts/TotalClicks/page"
-import { MostPopularOS } from "@/components/charts/PopularOS/page"
+import { TotalClicks } from "@/components/charts/AccountPage/TotalClicks/page"
+import { MostPopularOS } from "@/components/charts/AccountPage/PopularOS/page"
 import { ModeToggle } from "@/components/themeToggle"
 
 export default function Dashboard() {
@@ -62,7 +61,7 @@ export default function Dashboard() {
             });
         } catch (e) { console.error(e) }
 
-    }, [isConnected, caipAddress!]);
+    }, [isConnected, caipAddress, user]);
 
     return (
         <div className="analytics-page">
@@ -98,8 +97,8 @@ export default function Dashboard() {
                             <DonutChart />
                             <RadialChart />
                             <BarChartInteractive />
-                            <TotalClicks />
-                            <MostPopularOS />
+                            <TotalClicks totalClicks={0} />
+                            <MostPopularOS os={{}} />
                         </div>
                         <div>
                             <PieChartInteractive />
@@ -107,12 +106,6 @@ export default function Dashboard() {
                     </div>
                 </SidebarInset>
             </SidebarProvider>
-            {isOnboardingOpen && (
-                <OnboardingDialog
-                    open={isOnboardingOpen}
-                    onOpenChange={setIsOnboardingOpen}
-                />
-            )}
         </div>
     );
 }

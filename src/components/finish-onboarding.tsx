@@ -1,3 +1,5 @@
+"use client"
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,7 +16,6 @@ import { useAppKitAccount } from "@reown/appkit/react";
 import { createUserAsync } from "@/store/slices/userSlice";
 import { useAppDispatch } from "@/store/hooks";
 
-
 interface OnboardingDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -25,23 +26,25 @@ export function OnboardingDialog({ open, onOpenChange }: OnboardingDialogProps) 
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // This flag allows closing only after a successful submission.
+  const [canClose, setCanClose] = useState(false);
   const { caipAddress, embeddedWalletInfo } = useAppKitAccount();
-  const dispatch = useAppDispatch()
+  const dispatch = useAppDispatch();
 
   const userId = caipAddress!;
-  const authType = embeddedWalletInfo?.authProvider
+  const authType = embeddedWalletInfo?.authProvider;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const userData = { userId, firstName, lastName, email, authType }
-      const response = await dispatch(createUserAsync(userData)).unwrap().catch((e) => {
-        console.error(e)
-      })
-      console.log('response', response?._id)
+      const userData = { userId, firstName, lastName, email, authType };
+      const response = await dispatch(createUserAsync(userData)).unwrap();
+      console.log("response", response?._id);
       if (response?._id) {
-        onOpenChange(false); // Close dialog on success
+        // Allow closing after a successful submission.
+        setCanClose(true);
+        onOpenChange(false);
       } else {
         console.error("Failed to submit onboarding data");
       }
@@ -53,8 +56,19 @@ export function OnboardingDialog({ open, onOpenChange }: OnboardingDialogProps) 
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+    <Dialog
+      open={open}
+      onOpenChange={(openState) => {
+        // Prevent closing unless allowed.
+        if (!openState && !canClose) return;
+        onOpenChange(openState);
+      }}
+    >
+      <DialogContent
+        className="sm:max-w-[425px]"
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onInteractOutside={(e) => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle>Complete Your Profile</DialogTitle>
           <DialogDescription>
