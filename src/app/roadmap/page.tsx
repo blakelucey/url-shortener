@@ -21,9 +21,10 @@ import { useAppKitAccount } from "@reown/appkit/react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks"
 import { ModeToggle } from "@/components/themeToggle"
 import { fetchUser, selectUser, User } from "@/store/slices/userSlice"
+import RoadmapTable from "@/components/roadmap-table"
 
 
-export default function Billing() {
+export default function Roadmap() {
     const { embeddedWalletInfo, caipAddress } = useAppKitAccount();
     const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(false);
     const { isConnected, address } = useAccount();
@@ -91,6 +92,7 @@ export default function Billing() {
                     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
                         <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min">
                             <div className="rounded-xl p-2 ml-auto flex items-center space-x-2 gap-4">
+                                <RoadmapTable />
                             </div>
                         </div>
                     </div>

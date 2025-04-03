@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
         }
         const data = await response.json();
         // Return the list of issues as JSON.
-        return NextResponse.json(data.issues, { status: 200 });
+        return NextResponse.json(data, { status: 200 });
     } catch (error: any) {
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
