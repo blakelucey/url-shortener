@@ -55,7 +55,7 @@ export default function Dashboard() {
       });
     } catch (e) { console.error(e) }
 
-  }, [isConnected, caipAddress!]);
+  }, [isConnected, caipAddress, user]);
 
   return (
     <div>

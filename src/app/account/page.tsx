@@ -90,7 +90,7 @@ export default function Account() {
             console.error(e)
         }
 
-    }, [isConnected, caipAddress!]);
+    }, [isConnected, caipAddress, dispatch]);
 
     return (
         <div>

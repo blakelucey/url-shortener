@@ -72,6 +72,13 @@ export function AccountDropdownMenu() {
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
+                    <DropdownMenuItem onClick={() => router.push('/roadmap')}>
+                        <Icons.LucideMap />
+                        <span>Roadmap</span>
+                    </DropdownMenuItem>
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
                     <DropdownMenuItem onClick={handleDisconnect}>
                         <Users />
                         <span>Log Out</span>

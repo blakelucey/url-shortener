@@ -47,7 +47,7 @@ const UpdateEmail = () => {
         catch (e) {
             console.error(e)
         }
-    }, [isConnected, caipAddress!]);
+    }, [isConnected, caipAddress, dispatch]);
 
 
     useEffect(() => {

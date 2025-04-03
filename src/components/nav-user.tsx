@@ -35,6 +35,7 @@ import { useRouter } from "next/navigation";
 import { useAccount } from "wagmi"
 import { User } from '@/store/slices/userSlice'
 import { OnboardingDialog } from "./finish-onboarding";
+import { Icons } from "./icons";
 
 export function NavUser({
   user,
@@ -43,10 +44,8 @@ export function NavUser({
   const { disconnect } = useDisconnect();
   const { isConnected } = useAccount();
   const router = useRouter();
-  const [userData, setUserData] = useState<User>(user)
-  const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(!user?._id);
-
-  console.log('user', user)
+  const [userData, setUserData] = useState<User>(user?.user)
+  const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(!user?.user?._id);
 
   useEffect(() => {
     if (!isConnected) {
@@ -116,13 +115,13 @@ export function NavUser({
                   <BadgeCheck />
                   Account
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={() => router.push('/billing')}>
                   <CreditCard />
                   Billing
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Bell />
-                  Notifications
+                <DropdownMenuItem onClick={() => router.push('/roadmap')}>
+                  <Icons.LucideMap />
+                  Roadmap
                 </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />

@@ -62,7 +62,7 @@ const data = {
       title: "Settings",
       url: "#",
       icon: Icons.LucideSettings,
-      items: [{ title: "Account", url: "/account" }, { title: "Billing", url: "" }, { title: "Notifications", url: "" }, { title: "Log out", url: "" }],
+      items: [{ title: "Account", url: "/account" }, { title: "Billing", url: "/billing" }, { title: "Roadmap", url: "/roadmap" }, { title: "Log out", }],
     },
   ],
 }
@@ -102,7 +102,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           console.error('Error fetching clicks:', e);
         });
     }
-  }, [isConnected, router])
+  }, [caipAddress, dispatch, isConnected, router])
 
   console.log('user', user)
 
