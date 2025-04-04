@@ -44,7 +44,7 @@ export function ContactDialog({ open, onOpenChange }: ContactDialogProps) {
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            const response = await axios.post("http://localhost:3000/api/help", { firstName, lastName, email, phoneNumber, message, messageType });
+            const response = await axios.post(`${process.env.NEXT_PUBLIC_FRONTEND_URL}/api/help`, { firstName, lastName, email, phoneNumber, message, messageType });
             if (response.status === 200) {
                 onOpenChange(false); // Close dialog on success
             } else {
@@ -75,15 +75,15 @@ export function ContactDialog({ open, onOpenChange }: ContactDialogProps) {
                             <Label htmlFor="messageType" className="text-right">
                                 Message Type
                             </Label>
-                            <Select>
+                            <Select value={messageType} onValueChange={(val) => setMessageType(val)}>
                                 <SelectTrigger className="w-[180px]">
                                     <SelectValue placeholder="What are you contact us about?" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectGroup>
-                                        <SelectItem value="Help" id="Help" onClick={() => setMessageType("Help")}>I need help with something</SelectItem>
-                                        <SelectItem value="Suggest a new feature" id="Suggest a new feature" onClick={() => setMessageType("Suggest a new feature")}>I want to suggest a new feature</SelectItem>
-                                        <SelectItem value="Report a bug" id="Suggest a new feature" onClick={() => setMessageType("Suggest a new feature")}>I want to report a bug</SelectItem>
+                                        <SelectItem value="Help" id="Help">I need help with something</SelectItem>
+                                        <SelectItem value="Suggest a new feature" id="Suggest a new feature">I want to suggest a new feature</SelectItem>
+                                        <SelectItem value="Report a bug" id="Suggest a new feature">I want to report a bug</SelectItem>
                                     </SelectGroup>
                                 </SelectContent>
                             </Select>

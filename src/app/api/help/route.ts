@@ -3,10 +3,13 @@ import nodemailer from "nodemailer";
 
 // Configure Nodemailer transporter
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  service: "Zoho",
+  host: "smtp.zoho.com",
+  port: 465,
+  secure: true,
   auth: {
-    user: process.env.NEXT_GMAIL,
-    pass: process.env.NEXT_GMAIL_APP_PASSWORD,
+    user: `${process.env.NEXT_ZOHO_MAIL_ADDRESS!}`,
+    pass: `${process.env.NEXT_ZOHO_MAIL_THIRD_PARTY_PASSWORD!}`,
   },
 });
 
@@ -19,8 +22,9 @@ export async function POST(request: NextRequest) {
 
     // Define email options
     const mailOptions = {
-      from: data.email,
-      to: process.env.NEXT_GMAIL,
+      from: `${process.env.NEXT_ZOHO_MAIL_ADDRESS!}`, // Your Zoho email address
+      replyTo: `${data?.email}`, // The user's email address
+      to: `${process.env.NEXT_ZOHO_MAIL_ADDRESS!}`,
       subject: `Support request from ${data.firstName} ${data.lastName} -- ${data.messageType}`,
       html: `
       <p><b>First Name:</b> ${data.firstName}</p>
