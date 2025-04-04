@@ -54,15 +54,41 @@ export const selectClicksOverTime = createSelector(
 );
 
 // Distribution by device type
-export const selectDeviceTypeDistribution = createSelector(
+export const selectClicksByDeviceType = createSelector(
   [selectAllClicks],
   (clicks) => {
-    const distribution: { [deviceType: string]: number } = {};
-    clicks.forEach(click => {
-      const deviceType = click.deviceType || 'unknown';
-      distribution[deviceType] = (distribution[deviceType] || 0) + 1;
+    const counts: { [deviceType: string]: number } = {};
+    clicks.forEach((click) => {
+      const { deviceType } = parseUserAgent(click.userAgent || '');
+      counts[deviceType] = (counts[deviceType] || 0) + 1;
     });
-    return distribution;
+    return counts;
+  }
+);
+
+export const selectClicksByDateAndDevice = createSelector(
+  [selectAllClicks],
+  (clicks) => {
+    const data: Record<string, { desktop: number; mobile: number }> = {};
+
+    clicks.forEach((click) => {
+      const dateKey = format(new Date(click.timestamp), 'yyyy-MM-dd');
+      if (!data[dateKey]) {
+        data[dateKey] = { desktop: 0, mobile: 0 };
+      }
+      const { deviceType } = parseUserAgent(click.userAgent || '');
+      // Assume that if deviceType is 'mobile' then count as mobile; otherwise, count as desktop.
+      if (deviceType === 'mobile') {
+        data[dateKey].mobile += 1;
+      } else {
+        data[dateKey].desktop += 1;
+      }
+    });
+
+    // Convert the aggregated object into an array sorted by date.
+    return Object.entries(data)
+      .map(([date, counts]) => ({ date, ...counts }))
+      .sort((a, b) => a.date.localeCompare(b.date));
   }
 );
 
