@@ -83,7 +83,7 @@ export function AreaChartInteractive() {
         <div className="grid flex-1 gap-1 text-center sm:text-left">
           <CardTitle>Area Chart - Interactive</CardTitle>
           <CardDescription>
-            Showing total visitors for the selected time range
+            Showing total clicks for the selected time range
           </CardDescription>
         </div>
         <Select value={timeRange} onValueChange={setTimeRange}>

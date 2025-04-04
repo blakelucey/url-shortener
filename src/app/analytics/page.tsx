@@ -20,14 +20,12 @@ import { useAccount } from "wagmi"
 import { useAppKitAccount } from "@reown/appkit/react";
 import { selectUser } from "@/store/slices/userSlice"
 import { useAppSelector } from "@/store/hooks"
-import { AreaChartInteractive } from "@/components/charts/AreaChartInteractive/page"
-import { DonutChart } from "@/components/charts/DonutChart/page"
-import { RadialChart } from "@/components/charts/RadialChart/page"
-import { PieChartInteractive } from "@/components/charts/PieChartInteractive/page"
-import { BarChartInteractive } from "@/components/charts/BarChartInteractive/page"
-import { TotalClicks } from "@/components/charts/AccountPage/TotalClicks/page"
-import { MostPopularOS } from "@/components/charts/AccountPage/PopularOS/page"
+import { AreaChartInteractive } from "@/components/charts/AnalyticsPage/AreaChartInteractive/page"
+import { BarChartBrowser } from "@/components/charts/AnalyticsPage/BarChartBrowser/page"
+import { BarChartOS } from "@/components/charts/AnalyticsPage/BarChartOS/page"
 import { ModeToggle } from "@/components/themeToggle"
+import { CarouselAnalytics } from "@/components/charts/AnalyticsPage/Carousel/page"
+import { LineChartLinks } from "@/components/charts/AnalyticsPage/LineChartLinks/page"
 
 export default function Dashboard() {
     const { embeddedWalletInfo, caipAddress } = useAppKitAccount();
@@ -84,24 +82,26 @@ export default function Dashboard() {
                                 </BreadcrumbList>
                             </Breadcrumb>
                         </div>
-                            <div className="absolute top-2 right-5">
-                                <ModeToggle />
-                            </div>
+                        <div className="absolute top-2 right-5">
+                            <ModeToggle />
+                        </div>
                     </header>
 
                     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
                         <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min">
                             <AreaChartInteractive />
                         </div>
-                        <div className="flex flex-1 flex-row gap-4 p-4">
-                            <DonutChart />
-                            <RadialChart />
-                            <BarChartInteractive />
-                            <TotalClicks totalClicks={0} />
-                            <MostPopularOS os={{}} />
+                        <div className="flex flex-row gap-4 p-4">
+                            <BarChartBrowser />
+                            <BarChartOS />
+                            <div className="mx-auto">
+                                <CarouselAnalytics />
+                            </div>
                         </div>
                         <div>
-                            <PieChartInteractive />
+                        </div>
+                        <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min">
+                            <LineChartLinks />
                         </div>
                     </div>
                 </SidebarInset>

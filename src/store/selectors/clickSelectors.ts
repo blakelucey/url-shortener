@@ -10,7 +10,7 @@ export const selectAllLinks = (state: RootState) => state.links.links;
 // Select clicks for a specific link
 export const selectClicksByLinkId = createSelector(
   [selectAllClicks, (_: RootState, linkId: string) => linkId],
-  (clicks, linkId) => clicks.filter(click => click.linkId === linkId)
+  (clicks, linkId) => clicks.filter((click: { linkId: any; }) => click.linkId === linkId)
 );
 
 // Total clicks per link
@@ -22,6 +22,41 @@ export const selectTotalClicksByLink = createSelector(
       clickCounts[click.linkId] = (clickCounts[click.linkId] || 0) + 1;
     });
     return clickCounts;
+  }
+);
+
+export const selectClicksForLinkByDateAndDevice = createSelector(
+  [selectAllClicks, (_: any, linkId: string) => linkId],
+  (clicks, linkId) => {
+    // Calculate the date 3 months ago from now.
+    const threeMonthsAgo = new Date();
+    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+
+    // Filter clicks for the given link and within the last 3 months.
+    const filteredClicks = clicks.filter(click =>
+      click.linkId === linkId && new Date(click.timestamp) >= threeMonthsAgo
+    );
+
+    // Aggregate clicks by date into desktop and mobile counts.
+    const counts: Record<string, { desktop: number; mobile: number }> = {};
+    filteredClicks.forEach(click => {
+      const dateKey = format(new Date(click.timestamp), 'yyyy-MM-dd');
+      if (!counts[dateKey]) {
+        counts[dateKey] = { desktop: 0, mobile: 0 };
+      }
+      const { deviceType } = parseUserAgent(click.userAgent || '');
+      // Count as mobile if deviceType is 'mobile'; otherwise, count as desktop.
+      if (deviceType === 'mobile') {
+        counts[dateKey].mobile += 1;
+      } else {
+        counts[dateKey].desktop += 1;
+      }
+    });
+
+    // Convert the aggregated data into an array sorted by date.
+    return Object.entries(counts)
+      .map(([date, devices]) => ({ date, ...devices }))
+      .sort((a, b) => a.date.localeCompare(b.date));
   }
 );
 
@@ -254,6 +289,35 @@ export const selectClicksByOperatingSystem = createSelector(
   }
 );
 
+export const selectClicksByOSOverTime = createSelector(
+  [
+    selectAllClicks,
+    (_: any, startDate: string) => new Date(startDate),
+    (_: any, __: string, endDate: string) => new Date(endDate)
+  ],
+  (clicks, startDate, endDate) => {
+    // Filter clicks in the specified time range.
+    const filtered = clicks.filter(click => {
+      const ts = new Date(click.timestamp);
+      return ts >= startDate && ts <= endDate;
+    });
+
+    // Aggregate click counts by operating system.
+    const osCounts: Record<string, number> = {};
+    filtered.forEach(click => {
+      const { os } = parseUserAgent(click.userAgent || '');
+      // Ensure os is lowercased for consistency.
+      const key = os.toLowerCase();
+      osCounts[key] = (osCounts[key] || 0) + 1;
+    });
+
+    // Convert to an array for chart data.
+    return Object.entries(osCounts)
+      .map(([os, visitors]) => ({ os, visitors }))
+      .sort((a, b) => b.visitors - a.visitors);
+  }
+);
+
 // Selector for browser popularity.
 export const selectClicksByBrowser = createSelector(
   [selectAllClicks],
@@ -264,6 +328,35 @@ export const selectClicksByBrowser = createSelector(
       browserCounts[browser] = (browserCounts[browser] || 0) + 1;
     });
     return browserCounts;
+  }
+);
+
+export const selectClicksByBrowserOverTime = createSelector(
+  [
+    selectAllClicks,
+    (_: any, startDate: string) => new Date(startDate),
+    (_: any, __: string, endDate: string) => new Date(endDate)
+  ],
+  (clicks, startDate, endDate) => {
+    // Filter clicks in the specified time range.
+    const filtered = clicks.filter(click => {
+      const ts = new Date(click.timestamp);
+      return ts >= startDate && ts <= endDate;
+    });
+
+    // Aggregate click counts by browser.
+    const browserCounts: Record<string, number> = {};
+    filtered.forEach(click => {
+      const { browser } = parseUserAgent(click.userAgent || '');
+      // Ensure browser is lowercased for consistency.
+      const key = browser.toLowerCase();
+      browserCounts[key] = (browserCounts[key] || 0) + 1;
+    });
+
+    // Convert to array for chart data.
+    return Object.entries(browserCounts)
+      .map(([browser, visitors]) => ({ browser, visitors }))
+      .sort((a, b) => b.visitors - a.visitors);
   }
 );
 
