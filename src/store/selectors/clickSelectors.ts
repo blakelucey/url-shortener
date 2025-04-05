@@ -1,6 +1,6 @@
 import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../store'; // Adjust path to your store's RootState type
-import { format } from 'date-fns'; // For date formatting, install with: npm install date-fns
+import { eachDayOfInterval, format } from 'date-fns'; // For date formatting, install with: npm install date-fns
 import { parseUserAgent } from '@/lib/parseUserAgent';
 
 // Base selector for all clicks
@@ -435,6 +435,53 @@ export const selectTopCity = createSelector(
 );
 
 /* ===== UTM Data Selectors ===== */
+
+type UTMField = 'utm_source' | 'utm_medium' | 'utm_campaign' | 'utm_term' | 'utm_content';
+
+export const selectClicksByUTMComparisonOverTime = createSelector(
+  [
+    selectAllClicks,
+    (_: any, utmField: UTMField, primaryValue: string, comparisonValue: string) => utmField,
+    (_: any, utmField: UTMField, primaryValue: string, comparisonValue: string) => primaryValue,
+    (_: any, utmField: UTMField, primaryValue: string, comparisonValue: string) => comparisonValue,
+  ],
+  (clicks, utmField, primaryValue, comparisonValue) => {
+    // Calculate the date 3 months ago from now.
+    const threeMonthsAgo = new Date();
+    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+    const endDate = new Date(); // Now
+
+    // Filter clicks within the last 3 months that match either value.
+    const filtered = clicks.filter(click => {
+      const ts = new Date(click.timestamp);
+      // Now that utmField is of type UTMField, we assume that the Click type
+      // contains these properties. If not, you can cast click as any.
+      const value = (click as any)[utmField] || '';
+      return ts >= threeMonthsAgo && ts <= endDate && (value === primaryValue || value === comparisonValue);
+    });
+
+    // Aggregate clicks by day for both values.
+    const data: Record<string, { primary: number; comparison: number }> = {};
+    filtered.forEach(click => {
+      const ts = new Date(click.timestamp);
+      const dateKey = format(ts, 'yyyy-MM-dd');
+      if (!data[dateKey]) {
+        data[dateKey] = { primary: 0, comparison: 0 };
+      }
+      const value = (click as any)[utmField] || '';
+      if (value === primaryValue) {
+        data[dateKey].primary += 1;
+      } else if (value === comparisonValue) {
+        data[dateKey].comparison += 1;
+      }
+    });
+
+    // Convert the aggregated object into a sorted array.
+    return Object.entries(data)
+      .map(([date, counts]) => ({ date, ...counts }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+  }
+);
 
 // Aggregate counts for utm_source.
 export const selectUTMSourceCounts = createSelector(

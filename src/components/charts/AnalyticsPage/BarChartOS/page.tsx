@@ -118,7 +118,7 @@ export function BarChartOS() {
                         )}
                     </div>
                     <div className="leading-none text-muted-foreground">
-                        Showing common OS clicks for {startDate.toLocaleDateString()} to {endDate.toLocaleDateString()}
+                        Showing OS clicks for {startDate.toLocaleDateString()} to {endDate.toLocaleDateString()}
                     </div>
                 </CardFooter>
             </Card>

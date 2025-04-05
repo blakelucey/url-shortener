@@ -26,6 +26,11 @@ import { BarChartOS } from "@/components/charts/AnalyticsPage/BarChartOS/page"
 import { ModeToggle } from "@/components/themeToggle"
 import { CarouselAnalytics } from "@/components/charts/AnalyticsPage/Carousel/page"
 import { LineChartLinks } from "@/components/charts/AnalyticsPage/LineChartLinks/page"
+import { LineChartUTMSource } from "@/components/charts/AnalyticsPage/LineChartUTMSource/page"
+import { LineChartUTMMedium } from "@/components/charts/AnalyticsPage/LineChartUTMMedium/page"
+import { LineChartUTMCampaign } from "@/components/charts/AnalyticsPage/LineChartUTMCampaign/page"
+import { LineChartUTMTerm } from "@/components/charts/AnalyticsPage/LineChartUTMTerm/page"
+import { LineChartUTMContent } from "@/components/charts/AnalyticsPage/LineChartUTMContent/page"
 
 export default function Dashboard() {
     const { embeddedWalletInfo, caipAddress } = useAppKitAccount();
@@ -102,6 +107,21 @@ export default function Dashboard() {
                         </div>
                         <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min">
                             <LineChartLinks />
+                        </div>
+                        <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min">
+                            <LineChartUTMSource />
+                        </div>
+                        <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min">
+                            <LineChartUTMMedium />
+                        </div>
+                        <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min">
+                            <LineChartUTMCampaign />
+                        </div>
+                        <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min">
+                            <LineChartUTMTerm />
+                        </div>
+                        <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min">
+                            <LineChartUTMContent />
                         </div>
                     </div>
                 </SidebarInset>

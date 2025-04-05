@@ -118,7 +118,7 @@ export function BarChartBrowser() {
           )}
         </div>
         <div className="leading-none text-muted-foreground">
-          Showing total browser clicks for {startDate.toLocaleDateString()} to {endDate.toLocaleDateString()}
+          Showing browser clicks for {startDate.toLocaleDateString()} to {endDate.toLocaleDateString()}
         </div>
       </CardFooter>
     </Card>
