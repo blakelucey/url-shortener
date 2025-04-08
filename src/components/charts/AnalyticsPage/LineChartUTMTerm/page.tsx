@@ -32,11 +32,11 @@ import { TrendingUp, TrendingDown } from "lucide-react";
 const chartConfig = {
     desktop: {
         label: "Primary",
-        color: "var(--color-primary)",
+        color: "hsl(var(--chart-2))",
     },
     mobile: {
         label: "Comparison",
-        color: "var(--color-secondary)",
+        color: "hsl(var(--chart-4))",
     },
 } satisfies { [key: string]: { label: string; color: string } };
 
@@ -118,7 +118,7 @@ export function LineChartUTMTerm() {
             </CardHeader>
             <CardContent className="px-2 sm:p-6">
                 <ChartContainer config={chartConfig} className="aspect-auto h-[250px] w-full">
-                    <LineChart data={utmData} accessibilityLayer margin={{ right: 12, left: 12 }}>
+                    <LineChart data={utmData} accessibilityLayer margin={{ top: 20, right: 12, left: 12 }}>
                         <CartesianGrid vertical={false} />
                         <XAxis
                             dataKey="date"
@@ -155,14 +155,14 @@ export function LineChartUTMTerm() {
                             dataKey="primary"
                             stroke={chartConfig.desktop.color}
                             strokeWidth={2}
-                            dot={false}
+                            dot={true}
                         />
                         <Line
                             type="monotone"
                             dataKey="comparison"
                             stroke={chartConfig.mobile.color}
                             strokeWidth={2}
-                            dot={false}
+                            dot={true}
                         />
                     </LineChart>
                 </ChartContainer>

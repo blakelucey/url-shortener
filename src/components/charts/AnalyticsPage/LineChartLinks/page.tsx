@@ -35,11 +35,11 @@ const chartConfig = {
     },
     desktop: {
         label: "Desktop",
-        color: "hsl(var(--chart-1))",
+        color: "hsl(var(--chart-3))",
     },
     mobile: {
         label: "Mobile",
-        color: "hsl(var(--chart-2))",
+        color: "hsl(var(--chart-3))",
     },
 } satisfies ChartConfig
 
@@ -127,6 +127,7 @@ export function LineChartLinks() {
                         accessibilityLayer
                         data={chartData}
                         margin={{
+                            top: 20,
                             left: 12,
                             right: 12,
                         }}
