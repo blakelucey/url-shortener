@@ -169,6 +169,44 @@ export const selectTopReferrers = createSelector(
   }
 );
 
+export const selectAllReferrersWithTime = createSelector(
+  [selectAllClicks],
+  (clicks) => {
+    // We'll store count as well as the min and max timestamps per referrer.
+    const referrerData: {
+      [referrer: string]: { count: number; minTimestamp: number; maxTimestamp: number, timestamp: number }
+    } = {};
+
+    clicks.forEach(click => {
+      // Assume click.timestamp is a valid ISO string.
+      const ref = click.referrer || 'Direct';
+      const ts = new Date(click.timestamp).getTime(); // getTime() returns a number
+
+      if (!referrerData[ref]) {
+        referrerData[ref] = { count: 0, minTimestamp: ts, maxTimestamp: ts, timestamp: ts };
+      }
+      referrerData[ref].count += 1;
+      if (ts < referrerData[ref].minTimestamp) {
+        referrerData[ref].minTimestamp = ts;
+      }
+      if (ts > referrerData[ref].maxTimestamp) {
+        referrerData[ref].maxTimestamp = ts;
+      }
+    });
+
+    // Return an array of referrer objects with time information.
+    return Object.entries(referrerData)
+      .map(([referrer, data]) => ({
+        referrer,
+        count: data.count,
+        minTimestamp: data.minTimestamp,
+        maxTimestamp: data.maxTimestamp,
+        timestamp: data.timestamp,
+      }))
+      .sort((a, b) => b.count - a.count)
+  }
+);
+
 export const selectUniqueClicksByLink = createSelector(
   [selectAllClicks],
   (clicks) => {

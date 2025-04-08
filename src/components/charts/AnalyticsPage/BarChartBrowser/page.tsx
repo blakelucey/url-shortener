@@ -11,11 +11,11 @@ import { TrendingDown, TrendingUp } from "lucide-react"
 
 const chartConfig = {
   visitors: { label: "Visitors" },
-  chrome: { label: "Chrome", color: "hsl(var(--chart-1))" },
+  chrome: { label: "Chrome", color: "hsl(var(--chart-2))" },
   safari: { label: "Safari", color: "hsl(var(--chart-2))" },
-  firefox: { label: "Firefox", color: "hsl(var(--chart-3))" },
-  edge: { label: "Edge", color: "hsl(var(--chart-4))" },
-  other: { label: "Other", color: "hsl(var(--chart-5))" },
+  firefox: { label: "Firefox", color: "hsl(var(--chart-2))" },
+  edge: { label: "Edge", color: "hsl(var(--chart-2))" },
+  other: { label: "Other", color: "hsl(var(--chart-2))" },
 } satisfies ChartConfig;
 
 export function BarChartBrowser() {

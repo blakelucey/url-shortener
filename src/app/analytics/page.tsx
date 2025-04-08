@@ -10,6 +10,12 @@ import {
     BreadcrumbPage,
     BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
+import {
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Separator } from "@/components/ui/separator"
 import {
     SidebarInset,
@@ -31,8 +37,10 @@ import { LineChartUTMMedium } from "@/components/charts/AnalyticsPage/LineChartU
 import { LineChartUTMCampaign } from "@/components/charts/AnalyticsPage/LineChartUTMCampaign/page"
 import { LineChartUTMTerm } from "@/components/charts/AnalyticsPage/LineChartUTMTerm/page"
 import { LineChartUTMContent } from "@/components/charts/AnalyticsPage/LineChartUTMContent/page"
+import { PieChartReferrer } from "@/components/charts/AnalyticsPage/PieChartReferrer/page";
+import { cn } from "@/lib/utils";
 
-export default function Dashboard() {
+export default function Analytics() {
     const { embeddedWalletInfo, caipAddress } = useAppKitAccount();
     const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(false);
     const { isConnected, address } = useAccount();
@@ -105,23 +113,39 @@ export default function Dashboard() {
                         </div>
                         <div>
                         </div>
-                        <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min">
-                            <LineChartLinks />
-                        </div>
-                        <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min">
-                            <LineChartUTMSource />
-                        </div>
-                        <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min">
-                            <LineChartUTMMedium />
-                        </div>
-                        <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min">
-                            <LineChartUTMCampaign />
-                        </div>
-                        <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min">
-                            <LineChartUTMTerm />
-                        </div>
-                        <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min">
-                            <LineChartUTMContent />
+                        <Accordion type="single" collapsible className="w-full">
+                            <div className={cn(
+                                "border-border/50 bg-background grid min-w-[8rem] items-start gap-4 rounded-lg border px-2.5 py-1.5 text-xs shadow-md",
+                            )}>
+                                <AccordionItem value="accordion-1" >
+                                    <AccordionTrigger style={{ cursor: "pointer" }}>
+                                        View UTM Parameters
+                                    </AccordionTrigger>
+                                    <AccordionContent>
+                                        <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min mb-4">
+                                            <LineChartLinks />
+                                        </div>
+                                        <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min mb-4">
+                                            <LineChartUTMSource />
+                                        </div>
+                                        <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min mb-4">
+                                            <LineChartUTMMedium />
+                                        </div>
+                                        <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min mb-4">
+                                            <LineChartUTMCampaign />
+                                        </div>
+                                        <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min mb-4">
+                                            <LineChartUTMTerm />
+                                        </div>
+                                        <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min mb-4">
+                                            <LineChartUTMContent />
+                                        </div>
+                                    </AccordionContent>
+                                </AccordionItem>
+                            </div>
+                        </Accordion>
+                        <div className="flex flex-row gap-4 p-4">
+                            <PieChartReferrer />
                         </div>
                     </div>
                 </SidebarInset>

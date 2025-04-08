@@ -11,11 +11,11 @@ import { TrendingDown, TrendingUp } from "lucide-react"
 
 const chartConfig = {
     visitors: { label: "Visitors" },
-    windows: { label: "Windows", color: "hsl(var(--chart-1))" },
-    macOs: { label: "Mac OS", color: "hsl(var(--chart-2))" },
-    ios: { label: "iOS", color: "hsl(var(--chart-3))" },
+    windows: { label: "Windows", color: "hsl(var(--chart-4))" },
+    macOs: { label: "Mac OS", color: "hsl(var(--chart-4))" },
+    ios: { label: "iOS", color: "hsl(var(--chart-4))" },
     android: { label: "Android", color: "hsl(var(--chart-4))" },
-    other: { label: "Other", color: "hsl(var(--chart-5))" },
+    other: { label: "Other", color: "hsl(var(--chart-4))" },
 } satisfies ChartConfig;
 
 export function BarChartOS() {
