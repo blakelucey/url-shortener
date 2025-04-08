@@ -154,6 +154,7 @@ export function LineChartUTMSource() {
                         <Line
                             type="monotone"
                             dataKey="primary"
+                            name={primaryValue}
                             stroke={chartConfig.desktop.color}
                             strokeWidth={2}
                             dot={true}
@@ -161,6 +162,7 @@ export function LineChartUTMSource() {
                         <Line
                             type="monotone"
                             dataKey="comparison"
+                            name={comparisonValue}
                             stroke={chartConfig.mobile.color}
                             strokeWidth={2}
                             dot={true}

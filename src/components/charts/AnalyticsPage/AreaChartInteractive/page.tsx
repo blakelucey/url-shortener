@@ -15,7 +15,6 @@ import {
   ChartLegend,
   ChartLegendContent,
   ChartTooltip,
-  ChartTooltipContent,
 } from "@/components/ui/chart"
 import {
   Select,
@@ -26,6 +25,7 @@ import {
 } from "@/components/ui/select"
 import { useAppSelector } from "@/store/hooks"
 import { selectClicksByDateAndDevice } from "@/store/selectors/clickSelectors"
+import { cn } from "@/lib/utils"
 
 const chartConfig = {
   visitors: {
@@ -39,30 +39,27 @@ const chartConfig = {
     label: "Mobile",
     color: "hsl(var(--chart-2))",
   },
+  date: {
+    label: "Date",
+    color: "hsl(var(--primary-))",
+  },
 };
 
 export function AreaChartInteractive() {
   const [timeRange, setTimeRange] = useState("7d")
-  // Get your aggregated click data (with keys "date", "desktop", "mobile").
   const clicksData = useAppSelector(selectClicksByDateAndDevice)
 
-  // Calculate the domain based on the selected time range.
   const { filteredData, domain } = useMemo(() => {
     let daysToSubtract = 90
     if (timeRange === "30d") daysToSubtract = 30
     else if (timeRange === "7d") daysToSubtract = 7
 
-    // Use the current date as the reference end date.
     const endDate = new Date()
-    // Start date is current date minus the number of days.
     const startDate = new Date(endDate)
     startDate.setDate(startDate.getDate() - daysToSubtract)
 
-    // Convert start and end dates to timestamps.
     const domain = [startDate.getTime(), endDate.getTime()]
 
-    // Convert the date field in clicksData to a timestamp.
-    // Only include items that fall within the range.
     const filteredData = clicksData
       .filter(item => {
         const ts = new Date(item.date).getTime()
@@ -70,12 +67,38 @@ export function AreaChartInteractive() {
       })
       .map(item => ({
         ...item,
-        // Convert date to timestamp.
         date: new Date(item.date).getTime(),
       }))
 
     return { filteredData, domain }
   }, [clicksData, timeRange])
+
+  const CustomTooltip = ({ active = false, payload = [], label = "" }) => {
+
+    if (!active || !payload.length) return null;
+
+    if (active && payload && payload.length) {
+      const date = new Date(label).toLocaleDateString("en-US", {
+
+        month: "short",
+        day: "numeric",
+      });
+      return (
+        <div
+          className={cn(
+            "border-border/50 bg-background grid min-w-[8rem] items-start gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs shadow-xl",
+          )}
+        >          <p className="font-bold">{date}</p>
+          {payload.map((item: { name: string | number; value: string | number | bigint | boolean | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<string | number | bigint | boolean | React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | null | undefined> | null | undefined }, index: React.Key | null | undefined) => (
+            <p key={index}>
+              {chartConfig[item.name as keyof typeof chartConfig]?.label}: {item.value}
+            </p>
+          ))}
+        </div>
+      );
+    }
+    return null;
+  };
 
   return (
     <Card>
@@ -111,9 +134,7 @@ export function AreaChartInteractive() {
           config={chartConfig}
           className="aspect-auto h-[250px] w-full"
         >
-          <AreaChart data={filteredData} margin={{
-            top: 20
-          }}>
+          <AreaChart data={filteredData} margin={{ top: 20 }}>
             <defs>
               <linearGradient id="fillDesktop" x1="0" y1="0" x2="0" y2="1">
                 <stop
@@ -150,9 +171,9 @@ export function AreaChartInteractive() {
               axisLine={false}
               tickMargin={8}
               minTickGap={32}
-              tickFormatter={(timestamp) => {
-                const date = new Date(timestamp)
-                return date.toLocaleDateString("en-US", {
+              tickFormatter={(date) => {
+                const newDate = new Date(date)
+                return newDate.toLocaleDateString("en-US", {
                   month: "short",
                   day: "numeric",
                 })
@@ -160,17 +181,7 @@ export function AreaChartInteractive() {
             />
             <ChartTooltip
               cursor={false}
-              content={
-                <ChartTooltipContent
-                  labelFormatter={(timestamp) =>
-                    new Date(timestamp).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                    })
-                  }
-                  indicator="dot"
-                />
-              }
+              content={<CustomTooltip />}
             />
             <Area
               dataKey="mobile"
