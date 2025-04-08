@@ -38,6 +38,8 @@ import { LineChartUTMCampaign } from "@/components/charts/AnalyticsPage/LineChar
 import { LineChartUTMTerm } from "@/components/charts/AnalyticsPage/LineChartUTMTerm/page"
 import { LineChartUTMContent } from "@/components/charts/AnalyticsPage/LineChartUTMContent/page"
 import { PieChartReferrer } from "@/components/charts/AnalyticsPage/PieChartReferrer/page";
+import { PieChartChannels } from "@/components/charts/AnalyticsPage/PieChartChannels/page";
+import { PieChartCampaigns } from "@/components/charts/AnalyticsPage/PieChartCampaigns/page";
 import { cn } from "@/lib/utils";
 
 export default function Analytics() {
@@ -144,8 +146,10 @@ export default function Analytics() {
                                 </AccordionItem>
                             </div>
                         </Accordion>
-                        <div className="flex flex-row gap-4 p-4">
+                        <div className="flex flex-1 flex-row gap-10 justify-center p-4">
                             <PieChartReferrer />
+                            <PieChartChannels />
+                            <PieChartCampaigns />
                         </div>
                     </div>
                 </SidebarInset>
