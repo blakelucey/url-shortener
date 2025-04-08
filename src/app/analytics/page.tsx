@@ -40,6 +40,7 @@ import { LineChartUTMContent } from "@/components/charts/AnalyticsPage/LineChart
 import { PieChartReferrer } from "@/components/charts/AnalyticsPage/PieChartReferrer/page";
 import { PieChartChannels } from "@/components/charts/AnalyticsPage/PieChartChannels/page";
 import { PieChartCampaigns } from "@/components/charts/AnalyticsPage/PieChartCampaigns/page";
+import MapLibreComponent from "@/components/charts/AnalyticsPage/MapLibreComp/page";
 import { cn } from "@/lib/utils";
 
 export default function Analytics() {
@@ -115,6 +116,11 @@ export default function Analytics() {
                         </div>
                         <div>
                         </div>
+                        <div className="flex flex-row gap-4 p-4">
+                            <PieChartReferrer />
+                            <PieChartChannels />
+                            <PieChartCampaigns />
+                        </div>
                         <Accordion type="single" collapsible className="w-full">
                             <div className={cn(
                                 "border-border/50 bg-background grid min-w-[8rem] items-start gap-4 rounded-lg border px-2.5 py-1.5 text-xs shadow-md",
@@ -146,11 +152,7 @@ export default function Analytics() {
                                 </AccordionItem>
                             </div>
                         </Accordion>
-                        <div className="flex flex-1 flex-row gap-10 justify-center p-4">
-                            <PieChartReferrer />
-                            <PieChartChannels />
-                            <PieChartCampaigns />
-                        </div>
+                        <MapLibreComponent />
                     </div>
                 </SidebarInset>
             </SidebarProvider>
