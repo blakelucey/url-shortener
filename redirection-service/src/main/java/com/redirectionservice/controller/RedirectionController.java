@@ -41,7 +41,7 @@ public class RedirectionController {
     @Autowired
     private MongoTemplate mongoTemplate; // For querying the "links" collection
 
-      // Inject the token from your environment (loaded via Dotenv)
+    // Inject the token from your environment (loaded via Dotenv)
     @Value("${NEXT_IPINFO_TOKEN}")
     private String ipinfoToken;
 
@@ -50,7 +50,7 @@ public class RedirectionController {
     // Cache TTL: 1 hour.
     private static final long CACHE_TTL_MS = TimeUnit.HOURS.toMillis(1);
 
-      // Utility method to fetch the server's public IP
+    // Utility method to fetch the server's public IP
     public static String getIp() throws IOException {
         URL whatismyip = new URL("http://checkip.amazonaws.com");
         try (BufferedReader in = new BufferedReader(new InputStreamReader(whatismyip.openStream()))) {
@@ -95,7 +95,8 @@ public class RedirectionController {
         Map<String, String> geoData = getGeoLocation(ipAddress);
 
         // Extract UTM parameters from the link document.
-        // (Assuming the document keys match exactly, e.g., "utm_source", "utm_medium", etc.)
+        // (Assuming the document keys match exactly, e.g., "utm_source", "utm_medium",
+        // etc.)
         String utm_source = linkDoc != null ? linkDoc.getString("utm_source") : null;
         String utm_medium = linkDoc != null ? linkDoc.getString("utm_medium") : null;
         String utm_campaign = linkDoc != null ? linkDoc.getString("utm_campaign") : null;
@@ -115,6 +116,8 @@ public class RedirectionController {
         click.setRegion(geoData.getOrDefault("region", "Unknown"));
         click.setCity(geoData.getOrDefault("city", "Unknown"));
         click.setPostal(geoData.getOrDefault("postal", "unknown"));
+        click.setLatitude(Double.parseDouble(geoData.getOrDefault("latitude", "0")));
+        click.setLongitude(Double.parseDouble(geoData.getOrDefault("longitude", "0")));
         // Set UTM parameters retrieved from the link document.
         click.setUtm_source(utm_source);
         click.setUtm_medium(utm_medium);
@@ -129,7 +132,7 @@ public class RedirectionController {
         return new RedirectView(mapping.getOriginalUrl());
     }
 
-       private Map<String, String> getGeoLocation(String ipAddress) {
+    private Map<String, String> getGeoLocation(String ipAddress) {
         CacheEntry entry = geoCache.get(ipAddress);
         if (entry != null && !entry.isExpired()) {
             System.out.println("[GeoLookup] Using cached geo data for IP: " + ipAddress);
@@ -147,20 +150,27 @@ public class RedirectionController {
                 geoData.put("region", response.getRegion() != null ? response.getRegion() : "Unknown");
                 geoData.put("city", response.getCity() != null ? response.getCity() : "Unknown");
                 geoData.put("postal", response.getPostal() != null ? response.getPostal() : "Unknown");
+                geoData.put("latitude", response.getLatitude() != null ? response.getLatitude() : "Unknown");
+                geoData.put("longitude", response.getLongitude() != null ? response.getLongitude() : "Unknown");
             } else {
                 System.out.println("[GeoLookup] IPinfo response was null for IP: " + ipAddress);
                 geoData.put("country", "Unknown");
                 geoData.put("region", "Unknown");
                 geoData.put("city", "Unknown");
                 geoData.put("postal", "Unknown");
+                geoData.put("latitude", "Unknown");
+                geoData.put("longitude", "Unknown");
             }
         } catch (Exception e) { // Catch any exceptions (e.g. rate limiting)
-            System.err.println("[GeoLookup] Exception while fetching geo data for IP " + ipAddress + ": " + e.getMessage());
+            System.err.println(
+                    "[GeoLookup] Exception while fetching geo data for IP " + ipAddress + ": " + e.getMessage());
             e.printStackTrace();
             geoData.put("country", "Unknown");
             geoData.put("region", "Unknown");
             geoData.put("city", "Unknown");
             geoData.put("postal", "Unknown");
+            geoData.put("latitude", "Unknown");
+            geoData.put("longitude", "Unknown");
         }
         geoCache.put(ipAddress, new CacheEntry(geoData, System.currentTimeMillis()));
         System.out.println("[GeoLookup] Cached geo data for IP " + ipAddress + ": " + geoData);

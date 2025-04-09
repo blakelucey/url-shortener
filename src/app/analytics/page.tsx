@@ -2,6 +2,7 @@
 
 import { AppSidebar } from "@/components/app-sidebar"
 import React, { useState, useEffect } from 'react'
+import dynamic from 'next/dynamic'
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -10,6 +11,12 @@ import {
     BreadcrumbPage,
     BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
+import {
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Separator } from "@/components/ui/separator"
 import {
     SidebarInset,
@@ -20,16 +27,27 @@ import { useAccount } from "wagmi"
 import { useAppKitAccount } from "@reown/appkit/react";
 import { selectUser } from "@/store/slices/userSlice"
 import { useAppSelector } from "@/store/hooks"
-import { AreaChartInteractive } from "@/components/charts/AreaChartInteractive/page"
-import { DonutChart } from "@/components/charts/DonutChart/page"
-import { RadialChart } from "@/components/charts/RadialChart/page"
-import { PieChartInteractive } from "@/components/charts/PieChartInteractive/page"
-import { BarChartInteractive } from "@/components/charts/BarChartInteractive/page"
-import { TotalClicks } from "@/components/charts/AccountPage/TotalClicks/page"
-import { MostPopularOS } from "@/components/charts/AccountPage/PopularOS/page"
+import { AreaChartInteractive } from "@/components/charts/AnalyticsPage/AreaChartInteractive/page"
+import { BarChartBrowser } from "@/components/charts/AnalyticsPage/BarChartBrowser/page"
+import { BarChartOS } from "@/components/charts/AnalyticsPage/BarChartOS/page"
 import { ModeToggle } from "@/components/themeToggle"
+import { CarouselAnalytics } from "@/components/charts/AnalyticsPage/Carousel/page"
+import { LineChartLinks } from "@/components/charts/AnalyticsPage/LineChartLinks/page"
+import { LineChartUTMSource } from "@/components/charts/AnalyticsPage/LineChartUTMSource/page"
+import { LineChartUTMMedium } from "@/components/charts/AnalyticsPage/LineChartUTMMedium/page"
+import { LineChartUTMCampaign } from "@/components/charts/AnalyticsPage/LineChartUTMCampaign/page"
+import { LineChartUTMTerm } from "@/components/charts/AnalyticsPage/LineChartUTMTerm/page"
+import { LineChartUTMContent } from "@/components/charts/AnalyticsPage/LineChartUTMContent/page"
+import { PieChartReferrer } from "@/components/charts/AnalyticsPage/PieChartReferrer/page";
+import { PieChartChannels } from "@/components/charts/AnalyticsPage/PieChartChannels/page";
+import { PieChartCampaigns } from "@/components/charts/AnalyticsPage/PieChartCampaigns/page";
+const DynamicMap = dynamic(() => import("@/components/charts/AnalyticsPage/MapLibreComp/page"), {
+    loading: () => <p>Loading...</p>,
+    ssr: false,
+});
+import { cn } from "@/lib/utils";
 
-export default function Dashboard() {
+export default function Analytics() {
     const { embeddedWalletInfo, caipAddress } = useAppKitAccount();
     const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(false);
     const { isConnected, address } = useAccount();
@@ -84,24 +102,77 @@ export default function Dashboard() {
                                 </BreadcrumbList>
                             </Breadcrumb>
                         </div>
-                            <div className="absolute top-2 right-5">
-                                <ModeToggle />
-                            </div>
+                        <div className="absolute top-2 right-5">
+                            <ModeToggle />
+                        </div>
                     </header>
 
                     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
                         <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min">
                             <AreaChartInteractive />
                         </div>
-                        <div className="flex flex-1 flex-row gap-4 p-4">
-                            <DonutChart />
-                            <RadialChart />
-                            <BarChartInteractive />
-                            <TotalClicks totalClicks={0} />
-                            <MostPopularOS os={{}} />
+                        <div className="flex flex-row gap-4 p-4">
+                            <BarChartBrowser />
+                            <BarChartOS />
+                            <div className="mx-auto">
+                                <CarouselAnalytics />
+                            </div>
                         </div>
                         <div>
-                            <PieChartInteractive />
+                        </div>
+                        <div className="flex flex-row gap-4 p-4">
+                            <PieChartReferrer />
+                            <PieChartChannels />
+                            <PieChartCampaigns />
+                        </div>
+                        <Accordion type="single" collapsible className="w-full">
+                            <div className={cn(
+                                "border-border/50 bg-background grid min-w-[8rem] items-start gap-4 rounded-lg border px-2.5 py-1.5 text-xs shadow-md",
+                            )}>
+                                <AccordionItem value="accordion-1" >
+                                    <AccordionTrigger style={{ cursor: "pointer" }}>
+                                        View UTM Parameters
+                                    </AccordionTrigger>
+                                    <AccordionContent>
+                                        <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min mb-4">
+                                            <LineChartLinks />
+                                        </div>
+                                        <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min mb-4">
+                                            <LineChartUTMSource />
+                                        </div>
+                                        <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min mb-4">
+                                            <LineChartUTMMedium />
+                                        </div>
+                                        <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min mb-4">
+                                            <LineChartUTMCampaign />
+                                        </div>
+                                        <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min mb-4">
+                                            <LineChartUTMTerm />
+                                        </div>
+                                        <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min mb-4">
+                                            <LineChartUTMContent />
+                                        </div>
+                                    </AccordionContent>
+                                </AccordionItem>
+                            </div>
+                        </Accordion>
+                        <div>
+                            <Accordion type="single" collapsible className="w-full">
+                                <div className={cn(
+                                    "border-border/50 bg-background grid min-w-[8rem] items-start gap-4 rounded-lg border px-2.5 py-1.5 text-xs shadow-md",
+                                )}>
+                                    <AccordionItem value="accordion-1" >
+                                        <AccordionTrigger style={{ cursor: "pointer" }}>
+                                            View Geo Data
+                                        </AccordionTrigger>
+                                        <AccordionContent>
+                                            <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min mb-4">
+                                                <DynamicMap />
+                                            </div>
+                                        </AccordionContent>
+                                    </AccordionItem>
+                                </div>
+                            </Accordion>
                         </div>
                     </div>
                 </SidebarInset>
