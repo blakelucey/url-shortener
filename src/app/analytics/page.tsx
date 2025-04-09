@@ -2,6 +2,7 @@
 
 import { AppSidebar } from "@/components/app-sidebar"
 import React, { useState, useEffect } from 'react'
+import dynamic from 'next/dynamic'
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -40,7 +41,10 @@ import { LineChartUTMContent } from "@/components/charts/AnalyticsPage/LineChart
 import { PieChartReferrer } from "@/components/charts/AnalyticsPage/PieChartReferrer/page";
 import { PieChartChannels } from "@/components/charts/AnalyticsPage/PieChartChannels/page";
 import { PieChartCampaigns } from "@/components/charts/AnalyticsPage/PieChartCampaigns/page";
-import MapLibreComponent from "@/components/charts/AnalyticsPage/MapLibreComp/page";
+const DynamicMap = dynamic(() => import("@/components/charts/AnalyticsPage/MapLibreComp/page"), {
+    loading: () => <p>Loading...</p>,
+    ssr: false,
+});
 import { cn } from "@/lib/utils";
 
 export default function Analytics() {
@@ -152,7 +156,9 @@ export default function Analytics() {
                                 </AccordionItem>
                             </div>
                         </Accordion>
-                        <MapLibreComponent />
+                        <div>
+                        <DynamicMap />
+                        </div>
                     </div>
                 </SidebarInset>
             </SidebarProvider>

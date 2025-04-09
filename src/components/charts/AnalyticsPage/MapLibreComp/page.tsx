@@ -1,125 +1,96 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef } from 'react';
-import maplibregl from 'maplibre-gl';
-import 'maplibre-gl/dist/maplibre-gl.css';
-import { useAppSelector } from '@/store/hooks';
-import { selectAllClicks } from '@/store/selectors/clickSelectors';
-import { useGeocodedClicks } from '@/hooks/useGeoCodeClicks';
+import React from "react";
+import dynamic from "next/dynamic";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
+import style from './page.module.css'
 
-const MapLibreComponent = () => {
-  const mapContainerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<maplibregl.Map | null>(null);
-  const clicks = useAppSelector(selectAllClicks);
-  console.log('clicks', clicks);
+// Dynamically import React Leaflet components to avoid SSR issues.
+const MapContainer = dynamic(
+  async () => (await import("react-leaflet")).MapContainer,
+  { ssr: false }
+);
+const TileLayer = dynamic(
+  async () => (await import("react-leaflet")).TileLayer,
+  { ssr: false }
+);
+const Marker = dynamic(
+  async () => (await import("react-leaflet")).Marker,
+  { ssr: false }
+);
+const Popup = dynamic(
+  async () => (await import("react-leaflet")).Popup,
+  { ssr: false }
+);
 
-  const geoFeatures = useGeocodedClicks();
-  console.log('geoFeatures', geoFeatures);
+// Dynamically import MarkerClusterGroup and assert its type.
+const MarkerClusterGroup = dynamic(
+  async () =>
+    (await import("react-leaflet-markercluster")).default,
+  { ssr: false }
+) as React.ComponentType<{ children: React.ReactNode; iconCreateFunction?: (cluster: L.MarkerCluster) => L.DivIcon }>;
 
-  const geoJsonData = useMemo(() => ({
-    type: "FeatureCollection",
-    features: geoFeatures.map(feature => feature)
-  }) as GeoJSON.FeatureCollection, [geoFeatures]);
+// import { staticGeoData } from "../../../../../staticGeoData"; // static data for testing
+import { useGeocodedClicks } from "@/hooks/useGeoCodeClicks";
 
-  console.log('geoJsonData', geoJsonData);
-
-  // Initialize map and layers only once on mount
-  useEffect(() => {
-    // Create the map instance
-    mapRef.current = new maplibregl.Map({
-      container: mapContainerRef.current!,
-      style: 'https://demotiles.maplibre.org/style.json',
-      center: [-103.5917, 40.6699],
-      zoom: 3,
-    });
-
-    // Set up sources and layers when the map loads
-    mapRef.current.on('load', () => {
-      console.log('Map loaded');
-
-      // Add the GeoJSON source with clustering enabled
-      mapRef.current!.addSource('clicks', {
-        type: 'geojson',
-        data: { type: 'FeatureCollection', features: [] }, // Empty initially
-        cluster: true,
-        clusterMaxZoom: 14, // Maximum zoom level for clustering
-        clusterRadius: 50, // Distance in pixels to cluster points
-      });
-
-      console.log('Source added:', mapRef.current!.getSource('clicks'));
-
-      // Layer for clusters
-      mapRef.current!.addLayer({
-        id: 'clusters',
-        type: 'circle',
-        source: 'clicks',
-        filter: ['has', 'point_count'], // Only show clustered points
-        paint: {
-          'circle-color': [
-            'step',
-            ['get', 'point_count'],
-            '#51bbd6', // Color for small clusters
-            100,
-            '#f1f075', // Color for medium clusters
-            750,
-            '#f28cb1', // Color for large clusters
-          ],
-          'circle-radius': [
-            'step',
-            ['get', 'point_count'],
-            20, // Radius for small clusters
-            100,
-            30, // Radius for medium clusters
-            750,
-            40, // Radius for large clusters
-          ],
-        },
-      });
-
-      // Layer for cluster counts
-      mapRef.current!.addLayer({
-        id: 'cluster-count',
-        type: 'symbol',
-        source: 'clicks',
-        filter: ['has', 'point_count'],
-        layout: {
-          'text-field': ['get', 'point_count'], // Display raw cluster count
-          'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
-          'text-size': 12,
-        },
-      });
-
-      // Layer for unclustered points
-      mapRef.current!.addLayer({
-        id: 'unclustered-point',
-        type: 'circle',
-        source: 'clicks',
-        filter: ['!', ['has', 'point_count']], // Only show unclustered points
-        paint: {
-          'circle-color': '#11b4da',
-          'circle-radius': 4,
-          'circle-stroke-width': 1,
-          'circle-stroke-color': '#fff',
-        },
-      });
-
-      // Set initial data for the source
-      (mapRef.current!.getSource('clicks') as maplibregl.GeoJSONSource).setData(geoJsonData);
-    });
-
-    // Cleanup map on component unmount
-    return () => mapRef.current!.remove();
-  }, [geoJsonData]); // Empty dependency array ensures this runs only once
-
-  // Update source data when geoJsonData changes
-  useEffect(() => {
-    if (mapRef.current && mapRef.current.getSource('clicks')) {
-      (mapRef.current.getSource('clicks') as maplibregl.GeoJSONSource).setData(geoJsonData);
-      console.log('Source data updated:', geoJsonData);
-    }
-  }, [geoJsonData]);
-
-  return <div ref={mapContainerRef} style={{ height: '100vh', width: '100%' }} />;
+// Create a custom cluster icon using Leaflet’s divIcon.
+const createClusterIcon = (cluster: L.MarkerCluster): L.DivIcon => {
+  const count = cluster.getChildCount();
+  return L.divIcon({
+    html: `<div class=${style.custom_cluster_icon}><span>${count}</span></div>`,
+    className: style.custom_cluster_icon, // The CSS class for additional styling.
+    iconSize: L.point(40, 40, true),
+  });
 };
 
-export default MapLibreComponent;
+// Create a custom marker icon for unclustered markers.
+const customMarkerIcon = L.divIcon({
+  html: `<div class=${style.custom_marker}></div>`,
+  className: style.custom_marker, // CSS class for marker styling.
+  iconSize: L.point(12, 12, true),
+});
+
+const LeafletMapCluster = () => {
+  // Convert GeoJSON features from staticGeoData into an array of marker objects.
+  // GeoJSON coordinates are in [lng, lat] order; Leaflet expects [lat, lng].
+  const geoFeatures = useGeocodedClicks();
+  const markers = geoFeatures.features.map((feature, index) => {
+    const [lat, lon] = feature.coordinates;
+    return {
+      id: index,
+      position: [lat, lon] as [number, number],
+    };
+  });
+
+  // Tile layer URL and attribution for OpenStreetMap.
+  const tileLayerUrl = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+  const attribution =
+    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+
+  return (
+    <MapContainer
+      center={[39.8169907, -91.2423657]} // [lat, lng]
+      zoom={7}
+      style={{ height: "100vh", width: "100%" }}
+    >
+      <TileLayer url={tileLayerUrl} attribution={attribution} />
+      <MarkerClusterGroup iconCreateFunction={createClusterIcon}>
+        {markers.map((marker) => (
+          <Marker key={marker.id} position={marker.position} icon={customMarkerIcon}>
+            <Popup>
+              <div>
+                <p>Marker ID: {marker.id}</p>
+                <p>
+                  Coordinates: {marker.position[0].toFixed(4)}, {marker.position[1].toFixed(4)}
+                </p>
+              </div>
+            </Popup>
+          </Marker>
+        ))}
+      </MarkerClusterGroup>
+    </MapContainer>
+  );
+};
+
+export default LeafletMapCluster;
