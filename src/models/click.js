@@ -45,6 +45,12 @@ const clickSchema = new Schema({
   postal: {
     type: String,
   },
+  latitude: {
+    type: Number,
+  },
+  longitude: {
+    type: Number
+  },
   // Additional marketing parameters
   utm_source: {
     type: String,

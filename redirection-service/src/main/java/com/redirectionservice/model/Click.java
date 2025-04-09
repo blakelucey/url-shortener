@@ -32,6 +32,8 @@ public class Click {
     private String region;
     private String city;
     private String postal;
+    private Number latitude;
+    private Number longitude;
     private String utm_source;
     private String utm_medium;
     private String utm_campaign;
@@ -93,6 +95,12 @@ public class Click {
 
     public String getPostal() { return postal; }
     public void setPostal(String postal) { this.postal = postal; }
+
+    public Number getLatitude() { return latitude; }
+    public void setLatitude(Number latitude) { this.latitude = latitude; }
+
+    public Number getLongitude() { return longitude; }
+    public void setLongitude(Number longitude) { this.longitude = longitude; }
 
     public String getUtm_source() { return utm_source; }
     public void setUtm_source(String utm_source) { this.utm_source = utm_source; }
