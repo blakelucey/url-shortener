@@ -1,6 +1,6 @@
 import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../store'; // Adjust path to your store's RootState type
-import { eachDayOfInterval, format } from 'date-fns'; // For date formatting, install with: npm install date-fns
+import { format } from 'date-fns'; // For date formatting, install with: npm install date-fns
 import { parseUserAgent } from '@/lib/parseUserAgent';
 
 // Base selector for all clicks
@@ -10,7 +10,7 @@ export const selectAllLinks = (state: RootState) => state.links.links;
 // Select clicks for a specific link
 export const selectClicksByLinkId = createSelector(
   [selectAllClicks, (_: RootState, linkId: string) => linkId],
-  (clicks, linkId) => clicks.filter((click: { linkId: any; }) => click.linkId === linkId)
+  (clicks, linkId) => clicks.filter(click => click.linkId === linkId)
 );
 
 // Total clicks per link
@@ -22,41 +22,6 @@ export const selectTotalClicksByLink = createSelector(
       clickCounts[click.linkId] = (clickCounts[click.linkId] || 0) + 1;
     });
     return clickCounts;
-  }
-);
-
-export const selectClicksForLinkByDateAndDevice = createSelector(
-  [selectAllClicks, (_: any, linkId: string) => linkId],
-  (clicks, linkId) => {
-    // Calculate the date 3 months ago from now.
-    const threeMonthsAgo = new Date();
-    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
-
-    // Filter clicks for the given link and within the last 3 months.
-    const filteredClicks = clicks.filter(click =>
-      click.linkId === linkId && new Date(click.timestamp) >= threeMonthsAgo
-    );
-
-    // Aggregate clicks by date into desktop and mobile counts.
-    const counts: Record<string, { desktop: number; mobile: number }> = {};
-    filteredClicks.forEach(click => {
-      const dateKey = format(new Date(click.timestamp), 'yyyy-MM-dd');
-      if (!counts[dateKey]) {
-        counts[dateKey] = { desktop: 0, mobile: 0 };
-      }
-      const { deviceType } = parseUserAgent(click.userAgent || '');
-      // Count as mobile if deviceType is 'mobile'; otherwise, count as desktop.
-      if (deviceType === 'mobile') {
-        counts[dateKey].mobile += 1;
-      } else {
-        counts[dateKey].desktop += 1;
-      }
-    });
-
-    // Convert the aggregated data into an array sorted by date.
-    return Object.entries(counts)
-      .map(([date, devices]) => ({ date, ...devices }))
-      .sort((a, b) => a.date.localeCompare(b.date));
   }
 );
 
@@ -89,41 +54,15 @@ export const selectClicksOverTime = createSelector(
 );
 
 // Distribution by device type
-export const selectClicksByDeviceType = createSelector(
+export const selectDeviceTypeDistribution = createSelector(
   [selectAllClicks],
   (clicks) => {
-    const counts: { [deviceType: string]: number } = {};
-    clicks.forEach((click) => {
-      const { deviceType } = parseUserAgent(click.userAgent || '');
-      counts[deviceType] = (counts[deviceType] || 0) + 1;
+    const distribution: { [deviceType: string]: number } = {};
+    clicks.forEach(click => {
+      const deviceType = click.deviceType || 'unknown';
+      distribution[deviceType] = (distribution[deviceType] || 0) + 1;
     });
-    return counts;
-  }
-);
-
-export const selectClicksByDateAndDevice = createSelector(
-  [selectAllClicks],
-  (clicks) => {
-    const data: Record<string, { desktop: number; mobile: number }> = {};
-
-    clicks.forEach((click) => {
-      const dateKey = format(new Date(click.timestamp), 'yyyy-MM-dd');
-      if (!data[dateKey]) {
-        data[dateKey] = { desktop: 0, mobile: 0 };
-      }
-      const { deviceType } = parseUserAgent(click.userAgent || '');
-      // Assume that if deviceType is 'mobile' then count as mobile; otherwise, count as desktop.
-      if (deviceType === 'mobile') {
-        data[dateKey].mobile += 1;
-      } else {
-        data[dateKey].desktop += 1;
-      }
-    });
-
-    // Convert the aggregated object into an array sorted by date.
-    return Object.entries(data)
-      .map(([date, counts]) => ({ date, ...counts }))
-      .sort((a, b) => a.date.localeCompare(b.date));
+    return distribution;
   }
 );
 
@@ -166,44 +105,6 @@ export const selectTopReferrers = createSelector(
       .map(([referrer, count]) => ({ referrer, count }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 10); // Top 10 referrers
-  }
-);
-
-export const selectAllReferrersWithTime = createSelector(
-  [selectAllClicks],
-  (clicks) => {
-    // We'll store count as well as the min and max timestamps per referrer.
-    const referrerData: {
-      [referrer: string]: { count: number; minTimestamp: number; maxTimestamp: number, timestamp: number }
-    } = {};
-
-    clicks.forEach(click => {
-      // Assume click.timestamp is a valid ISO string.
-      const ref = click.referrer || 'Direct';
-      const ts = new Date(click.timestamp).getTime(); // getTime() returns a number
-
-      if (!referrerData[ref]) {
-        referrerData[ref] = { count: 0, minTimestamp: ts, maxTimestamp: ts, timestamp: ts };
-      }
-      referrerData[ref].count += 1;
-      if (ts < referrerData[ref].minTimestamp) {
-        referrerData[ref].minTimestamp = ts;
-      }
-      if (ts > referrerData[ref].maxTimestamp) {
-        referrerData[ref].maxTimestamp = ts;
-      }
-    });
-
-    // Return an array of referrer objects with time information.
-    return Object.entries(referrerData)
-      .map(([referrer, data]) => ({
-        referrer,
-        count: data.count,
-        minTimestamp: data.minTimestamp,
-        maxTimestamp: data.maxTimestamp,
-        timestamp: data.timestamp,
-      }))
-      .sort((a, b) => b.count - a.count)
   }
 );
 
@@ -327,35 +228,6 @@ export const selectClicksByOperatingSystem = createSelector(
   }
 );
 
-export const selectClicksByOSOverTime = createSelector(
-  [
-    selectAllClicks,
-    (_: any, startDate: string) => new Date(startDate),
-    (_: any, __: string, endDate: string) => new Date(endDate)
-  ],
-  (clicks, startDate, endDate) => {
-    // Filter clicks in the specified time range.
-    const filtered = clicks.filter(click => {
-      const ts = new Date(click.timestamp);
-      return ts >= startDate && ts <= endDate;
-    });
-
-    // Aggregate click counts by operating system.
-    const osCounts: Record<string, number> = {};
-    filtered.forEach(click => {
-      const { os } = parseUserAgent(click.userAgent || '');
-      // Ensure os is lowercased for consistency.
-      const key = os.toLowerCase();
-      osCounts[key] = (osCounts[key] || 0) + 1;
-    });
-
-    // Convert to an array for chart data.
-    return Object.entries(osCounts)
-      .map(([os, visitors]) => ({ os, visitors }))
-      .sort((a, b) => b.visitors - a.visitors);
-  }
-);
-
 // Selector for browser popularity.
 export const selectClicksByBrowser = createSelector(
   [selectAllClicks],
@@ -366,35 +238,6 @@ export const selectClicksByBrowser = createSelector(
       browserCounts[browser] = (browserCounts[browser] || 0) + 1;
     });
     return browserCounts;
-  }
-);
-
-export const selectClicksByBrowserOverTime = createSelector(
-  [
-    selectAllClicks,
-    (_: any, startDate: string) => new Date(startDate),
-    (_: any, __: string, endDate: string) => new Date(endDate)
-  ],
-  (clicks, startDate, endDate) => {
-    // Filter clicks in the specified time range.
-    const filtered = clicks.filter(click => {
-      const ts = new Date(click.timestamp);
-      return ts >= startDate && ts <= endDate;
-    });
-
-    // Aggregate click counts by browser.
-    const browserCounts: Record<string, number> = {};
-    filtered.forEach(click => {
-      const { browser } = parseUserAgent(click.userAgent || '');
-      // Ensure browser is lowercased for consistency.
-      const key = browser.toLowerCase();
-      browserCounts[key] = (browserCounts[key] || 0) + 1;
-    });
-
-    // Convert to array for chart data.
-    return Object.entries(browserCounts)
-      .map(([browser, visitors]) => ({ browser, visitors }))
-      .sort((a, b) => b.visitors - a.visitors);
   }
 );
 
@@ -473,53 +316,6 @@ export const selectTopCity = createSelector(
 );
 
 /* ===== UTM Data Selectors ===== */
-
-type UTMField = 'utm_source' | 'utm_medium' | 'utm_campaign' | 'utm_term' | 'utm_content';
-
-export const selectClicksByUTMComparisonOverTime = createSelector(
-  [
-    selectAllClicks,
-    (_: any, utmField: UTMField, primaryValue: string, comparisonValue: string) => utmField,
-    (_: any, utmField: UTMField, primaryValue: string, comparisonValue: string) => primaryValue,
-    (_: any, utmField: UTMField, primaryValue: string, comparisonValue: string) => comparisonValue,
-  ],
-  (clicks, utmField, primaryValue, comparisonValue) => {
-    // Calculate the date 3 months ago from now.
-    const threeMonthsAgo = new Date();
-    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
-    const endDate = new Date(); // Now
-
-    // Filter clicks within the last 3 months that match either value.
-    const filtered = clicks.filter(click => {
-      const ts = new Date(click.timestamp);
-      // Now that utmField is of type UTMField, we assume that the Click type
-      // contains these properties. If not, you can cast click as any.
-      const value = (click as any)[utmField] || '';
-      return ts >= threeMonthsAgo && ts <= endDate && (value === primaryValue || value === comparisonValue);
-    });
-
-    // Aggregate clicks by day for both values.
-    const data: Record<string, { primary: number; comparison: number }> = {};
-    filtered.forEach(click => {
-      const ts = new Date(click.timestamp);
-      const dateKey = format(ts, 'yyyy-MM-dd');
-      if (!data[dateKey]) {
-        data[dateKey] = { primary: 0, comparison: 0 };
-      }
-      const value = (click as any)[utmField] || '';
-      if (value === primaryValue) {
-        data[dateKey].primary += 1;
-      } else if (value === comparisonValue) {
-        data[dateKey].comparison += 1;
-      }
-    });
-
-    // Convert the aggregated object into a sorted array.
-    return Object.entries(data)
-      .map(([date, counts]) => ({ date, ...counts }))
-      .sort((a, b) => a.date.localeCompare(b.date));
-  }
-);
 
 // Aggregate counts for utm_source.
 export const selectUTMSourceCounts = createSelector(

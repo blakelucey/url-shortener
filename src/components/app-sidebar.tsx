@@ -26,7 +26,6 @@ import { useAppKitAccount } from "@reown/appkit/react"
 import { useDisconnect } from "@reown/appkit/react";
 import { useRouter } from "next/navigation";
 import { useAccount } from "wagmi"
-import { title } from "process"
 
 
 // Sample data (unchanged)
