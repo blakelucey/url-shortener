@@ -32,7 +32,7 @@ const MarkerClusterGroup = dynamic(
 ) as React.ComponentType<{ children: React.ReactNode; iconCreateFunction?: (cluster: L.MarkerCluster) => L.DivIcon }>;
 
 // import { staticGeoData } from "../../../../../staticGeoData"; // static data for testing
-import { useGeocodedClicks } from "@/hooks/useGeoCodeClicks";
+import { useGeoCodedClicks } from "@/hooks/useGeoCodeClicks";
 
 // Create a custom cluster icon using Leaflet’s divIcon.
 const createClusterIcon = (cluster: L.MarkerCluster): L.DivIcon => {
@@ -54,7 +54,7 @@ const customMarkerIcon = L.divIcon({
 const LeafletMapCluster = () => {
   // Convert GeoJSON features from staticGeoData into an array of marker objects.
   // GeoJSON coordinates are in [lng, lat] order; Leaflet expects [lat, lng].
-  const geoFeatures = useGeocodedClicks();
+  const geoFeatures = useGeoCodedClicks();
   const markers = geoFeatures.features.map((feature, index) => {
     const [lat, lon] = feature.coordinates;
     return {

@@ -157,7 +157,22 @@ export default function Analytics() {
                             </div>
                         </Accordion>
                         <div>
-                        <DynamicMap />
+                            <Accordion type="single" collapsible className="w-full">
+                                <div className={cn(
+                                    "border-border/50 bg-background grid min-w-[8rem] items-start gap-4 rounded-lg border px-2.5 py-1.5 text-xs shadow-md",
+                                )}>
+                                    <AccordionItem value="accordion-1" >
+                                        <AccordionTrigger style={{ cursor: "pointer" }}>
+                                            View Geo Data
+                                        </AccordionTrigger>
+                                        <AccordionContent>
+                                            <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min mb-4">
+                                                <DynamicMap />
+                                            </div>
+                                        </AccordionContent>
+                                    </AccordionItem>
+                                </div>
+                            </Accordion>
                         </div>
                     </div>
                 </SidebarInset>
