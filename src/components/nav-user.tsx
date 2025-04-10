@@ -34,7 +34,6 @@ import { useDisconnect } from "@reown/appkit/react";
 import { useRouter } from "next/navigation";
 import { useAccount } from "wagmi"
 import { User } from '@/store/slices/userSlice'
-import { OnboardingDialog } from "./finish-onboarding";
 import { Icons } from "./icons";
 
 export function NavUser({
@@ -45,7 +44,6 @@ export function NavUser({
   const { isConnected } = useAccount();
   const router = useRouter();
   const [userData, setUserData] = useState<User>(user?.user)
-  const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(!user?.user?._id);
 
   useEffect(() => {
     if (!isConnected) {
@@ -117,7 +115,7 @@ export function NavUser({
                   <BadgeCheck />
                   Account
                 </DropdownMenuItem>
-                {userData.isPro &&
+                {userData?.isPro &&
                   <DropdownMenuItem onClick={() => router.push('/billing')}>
                     <CreditCard />
                     Billing
@@ -136,8 +134,6 @@ export function NavUser({
           </DropdownMenu>
         </SidebarMenuItem>
       </SidebarMenu>
-      {isOnboardingOpen && <OnboardingDialog open={isOnboardingOpen}
-        onOpenChange={setIsOnboardingOpen} />}
     </>
   )
 }

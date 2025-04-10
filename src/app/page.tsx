@@ -9,7 +9,10 @@ import TypingText from "@/components/textAnimation";
 import { useRouter } from "next/navigation";
 import { Icons } from "@/components/icons";
 import { useTheme } from "next-themes";
-
+import { User, selectUser } from '@/store/slices/userSlice'
+import { useAppSelector } from "@/store/hooks";
+import { Rendering } from "@/components/rendering";
+import { OnboardingDialog } from "../components/finish-onboarding";
 
 export default function HomePage() {
   const [isMounted, setIsMounted] = useState(false); // Use isMounted instead of isClient
@@ -18,18 +21,27 @@ export default function HomePage() {
   const { disconnect } = useDisconnect();
   const { theme } = useTheme();
   const router = useRouter();
-
+  const user: any = useAppSelector(selectUser)
+  const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>();
+  const [loading, setLoading] = useState<boolean>(false);
   useEffect(() => {
     setIsMounted(true); // Set after client-side mount
 
-    if(isConnected){
-      router.push('/dashboard');
+    if (isConnected) {
+      if (user?.user?._id) {
+        router.push('/dashboard');
+        setLoading(true)
+      } else {
+        setIsOnboardingOpen(true)
+      }
     }
-  }, [isConnected, router]);
+  }, [isConnected, router, user]);
 
-  if (!isMounted) {
-    return <div className="light">{/* Placeholder */}</div>;
+  // Show a loading screen if data is still being fetched.
+  if (loading) {
+    return <Rendering />;
   }
+
 
   const handleConnect = async () => {
     console.log("Opening AppKit modal...");
@@ -78,6 +90,8 @@ export default function HomePage() {
           </div>
         </main>
       </div>
+      {isOnboardingOpen && <OnboardingDialog open={isOnboardingOpen}
+        onOpenChange={setIsOnboardingOpen} />}
     </div>
   );
 }

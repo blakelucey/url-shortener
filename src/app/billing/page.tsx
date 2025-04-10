@@ -25,7 +25,6 @@ import { fetchUser, selectUser, User } from "@/store/slices/userSlice"
 
 export default function Billing() {
     const { embeddedWalletInfo, caipAddress } = useAppKitAccount();
-    const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(false);
     const { isConnected, address } = useAccount();
     const user: any = useAppSelector(selectUser)
     const [userData, setUserData] = useState<User>(user?.user)

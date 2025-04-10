@@ -24,39 +24,6 @@ import { useAppSelector } from "@/store/hooks"
 import { ModeToggle } from "@/components/themeToggle"
 
 export default function Dashboard() {
-  const { embeddedWalletInfo, caipAddress } = useAppKitAccount();
-  const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(false);
-  const { isConnected, address } = useAccount();
-  const user = useAppSelector(selectUser)
-
-  useEffect(() => {
-    console.log('isConnected:', isConnected);
-    console.log('caipAddress:', caipAddress);
-
-    try {
-      const checkUserStatus = async () => {
-        if (isConnected && caipAddress !== undefined) {
-          try {
-            if (user) {
-              setIsOnboardingOpen(false);
-            } else {
-              setIsOnboardingOpen(true);
-            }
-          } catch (error) {
-            console.error("Error checking user status:", error);
-            setIsOnboardingOpen(true);
-          }
-        } else {
-          setIsOnboardingOpen(false);
-        }
-      };
-      checkUserStatus().catch((e) => {
-        console.error(e);
-      });
-    } catch (e) { console.error(e) }
-
-  }, [isConnected, caipAddress, user]);
-
   return (
     <div>
       <SidebarProvider>

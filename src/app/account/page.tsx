@@ -44,7 +44,6 @@ import { TopUTMCampaign } from "@/components/charts/AccountPage/TopUTMCampaign/p
 
 export default function Account() {
     const { embeddedWalletInfo, caipAddress } = useAppKitAccount();
-    const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(false);
     const { isConnected, address } = useAccount();
     const user: any = useAppSelector(selectUser)
     const [userData, setUserData] = useState<User>(user?.user)

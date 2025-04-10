@@ -15,6 +15,8 @@ import { Label } from "@/components/ui/label";
 import { useAppKitAccount } from "@reown/appkit/react";
 import { createUserAsync } from "@/store/slices/userSlice";
 import { useAppDispatch } from "@/store/hooks";
+import { useRouter } from "next/navigation";
+import { Rendering } from "./rendering";
 
 interface OnboardingDialogProps {
   open: boolean;
@@ -25,11 +27,13 @@ export function OnboardingDialog({ open, onOpenChange }: OnboardingDialogProps) 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   // This flag allows closing only after a successful submission.
   const [canClose, setCanClose] = useState(false);
   const { caipAddress, embeddedWalletInfo } = useAppKitAccount();
   const dispatch = useAppDispatch();
+  const router = useRouter();
+  
 
   const userId = caipAddress!;
   const authType = embeddedWalletInfo?.authProvider;
@@ -52,8 +56,13 @@ export function OnboardingDialog({ open, onOpenChange }: OnboardingDialogProps) 
       console.error("Error submitting onboarding:", error);
     } finally {
       setIsSubmitting(false);
+      router.push('/dashboard');
     }
   };
+
+  if (isSubmitting) {
+    return <Rendering />;
+  }
 
   return (
     <Dialog
