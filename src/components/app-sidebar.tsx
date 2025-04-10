@@ -26,7 +26,6 @@ import { useAppKitAccount } from "@reown/appkit/react"
 import { useDisconnect } from "@reown/appkit/react";
 import { useRouter } from "next/navigation";
 import { useAccount } from "wagmi"
-import { title } from "process"
 
 
 // Sample data (unchanged)
@@ -63,7 +62,7 @@ const data = {
       title: "Settings",
       url: "#",
       icon: Icons.LucideSettings,
-      items: [{ title: "Account", url: "/account" }, { title: "Billing", url: "/billing" }, { title: "Roadmap", url: "https://kliqlylink.canny.io/" }, { title: "Log out", }],
+      items: [{ title: "Account", url: "/account" }, { title: "Upgrade to Pro", url: process.env.NEXT_PUBLIC_PAYMENT_LINK }, { title: "Billing", url: "/billing" }, { title: "Roadmap", url: "https://kliqlylink.canny.io/" }, { title: "Log out", }],
     },
   ],
 }
@@ -109,17 +108,46 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   console.log('open', isContactDialogOpen)
 
-  const modifiedNavMain = data.navMain.map(item => ({
+  const modifiedNavMain = data.navMain.map((item) => ({
     ...item,
-    items: item.items?.map(subItem => {
-      if (item.title === "Contact") {
-        return { ...subItem, onClick: () => setIsContactDialogOpen(true) };
-      }
-      if (item.title === "Settings" && subItem.title === "Log out") {
-        return { ...subItem, onClick: handleDisconnect };
-      }
-      return { ...subItem, onClick: () => { } };
-    }),
+    items: item.items
+      ?.map((subItem) => {
+        if (item.title === "Contact") {
+          return { ...subItem, onClick: () => setIsContactDialogOpen(true) };
+        }
+        if (item.title === "Settings" && subItem.title === "Log out") {
+          return { ...subItem, onClick: handleDisconnect };
+        }
+        if (item.title === "Settings" && subItem.title === "Billing") {
+          return userData?.isPro ? { ...subItem, onClick: () => { } } : null;
+        }
+        if (item.title === "Settings" && subItem.title === "Upgrade to Pro") {
+          return !userData?.isPro
+            ? {
+              ...subItem,
+              onClick: (e: React.MouseEvent) => {
+                e.preventDefault();
+                e.stopPropagation();
+                window.open(process.env.NEXT_PUBLIC_PAYMENT_LINK, '_blank', 'noopener noreferrer');
+              },
+            }
+            : null;
+        }
+        if (item.title === "Settings" && subItem.title === "Roadmap") {
+          return !userData?.isPro
+            ? {
+              ...subItem,
+              onClick: (e: React.MouseEvent) => {
+                e.preventDefault();
+                e.stopPropagation();
+                window.open("https://kliqlylink.canny.io/", '_blank', 'noopener noreferrer');
+              },
+            }
+            : null;
+        }
+        return { ...subItem, onClick: () => { } };
+      })
+      .filter((s): s is { title: string; url?: string; onClick: () => void } => Boolean(s)),
   }));
 
   return (

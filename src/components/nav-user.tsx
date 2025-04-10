@@ -104,7 +104,9 @@ export function NavUser({
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               {userData?.isPro === false && <><DropdownMenuGroup>
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={() =>
+                  window.open(process.env.NEXT_PUBLIC_PAYMENT_LINK, '_blank', 'noopener noreferrer')
+                }>
                   <Sparkles />
                   Upgrade to Pro
                 </DropdownMenuItem>
@@ -115,11 +117,12 @@ export function NavUser({
                   <BadgeCheck />
                   Account
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => router.push('/billing')}>
-                  <CreditCard />
-                  Billing
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => router.push("https://kliqlylink.canny.io/")}>
+                {userData.isPro &&
+                  <DropdownMenuItem onClick={() => router.push('/billing')}>
+                    <CreditCard />
+                    Billing
+                  </DropdownMenuItem>}
+                <DropdownMenuItem onClick={() => window.open("https://kliqlylink.canny.io/", "blank", "noopener noreferrer")}>
                   <Icons.LucideMap />
                   Roadmap
                 </DropdownMenuItem>

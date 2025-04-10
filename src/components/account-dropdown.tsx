@@ -1,7 +1,9 @@
 import {
     CreditCard,
+    Sparkles,
     Users,
 } from "lucide-react"
+import React, { useState, useEffect } from "react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -18,12 +20,11 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Icons } from "./icons"
-import { useEffect } from "react";
 import { useAppKitAccount, useDisconnect } from "@reown/appkit/react";
 import { useRouter } from "next/navigation";
 import { useAccount } from "wagmi"
-import { deleteUserAsync } from "@/store/slices/userSlice";
-import { useAppDispatch } from "@/store/hooks";
+import { deleteUserAsync, selectUser, User } from "@/store/slices/userSlice";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 
 export function AccountDropdownMenu() {
     const router = useRouter();
@@ -31,6 +32,8 @@ export function AccountDropdownMenu() {
     const { caipAddress } = useAppKitAccount();
     const { disconnect } = useDisconnect();
     const { isConnected } = useAccount();
+    const user: any = useAppSelector(selectUser)
+    const [userData, setUserData] = useState<User>(user?.user)
     const userId = caipAddress!
 
     useEffect(() => {
@@ -64,15 +67,22 @@ export function AccountDropdownMenu() {
             <DropdownMenuContent className="w-56">
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuGroup>
+                {userData?.isPro && <><DropdownMenuGroup>
                     <DropdownMenuItem onClick={() => router.push('/billing')}>
                         <CreditCard />
                         <span>Billing</span>
                     </DropdownMenuItem>
-                </DropdownMenuGroup>
-                <DropdownMenuSeparator />
+                </DropdownMenuGroup><DropdownMenuSeparator /></>}
+                {userData?.isPro === false && <><DropdownMenuGroup>
+                    <DropdownMenuItem onClick={() =>
+                        window.open(process.env.NEXT_PUBLIC_PAYMENT_LINK, '_blank', 'noopener noreferrer')
+                    }>
+                        <Sparkles />
+                        Upgrade to Pro
+                    </DropdownMenuItem>
+                </DropdownMenuGroup><DropdownMenuSeparator /></>}
                 <DropdownMenuGroup>
-                    <DropdownMenuItem onClick={() => router.push("https://kliqlylink.canny.io/")}>
+                    <DropdownMenuItem onClick={() => window.open("https://kliqlylink.canny.io/", "blank", "noopener noreferrer")}>
                         <Icons.LucideMap />
                         <span>Roadmap</span>
                     </DropdownMenuItem>
