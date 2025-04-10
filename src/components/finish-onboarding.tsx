@@ -15,7 +15,6 @@ import { Label } from "@/components/ui/label";
 import { useAppKitAccount } from "@reown/appkit/react";
 import { createUserAsync } from "@/store/slices/userSlice";
 import { useAppDispatch } from "@/store/hooks";
-import { useRouter } from "next/navigation";
 import { Rendering } from "./rendering";
 
 interface OnboardingDialogProps {
@@ -32,8 +31,7 @@ export function OnboardingDialog({ open, onOpenChange }: OnboardingDialogProps) 
   const [canClose, setCanClose] = useState(false);
   const { caipAddress, embeddedWalletInfo } = useAppKitAccount();
   const dispatch = useAppDispatch();
-  const router = useRouter();
-  
+
 
   const userId = caipAddress!;
   const authType = embeddedWalletInfo?.authProvider;
@@ -43,7 +41,9 @@ export function OnboardingDialog({ open, onOpenChange }: OnboardingDialogProps) 
     setIsSubmitting(true);
     try {
       const userData = { userId, firstName, lastName, email, authType };
-      const response = await dispatch(createUserAsync(userData)).unwrap();
+      const response: any = await dispatch(createUserAsync(userData)).unwrap().catch((e) => {
+        console.log(e)
+      });
       console.log("response", response?._id);
       if (response?._id) {
         // Allow closing after a successful submission.
@@ -56,7 +56,6 @@ export function OnboardingDialog({ open, onOpenChange }: OnboardingDialogProps) 
       console.error("Error submitting onboarding:", error);
     } finally {
       setIsSubmitting(false);
-      router.push('/dashboard');
     }
   };
 
@@ -74,7 +73,7 @@ export function OnboardingDialog({ open, onOpenChange }: OnboardingDialogProps) 
       }}
     >
       <DialogContent
-        className="sm:max-w-[425px]"
+        className="w-full"
         onPointerDownOutside={(e) => e.preventDefault()}
         onInteractOutside={(e) => e.preventDefault()}
       >
