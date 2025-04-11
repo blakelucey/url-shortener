@@ -5,14 +5,22 @@ import { useAppKit, useDisconnect } from "@reown/appkit/react";
 import { ModeToggle } from "@/components/themeToggle";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
-import TypingText from "@/components/textAnimation";
+import Image from 'next/image'
 import { useRouter } from "next/navigation";
-import { Icons } from "@/components/icons";
 import { useTheme } from "next-themes";
 import { User, selectUser } from '@/store/slices/userSlice'
 import { useAppSelector } from "@/store/hooks";
 import { Rendering } from "@/components/rendering";
 import { OnboardingDialog } from "../components/finish-onboarding";
+import image from '../../public/image.png'
+import image_white from '../../public/image_white.png'
+import { NavigationMenuUI } from "@/components/navigation-menu";
+import TypingText from '../components/textAnimation'
+import LandingPageHero from "@/components/landing-page-hero";
+import AnalyticsPreview from "@/components/landing-page-analytics-preview";
+import LandingPagePricing from "@/components/landing-page-pricing";
+import Footer from "@/components/footer";
+import axios from 'axios'
 
 export default function HomePage() {
   const [isMounted, setIsMounted] = useState(false); // Use isMounted instead of isClient
@@ -24,15 +32,21 @@ export default function HomePage() {
   const user: any = useAppSelector(selectUser)
   const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>();
   const [loading, setLoading] = useState<boolean>(false);
+
+  //============================================================================================== 
+  // TODO: Use stripe api to fetch successful trial customer and then complete onboarding process. 
+  //============================================================================================== 
+  //============================================================================================== 
+  //============================================================================================== 
+
+
   useEffect(() => {
     setIsMounted(true); // Set after client-side mount
 
     if (isConnected) {
-      if (user?.user?._id) {
+      if (user?.user?._id && user?.user?.isPro) {
         router.push('/dashboard');
         setLoading(true)
-      } else {
-        setIsOnboardingOpen(true)
       }
     }
   }, [isConnected, router, user]);
@@ -48,47 +62,76 @@ export default function HomePage() {
     open();
   };
 
-  const handleDisconnect = () => {
-    console.log("Disconnecting wallet...");
-    disconnect();
-  };
+  // const handleDisconnect = () => {
+  //   console.log("Disconnecting wallet...");
+  //   disconnect();
+  // };
+  const handlePayment = () => {
+    window.open(process.env.NEXT_PUBLIC_PAYMENT_LINK, '_blank', 'noopener noreferrer')
+  }
 
   // Render skeleton or empty state on the server, full content on the client
   return (
     <div className={theme}>
       <div className="min-h-screen flex flex-col">
-        <div className="fixed top-5 right-5">
-          <ModeToggle />
-        </div>
-        <main className="flex-1 flex items-center justify-center p-4">
-          <div className="text-center space-y-8">
-            <h1 className="scroll-m-40 text-4xl font-extrabold tracking-tight lg:text-5xl">
-              Shorten Your Links, Simplify Your Life
-            </h1>
-            <h5 className="scroll-m-20 text-2xl tracking-tight">
-              <TypingText />
-            </h5>
-            {isMounted && !isConnected ? (
-              <div className="flex items-center justify-center space-x-2 tracking-tight">
-                <p className="text-center light">Sign In/Sign Up</p>
-                <Button onClick={handleConnect} className="inline-flex items-center">
-                  <Icons.LucideLogIn className="h-5 w-5" />
+        <div className="justify-center flex flex-row">
+          <div className="min-h-screen flex flex-col">
+            <div className="fixed top-5 left-5">
+              <NavigationMenuUI />
+            </div>
+            <div className="fixed top-5 right-5 flex flex-row items-center space-x-4">
+              <div className="relative">
+                <Button onClick={() => console.log("Sign Up")} variant={"link"} style={{ cursor: "pointer" }}>
+                  Sign Up
+                </Button>
+                <Button onClick={handleConnect} variant={"link"} style={{ cursor: "pointer" }}>
+                  Sign In
                 </Button>
               </div>
-            ) : (
-              <div className="flex items-center justify-center space-x-2 tracking-tight">
-                <p className="text-center light">Sign Out</p>
-                <Button
-                  onClick={handleDisconnect}
-                  variant="destructive"
-                  className="inline-flex items-center"
-                >
-                  <Icons.LucideLogOut />
-                </Button>
+              <div className="relative">
+                <Image
+                  src={image}
+                  width={40}
+                  height={40}
+                  alt="Light mode illustration"
+                  className="dark:hidden object-contain"
+                />
+                <Image
+                  src={image_white}
+                  width={40}
+                  height={40}
+                  alt="Dark mode illustration"
+                  className="hidden dark:block object-contain"
+                />
               </div>
-            )}
+              <ModeToggle />
+            </div>
+            <main className="flex-1 flex items-center justify-center p-4">
+              <div className="text-center space-y-8">
+                <h1 className="scroll-m-40 text-4xl font-extrabold tracking-tight lg:text-5xl">
+                  Shorten. Share. Scale.
+                </h1>
+                <h5 className="scroll-m-20 text-2xl tracking-tight">
+                  <TypingText />
+                </h5>
+                <div className="flex items-center justify-center space-x-2 tracking-tight">
+                  <Button onClick={handlePayment} className="inline-flex items-center w-full" style={{ cursor: "pointer" }}>
+                    Try It Now
+                  </Button>
+                </div>
+              </div>
+            </main>
           </div>
-        </main>
+        </div>
+        <LandingPageHero />
+        <div className="my-30" />
+        <AnalyticsPreview />
+        <div className="my-30" />
+        <LandingPagePricing />
+        <div className="my-30" />
+        <div>
+          <Footer />
+        </div>
       </div>
       {isOnboardingOpen && <OnboardingDialog open={isOnboardingOpen}
         onOpenChange={setIsOnboardingOpen} />}
