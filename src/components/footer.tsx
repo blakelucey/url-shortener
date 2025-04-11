@@ -2,6 +2,8 @@
 import React, { useState } from 'react'
 import { Icons } from './icons'
 import { ContactDialog } from './contact-dialog';
+import Link from 'next/link';
+import { Button } from './ui/button';
 
 const Footer = () => {
   const [contact, setContact] = useState<boolean>(false)
@@ -13,21 +15,18 @@ const Footer = () => {
         </div>
 
         <div className="flex gap-6 text-center">
-          <a href="/privacy" className="hover:underline">Privacy</a>
-          <a href="/terms" className="hover:underline">Terms</a>
-          <a onClick={() => setContact(true)} style={{ cursor: "pointer" }} className="hover:underline">Contact</a>
+          <Button onClick={() => window.open("/privacy", '_blank', 'noopener noreferrer')} style={{ cursor: "pointer" }} variant="link" className="hover:underline">Privacy</Button>
+          <Button onClick={() => window.open("/terms", '_blank', 'noopener noreferrer')} style={{ cursor: "pointer" }} variant="link" className="hover:underline">Terms</Button>
+          <Button onClick={() => setContact(true)} style={{ cursor: "pointer" }} variant="link" className="hover:underline">Contact</Button>
         </div>
 
         <div className="flex gap-4 items-center justify-center">
-          <a href="https://x.com/kliqlylink" target="_blank" rel="noopener noreferrer" aria-label="Twitter" className="hover:text-foreground transition-colors">
+          <Button onClick={() => window.open("https://x.com/kliqlylink", '_blank', 'noopener noreferrer')} variant="link" style={{ cursor: "pointer" }} aria-label="LinkedIn" className="hover:text-foreground transition-colors">
             <Icons.Linkedin />
-          </a>
-          <a href="https://github.com/kliqly" target="_blank" rel="noopener noreferrer" aria-label="GitHub" className="hover:text-foreground transition-colors">
-            <Icons.Github />
-          </a>
-          <a href="mailto:support@kliqly.link" aria-label="Email" className="hover:text-foreground transition-colors">
+          </Button>
+          <Button onClick={() => window.open("mailto:support@kliqly.link", "_blank", "noopener, noreferrer")} variant="link" style={{ cursor: "pointer" }} aria-label="Email" className="hover:text-foreground transition-colors">
             <Icons.Mail />
-          </a>
+          </Button>
         </div>
       </div>
       {contact && <ContactDialog open={contact} onOpenChange={setContact} />}

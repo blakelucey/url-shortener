@@ -31,7 +31,7 @@ const components: { title: string; href?: string; description: string, onClick?:
         title: "About",
         href: "/about",
         description:
-            "Learn more about Lorem Ipsum and its features.",
+            "Learn more about kliqly.link and its features.",
     },
     {
         title: "Support",
@@ -55,13 +55,13 @@ const components: { title: string; href?: string; description: string, onClick?:
     },
     {
         title: "FAQ",
-        href: "#faq",
+        href: "/#faq",
         description:
             "Find answers to common questions about staking and yields.",
     },
     {
         title: "Pricing",
-        href: "#pricing",
+        href: "/#pricing",
         description:
             "View our pricing.",
     },
@@ -108,10 +108,10 @@ export function NavigationMenuUI() {
                                     </Link>
                                 </NavigationMenuLink>
                             </li>
-                            <ListItem href="#" title="Home">
+                            <ListItem href="/" title="Home">
                                 Access your dashboard and connect your wallet.
                             </ListItem>
-                            <ListItem href="#faq" title="FAQ">
+                            <ListItem href="/#faq" title="FAQ">
                                 Find answers to common questions about staking and yields.
                             </ListItem>
                         </ul>
@@ -136,7 +136,7 @@ export function NavigationMenuUI() {
                     </NavigationMenuContent>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
-                    <Link href={"#pricing"}>
+                    <Link href={"/#pricing"}>
                         <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                             Pricing
                         </NavigationMenuLink>
