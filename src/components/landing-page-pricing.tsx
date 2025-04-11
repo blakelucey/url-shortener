@@ -1,17 +1,10 @@
 import React from 'react'
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card"
 import image from '../../public/image.png'
 import image_white from '../../public/image_white.png'
 import Image from 'next/image'
 import { Button } from './ui/button'
 import { Icons } from './icons'
+import { HoverCardPricing } from './landing-page-hover-card'
 
 
 const LandingPagePricing = () => {
@@ -44,20 +37,16 @@ const LandingPagePricing = () => {
                         <h3 className='text-secondary font-bold tracking-tight lg:text-5xl my-8'>14‑day free trial, $1/month—plus usage fees based on clicks and short link creations.</h3>
                         <div className='flex flex-col gap-4'>
                             <div className='flex flex-row gap-4'>
-                                <Icons.LucideCheckCircle2 className='text-secondary' />
-                                <p className='text-secondary'>14-day free trial</p>
+                                <Icons.LucideBadgeCheck className='text-secondary' />
+                                <HoverCardPricing />
                             </div>
                             <div className='flex flex-row gap-4'>
-                                <Icons.LucideCheckCircle2 className='text-secondary' />
+                                <Icons.LucideBadgeCheck className='text-secondary' />
                                 <p className='text-secondary'>Unlimited short links</p>
                             </div>
                             <div className='flex flex-row gap-4'>
-                                <Icons.LucideCheckCircle2 className='text-secondary' />
+                                <Icons.LucideBadgeCheck className='text-secondary' />
                                 <p className='text-secondary'>Advanced Analytics</p>
-                            </div>
-                            <div className='flex flex-row gap-4'>
-                                <Icons.LucideCheckCircle2 className='text-secondary' />
-                                <p className='text-secondary'>Usage based billing, $0.0005/click, $0.01/link</p>
                             </div>
                         </div>
                     </div>

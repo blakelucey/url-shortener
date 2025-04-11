@@ -20,7 +20,9 @@ import LandingPageHero from "@/components/landing-page-hero";
 import AnalyticsPreview from "@/components/landing-page-analytics-preview";
 import LandingPagePricing from "@/components/landing-page-pricing";
 import Footer from "@/components/footer";
+import FAQ from "@/components/faq/page";
 import axios from 'axios'
+import Link from "next/link";
 
 export default function HomePage() {
   const [isMounted, setIsMounted] = useState(false); // Use isMounted instead of isClient
@@ -56,12 +58,6 @@ export default function HomePage() {
     return <Rendering />;
   }
 
-
-  const handleConnect = async () => {
-    console.log("Opening AppKit modal...");
-    open();
-  };
-
   // const handleDisconnect = () => {
   //   console.log("Disconnecting wallet...");
   //   disconnect();
@@ -79,34 +75,7 @@ export default function HomePage() {
             <div className="fixed top-5 left-5">
               <NavigationMenuUI />
             </div>
-            <div className="fixed top-5 right-5 flex flex-row items-center space-x-4">
-              <div className="relative">
-                <Button onClick={() => console.log("Sign Up")} variant={"link"} style={{ cursor: "pointer" }}>
-                  Sign Up
-                </Button>
-                <Button onClick={handleConnect} variant={"link"} style={{ cursor: "pointer" }}>
-                  Sign In
-                </Button>
-              </div>
-              <div className="relative">
-                <Image
-                  src={image}
-                  width={40}
-                  height={40}
-                  alt="Light mode illustration"
-                  className="dark:hidden object-contain"
-                />
-                <Image
-                  src={image_white}
-                  width={40}
-                  height={40}
-                  alt="Dark mode illustration"
-                  className="hidden dark:block object-contain"
-                />
-              </div>
-              <ModeToggle />
-            </div>
-            <main className="flex-1 flex items-center justify-center p-4">
+            <main className="flex-1 flex items-center justify-center p-4" id="#">
               <div className="text-center space-y-8">
                 <h1 className="scroll-m-40 text-4xl font-extrabold tracking-tight lg:text-5xl">
                   Shorten. Share. Scale.
@@ -127,7 +96,13 @@ export default function HomePage() {
         <div className="my-30" />
         <AnalyticsPreview />
         <div className="my-30" />
-        <LandingPagePricing />
+        <a id="pricing">
+          <LandingPagePricing />
+        </a>
+        <div className="my-30" />
+        <a id="faq">
+        <FAQ />
+        </a>
         <div className="my-30" />
         <div>
           <Footer />

@@ -16,8 +16,17 @@ import {
     NavigationMenuTrigger,
     navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
+import { ContactDialog } from "./contact-dialog";
+import { useState } from "react";
+import { Button } from "./ui/button";
+import Image from "next/image";
+import image from '../../public/image.png'
+import image_white from '../../public/image_white.png'
+import { ModeToggle } from "./themeToggle";
+import { useAppKit, useDisconnect } from "@reown/appkit/react";
 
-const components: { title: string; href: string; description: string }[] = [
+
+const components: { title: string; href?: string; description: string, onClick?: any }[] = [
     {
         title: "About",
         href: "/about",
@@ -26,53 +35,55 @@ const components: { title: string; href: string; description: string }[] = [
     },
     {
         title: "Support",
-        href: "/support",
         description:
             "Get help with your account or technical issues.",
     },
     {
         title: "Privacy Policy",
-        href: "/privacy-policy",
         description:
             "Learn about our privacy policy and how we handle user data.",
     },
     {
         title: "Terms of Service",
-        href: "/terms-of-service",
         description:
             "Review our terms of service and confirm your agreement to our policies.",
     },
     {
         title: "Contact Us",
-        href: "/contact",
         description:
             "Reach out to us with any questions or concerns.",
     },
     {
         title: "FAQ",
-        href: "/faq",
+        href: "#faq",
         description:
             "Find answers to common questions about staking and yields.",
     },
     {
         title: "Pricing",
-        href: "/pricing",
+        href: "#pricing",
         description:
-            "Stay updated with Web3 trends and platform news.",
+            "View our pricing.",
     },
     {
         title: "Roadmap",
-        href: "/roadmap",
         description:
             "View our product roadmap, and vote on new features"
     }
 ];
 
 export function NavigationMenuUI() {
+    const { open } = useAppKit()
     const { isConnected } = useAccount();
+    const [contact, setContact] = useState<boolean>(false)
+
+    const handleConnect = async () => {
+        console.log("Opening AppKit modal...");
+        open();
+    };
     return (
 
-        <NavigationMenu>
+        <><NavigationMenu>
             <NavigationMenuList>
                 <NavigationMenuItem>
                     {isConnected && <NavigationAvatar />}
@@ -97,11 +108,11 @@ export function NavigationMenuUI() {
                                     </Link>
                                 </NavigationMenuLink>
                             </li>
-                            <ListItem href="/" title="Home">
+                            <ListItem href="#" title="Home">
                                 Access your dashboard and connect your wallet.
                             </ListItem>
-                            <ListItem href="/subgraph" title="Subgraph Data">
-                                View real-time staking and yield data from the blockchain.
+                            <ListItem href="#faq" title="FAQ">
+                                Find answers to common questions about staking and yields.
                             </ListItem>
                         </ul>
                     </NavigationMenuContent>
@@ -109,12 +120,14 @@ export function NavigationMenuUI() {
                 <NavigationMenuItem>
                     <NavigationMenuTrigger>About</NavigationMenuTrigger>
                     <NavigationMenuContent>
-                        <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
+                        <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
                             {components.map((component) => (
                                 <ListItem
                                     key={component.title}
                                     title={component.title}
                                     href={component.href}
+                                    style={{ cursor: "pointer" }}
+                                    onClick={() => component.title === "Roadmap" ? window.open("https://kliqlylink.canny.io/", '_blank', 'noopener noreferrer') : component.title === "Contact Us" || component.title === "Support" ? setContact(true) : component.title === "Terms of Service" ? window.open("/terms", '_blank', 'noopener noreferrer') : component.title === "Privacy Policy" ? window.open("/privacy", '_blank', 'noopener noreferrer') : ""}
                                 >
                                     {component.description}
                                 </ListItem>
@@ -123,14 +136,40 @@ export function NavigationMenuUI() {
                     </NavigationMenuContent>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
-                    <Link href="/pricing" legacyBehavior passHref>
+                    <Link href={"#pricing"}>
                         <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                             Pricing
                         </NavigationMenuLink>
                     </Link>
                 </NavigationMenuItem>
             </NavigationMenuList>
-        </NavigationMenu>
+            {contact && <ContactDialog open={contact} onOpenChange={setContact} />}
+        </NavigationMenu><div className="fixed top-5 right-5 flex flex-row items-center space-x-4">
+                <div className="relative">
+                    <Button onClick={() => console.log("Sign Up")} variant={"link"} style={{ cursor: "pointer" }}>
+                        Sign Up
+                    </Button>
+                    <Button onClick={handleConnect} variant={"link"} style={{ cursor: "pointer" }}>
+                        Sign In
+                    </Button>
+                </div>
+                <div className="relative">
+                    <Image
+                        src={image}
+                        width={40}
+                        height={40}
+                        alt="Light mode illustration"
+                        className="dark:hidden object-contain" />
+                    <Image
+                        src={image_white}
+                        width={40}
+                        height={40}
+                        alt="Dark mode illustration"
+                        className="hidden dark:block object-contain" />
+                </div>
+                <ModeToggle />
+            </div></>
+
     );
 }
 

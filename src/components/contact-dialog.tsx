@@ -64,9 +64,9 @@ export function ContactDialog({ open, onOpenChange }: ContactDialogProps) {
                     <DialogClose onClick={() => onOpenChange(false)} className="transition-transform duration-300 hover:rotate-180" />
                 </div>
                 <DialogHeader>
-                    <DialogTitle>Complete Your Profile</DialogTitle>
+                    <DialogTitle>Contact Us</DialogTitle>
                     <DialogDescription>
-                        Please provide your first name, last name, and email to complete your profile.
+                        Let us know how we can help you.
                     </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSubmit}>
