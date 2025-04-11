@@ -17,13 +17,17 @@ import {
     navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import { ContactDialog } from "./contact-dialog";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import Image from "next/image";
 import image from '../../public/image.png'
 import image_white from '../../public/image_white.png'
 import { ModeToggle } from "./themeToggle";
 import { useAppKit, useDisconnect } from "@reown/appkit/react";
+import { useRouter } from "next/navigation";
+import { selectUser } from "@/store/slices/userSlice";
+import { useAppSelector } from "@/store/hooks";
+import { Rendering } from "./rendering";
 
 
 const components: { title: string; href?: string; description: string, onClick?: any }[] = [
@@ -73,9 +77,36 @@ const components: { title: string; href?: string; description: string, onClick?:
 ];
 
 export function NavigationMenuUI() {
+    const [isMounted, setIsMounted] = useState(false); // Use isMounted instead of isClient
+    const { disconnect } = useDisconnect();
     const { open } = useAppKit()
     const { isConnected } = useAccount();
+    const router = useRouter();
+    const user: any = useAppSelector(selectUser)
     const [contact, setContact] = useState<boolean>(false)
+    const [loading, setLoading] = useState<boolean>(false);
+
+
+    useEffect(() => {
+        setIsMounted(true); // Set after client-side mount
+
+        if (isConnected) {
+            if (user?.user?._id && user?.user?.isPro) {
+                router.push('/dashboard');
+                setLoading(true)
+            }
+        }
+    }, [isConnected, router, user]);
+
+    // Show a loading screen if data is still being fetched.
+    if (loading) {
+        return <Rendering />;
+    }
+
+    const handlePayment = () => {
+        window.open(process.env.NEXT_PUBLIC_PAYMENT_LINK, '_blank', 'noopener noreferrer')
+    }
+
 
     const handleConnect = async () => {
         console.log("Opening AppKit modal...");
@@ -146,7 +177,7 @@ export function NavigationMenuUI() {
             {contact && <ContactDialog open={contact} onOpenChange={setContact} />}
         </NavigationMenu><div className="fixed top-5 right-5 flex flex-row items-center space-x-4">
                 <div className="relative">
-                    <Button onClick={() => console.log("Sign Up")} variant={"link"} style={{ cursor: "pointer" }}>
+                    <Button onClick={handlePayment} variant={"link"} style={{ cursor: "pointer" }}>
                         Sign Up
                     </Button>
                     <Button onClick={handleConnect} variant={"link"} style={{ cursor: "pointer" }}>

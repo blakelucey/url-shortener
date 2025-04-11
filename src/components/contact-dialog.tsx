@@ -48,10 +48,10 @@ export function ContactDialog({ open, onOpenChange }: ContactDialogProps) {
             if (response.status === 200) {
                 onOpenChange(false); // Close dialog on success
             } else {
-                console.error("Failed to submit onboarding data");
+                console.error("Failed to submit contact data");
             }
         } catch (error) {
-            console.error("Error submitting onboarding:", error);
+            console.error("Error submitting contact:", error);
         } finally {
             setIsSubmitting(false);
         }

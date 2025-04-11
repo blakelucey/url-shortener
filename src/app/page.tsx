@@ -1,19 +1,8 @@
 "use client";
 
-import { useAccount } from "wagmi";
-import { useAppKit, useDisconnect } from "@reown/appkit/react";
-import { ModeToggle } from "@/components/themeToggle";
 import { Button } from "@/components/ui/button";
-import { useState, useEffect } from "react";
-import Image from 'next/image'
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useTheme } from "next-themes";
-import { User, selectUser } from '@/store/slices/userSlice'
-import { useAppSelector } from "@/store/hooks";
-import { Rendering } from "@/components/rendering";
-import { OnboardingDialog } from "../components/finish-onboarding";
-import image from '../../public/image.png'
-import image_white from '../../public/image_white.png'
 import { NavigationMenuUI } from "@/components/navigation-menu";
 import TypingText from '../components/textAnimation'
 import LandingPageHero from "@/components/landing-page-hero";
@@ -21,52 +10,14 @@ import AnalyticsPreview from "@/components/landing-page-analytics-preview";
 import LandingPagePricing from "@/components/landing-page-pricing";
 import Footer from "@/components/footer";
 import FAQ from "@/components/faq/page";
-import axios from 'axios'
-import Link from "next/link";
 
 export default function HomePage() {
-  const [isMounted, setIsMounted] = useState(false); // Use isMounted instead of isClient
-  const { isConnected } = useAccount();
-  const { open } = useAppKit();
-  const { disconnect } = useDisconnect();
   const { theme } = useTheme();
-  const router = useRouter();
-  const user: any = useAppSelector(selectUser)
-  const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>();
-  const [loading, setLoading] = useState<boolean>(false);
 
-  //============================================================================================== 
-  // TODO: Use stripe api to fetch successful trial customer and then complete onboarding process. 
-  //============================================================================================== 
-  //============================================================================================== 
-  //============================================================================================== 
-
-
-  useEffect(() => {
-    setIsMounted(true); // Set after client-side mount
-
-    if (isConnected) {
-      if (user?.user?._id && user?.user?.isPro) {
-        router.push('/dashboard');
-        setLoading(true)
-      }
-    }
-  }, [isConnected, router, user]);
-
-  // Show a loading screen if data is still being fetched.
-  if (loading) {
-    return <Rendering />;
-  }
-
-  // const handleDisconnect = () => {
-  //   console.log("Disconnecting wallet...");
-  //   disconnect();
-  // };
   const handlePayment = () => {
     window.open(process.env.NEXT_PUBLIC_PAYMENT_LINK, '_blank', 'noopener noreferrer')
   }
 
-  // Render skeleton or empty state on the server, full content on the client
   return (
     <div className={theme}>
       <div className="min-h-screen flex flex-col">
@@ -108,8 +59,6 @@ export default function HomePage() {
           <Footer />
         </div>
       </div>
-      {isOnboardingOpen && <OnboardingDialog open={isOnboardingOpen}
-        onOpenChange={setIsOnboardingOpen} />}
     </div>
   );
 }
