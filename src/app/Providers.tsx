@@ -41,7 +41,7 @@ function getQueryClient(): QueryClient {
 const metadata = {
     name: "defi-yield-aggregator",
     description: "Stake Yield Aggregator",
-    url: "http://localhost:3000",
+    url: `${process.env.NEXT_PUBLIC_FRONTEND_URL}`,
     icons: ["https://assets.reown.com/reown-profile-pic.png"],
 };
 

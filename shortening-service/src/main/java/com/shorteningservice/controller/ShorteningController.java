@@ -33,7 +33,7 @@ public class ShorteningController {
         UrlMapping mapping = new UrlMapping(userId, shortHash, originalUrl);
         repository.save(mapping);
 
-        String shortUrl = redirectionUrl + shortHash;
+        String shortUrl = redirectionUrl + "/" + shortHash;
         Map<String, String> response = Map.of("shortUrl", shortUrl, "shortHash", shortHash);
         return response;
     }
