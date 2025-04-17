@@ -25,45 +25,42 @@ export async function POST(request) {
 
 // Check if a user has started their free trial
 export async function GET(request) {
+    // helper to JSON‑encode and set headers/status
+    const respond = (payload, status = 200) =>
+        new Response(JSON.stringify(payload), {
+            status,
+            headers: { 'Content-Type': 'application/json' },
+        })
+
     try {
-        // Parse the query parameter from the URL.
-        const { searchParams } = new URL(request.url);
-        const email = searchParams.get("email");
+        const url = new URL(request.url)
+        const email = url.searchParams.get('email')
         if (!email) {
-            return NextResponse.json({ error: "Email is required" }, { status: 400 });
+            return respond({ error: 'Email is required' }, 400)
         }
 
-        // List customers with this email.
-        const customers = await stripe.customers.list({ email });
-        if (customers.data.length === 0) {
-            return NextResponse.json({ error: "No customer found" }, { status: 404 });
+        // get first customer with that email
+        const customersRes = await stripe.customers.list({ email })
+        const customer = customersRes.data[0]
+        if (!customer) {
+            return respond({ error: 'No customer found' }, 404)
         }
 
-        // Use the first customer found.
-        const customer = customers.data[0];
-
-        // List all subscriptions for the customer.
-        const subscriptions = await stripe.subscriptions.list({
+        // get all subscriptions & find an active trial
+        const subsRes = await stripe.subscriptions.list({
             customer: customer.id,
-            status: 'all'
-        });
+            status: 'all',
+        })
 
-        // Find a subscription that is trialing (has a trial_end and status 'trialing').
-        const trialSubscription = subscriptions.data.find(
-            (sub) => sub.status === "trialing" && sub.trial_end
-        );
+        console.log('customer', customer)
+        console.log('subsRes', subsRes)
 
-        if (trialSubscription) {
-            return NextResponse.json({
-                trialing: true,
-                subscriptionId: trialSubscription.id,
-                trialEnd: trialSubscription.trial_end,
-            });
-        } else {
-            return NextResponse.json({ trialing: false });
-        }
-    } catch (error) {
-        console.error("Error checking trial status:", error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return respond({
+            subsRes,
+            customer
+        })
+    } catch (err) {
+        console.error('Error checking trial status:', err)
+        return respond({ error: err.message }, 500)
     }
 }

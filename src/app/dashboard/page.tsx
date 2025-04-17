@@ -18,8 +18,41 @@ import {
 } from "@/components/ui/sidebar"
 import { LinkDataTable } from "@/components/link-table"
 import { ModeToggle } from "@/components/themeToggle"
+import { useAppDispatch, useAppSelector } from "@/store/hooks"
+import { fetchStripeCustomer, selectUser, User, selectCustomer } from "@/store/slices/userSlice"
+import axios from "axios"
 
 export default function Dashboard() {
+  const user: any = useAppSelector(selectUser)
+  const stripeCustomerId = useAppSelector(selectCustomer)
+  const [userData, setUserData] = useState<User>(user?.user)
+  const dispatch = useAppDispatch();
+
+  console.log('stripe customer id', stripeCustomerId.id)
+
+  useEffect(() => {
+    const handleFetchStripeCustomer = async () => {
+      const response = await dispatch(fetchStripeCustomer(userData?.email)).catch((e) => { console.error(e) })
+      console.log('response', response)
+    }
+
+    const handleUpdateStripeCustomerId = async () => {
+      try {
+        if (userData._id && !userData.stripeCustomerId) {
+          const response = await axios.post(`/api/users`, { userId: userData?.userId, stripeCustomerId: stripeCustomerId?.id, type: "update" })
+          console.log('response', response);
+          if (response.status === 200) {
+            console.log('response', response.data)
+          }
+        }
+      } catch (e) {
+        console.error(e)
+      }
+    }
+
+    handleFetchStripeCustomer().catch((e) => { console.error(e) })
+    handleUpdateStripeCustomerId().catch((e) => { console.error(e) })
+  }, [dispatch, stripeCustomerId?.id, userData._id, userData?.email, userData.stripeCustomerId, userData?.userId])
   return (
     <div>
       <SidebarProvider>
@@ -54,4 +87,8 @@ export default function Dashboard() {
       </SidebarProvider>
     </div>
   );
+}
+
+function useAppKitAccount(): { caipAddress: any } {
+  throw new Error("Function not implemented.")
 }

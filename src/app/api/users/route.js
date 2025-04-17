@@ -53,23 +53,37 @@ export async function POST(request) {
     console.log("Received data:", data);
 
     // Destructure all necessary fields
-    const { userId, firstName, lastName, email, authType, type, newEmail } = data;
-    console.log("Extracted fields:", { userId, firstName, lastName, email, authType, type, newEmail });
+    const { userId, firstName, lastName, email, authType, type, newEmail, stripeCustomerId } = data;
+    console.log("Extracted fields:", { userId, firstName, lastName, email, authType, type, newEmail, stripeCustomerId });
 
     if (type === 'update') {
       const existingUser = await User.findOne({ userId });
       if (!existingUser) {
         return new Response(JSON.stringify({ error: "User not found" }), { status: 404 });
       }
-      try {
-        await User.updateOne({ userId }, { $set: { email: newEmail } });
-        return new Response(JSON.stringify({ message: "User email updated successfully", userId, newEmail }), {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        });
-      } catch (e) {
-        console.error(e);
-        return new Response(JSON.stringify({ error: "Update failed" }), { status: 500 });
+      if (newEmail) {
+        try {
+          await User.updateOne({ userId }, { $set: { email: newEmail } });
+          return new Response(JSON.stringify({ message: "User email updated successfully", userId, newEmail }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          });
+        } catch (e) {
+          console.error(e);
+          return new Response(JSON.stringify({ error: "Update failed" }), { status: 500 });
+        }
+      }
+      if (stripeCustomerId) {
+        try {
+          await User.updateOne({ userId }, { $set: { stripeCustomerId: stripeCustomerId } });
+          return new Response(JSON.stringify({ message: "User stripe customer id updated successfully", userId, stripeCustomerId }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          });
+        } catch (e) {
+          console.error(e);
+          return new Response(JSON.stringify({ error: "Update failed" }), { status: 500 });
+        }
       }
     } else {
       // Creation branch if not updating
