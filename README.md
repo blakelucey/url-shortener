@@ -42,3 +42,14 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 - Expiration Date: 12 / 34
 - CVC: 123
 - ZIP Code: 94107
+
+### Docker Workflow:
+-------------------------
+- `docker-compose down` to tear down
+- `docker-compose up --build` to build
+- `docker ps -a` to view all containers
+- `docker logs <CONTAINERID>` to view logs for a specific container
+
+Containers in use for this application: 
+- my-url-shortener-shortening-1
+- my-url-shortener-redirection-1
