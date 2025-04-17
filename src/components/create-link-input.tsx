@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import React, { useState, useEffect } from 'react';
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -59,9 +60,9 @@ const CreateLinkInput = () => {
             }
             setIsFetchingHash(true);
             try {
-                const response = await axios.post("http://localhost:8080/shorten", { url: link, userId: userId });
+                const response = await axios.post(`${process.env.NEXT_PUBLIC_SHORTEN_URL}/shorten`, { url: link, userId: userId });
                 console.log('response', response)
-                const shortUrl = response.data.shortUrl; // e.g., "http://localhost:8081/abc123"
+                const shortUrl = response.data.shortUrl;
                 const shortHash = response.data.shortHash
                 setShortUrl(shortUrl);
                 setShortHash(shortHash);

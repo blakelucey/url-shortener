@@ -1,0 +1,21 @@
+# ─── BUILD STAGE ───────────────────────────────────────────────────────────────
+FROM maven:3.9.9-eclipse-temurin-24-noble AS builder
+
+# Work in /workspace (root-owned) so we never hit permissions issues
+WORKDIR /workspace
+
+# 1) Copy only POM to download deps
+COPY pom.xml ./
+RUN mvn dependency:go-offline -B
+
+# 2) Copy your code & build the fat JAR
+COPY src ./src
+RUN mvn clean package -DskipTests -B
+
+# ─── RUNTIME STAGE ─────────────────────────────────────────────────────────────
+FROM gcr.io/distroless/java17-debian11:nonroot
+
+WORKDIR /app
+COPY --from=builder /workspace/target/*.jar app.jar
+
+ENTRYPOINT ["java","-XX:+UseG1GC","-XX:MaxRAMPercentage=75.0","-jar","app.jar"]
