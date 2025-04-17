@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  redirection:
+    build: ./redirection-service
+    ports:
+      - "8081:8081" 
+    env_file:
+      - .env
+    environment:
+      - NEXT_IPINFO_TOKEN
+
+  shortening:
+    build: ./shortening-service
+    ports:
+      - "8080:8080" 
+    env_file:
+      - .env
+    environment:
+      - NEXT_PUBLIC_REDIRECTION_URL
+      - NEXT_PUBLIC_FRONTEND_URL
+      - SERVER_PORT
