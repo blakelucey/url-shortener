@@ -23,10 +23,10 @@ import Image from "next/image";
 import image from '../../public/image.png'
 import image_white from '../../public/image_white.png'
 import { ModeToggle } from "./themeToggle";
-import { useAppKit, useDisconnect } from "@reown/appkit/react";
+import { useAppKit, useAppKitAccount, useDisconnect } from "@reown/appkit/react";
 import { useRouter } from "next/navigation";
-import { selectUser } from "@/store/slices/userSlice";
-import { useAppSelector } from "@/store/hooks";
+import { selectUser, fetchUser } from "@/store/slices/userSlice";
+import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { Rendering } from "./rendering";
 
 
@@ -79,24 +79,31 @@ const components: { title: string; href?: string; description: string, onClick?:
 export function NavigationMenuUI() {
     const [isMounted, setIsMounted] = useState(false); // Use isMounted instead of isClient
     const { disconnect } = useDisconnect();
+    const { embeddedWalletInfo, caipAddress } = useAppKitAccount();
     const { open } = useAppKit()
     const { isConnected } = useAccount();
     const router = useRouter();
     const user: any = useAppSelector(selectUser)
     const [contact, setContact] = useState<boolean>(false)
     const [loading, setLoading] = useState<boolean>(false);
-
+    const dispatch = useAppDispatch();
 
     useEffect(() => {
         setIsMounted(true); // Set after client-side mount
-
+        if (caipAddress) {
+            void dispatch(fetchUser(caipAddress));
+        }
         if (isConnected) {
-            if (user?.user?._id && user?.user?.isPro) {
+            if (user?.user?._id && user?.user?.isBasic) {
                 router.push('/dashboard');
                 setLoading(true)
+            } else {
+                alert("User does not exist, please finish onboarding")
+                window.open(process.env.NEXT_PUBLIC_PAYMENT_LINK, '_blank', 'noopener noreferrer')
             }
         }
-    }, [isConnected, router, user]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [caipAddress, dispatch, isConnected, router]);
 
     // Show a loading screen if data is still being fetched.
     if (loading) {
@@ -167,11 +174,9 @@ export function NavigationMenuUI() {
                     </NavigationMenuContent>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
-                    <Link href={"/#pricing"}>
-                        <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                            Pricing
-                        </NavigationMenuLink>
-                    </Link>
+                    <NavigationMenuLink className={navigationMenuTriggerStyle()} href="/#pricing">
+                        Pricing
+                    </NavigationMenuLink>
                 </NavigationMenuItem>
             </NavigationMenuList>
             {contact && <ContactDialog open={contact} onOpenChange={setContact} />}

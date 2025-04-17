@@ -20,6 +20,7 @@ import image from '../../../public/image.png'
 import image_white from '../../../public/image_white.png'
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useRouter } from "next/navigation";
 import { z } from "zod"
 import Image from "next/image"
 import { ModeToggle } from "@/components/themeToggle"
@@ -37,6 +38,8 @@ export default function Onboarding() {
     const [canClose, setCanClose] = useState<boolean>(false)
     const { caipAddress, embeddedWalletInfo } = useAppKitAccount()
     const dispatch = useAppDispatch()
+
+    const router = useRouter();
 
     const userId = caipAddress!
     const authType = embeddedWalletInfo?.authProvider
@@ -66,6 +69,7 @@ export default function Onboarding() {
             if (response?._id) {
                 // Allow closing after a successful submission.
                 setCanClose(true)
+                router.push("/dashboard")
             } else {
                 console.error("Failed to submit onboarding data")
             }
@@ -83,7 +87,7 @@ export default function Onboarding() {
     return (
         <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10">
             <div className="fixed top-5 right-5">
-            <ModeToggle />
+                <ModeToggle />
             </div>
             <div className="flex w-full max-w-sm flex-col gap-6">
                 <div className="flex items-center gap-2 self-center font-medium">

@@ -101,7 +101,7 @@ export function NavUser({
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              {userData?.isPro === false && <><DropdownMenuGroup>
+              {userData?.isBasic === false && <><DropdownMenuGroup>
                 <DropdownMenuItem onClick={() =>
                   window.open(process.env.NEXT_PUBLIC_PAYMENT_LINK, '_blank', 'noopener noreferrer')
                 }>
@@ -115,7 +115,7 @@ export function NavUser({
                   <BadgeCheck />
                   Account
                 </DropdownMenuItem>
-                {userData?.isPro &&
+                {userData?.isBasic &&
                   <DropdownMenuItem onClick={() => router.push('/billing')}>
                     <CreditCard />
                     Billing

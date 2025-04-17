@@ -67,13 +67,13 @@ export function AccountDropdownMenu() {
             <DropdownMenuContent className="w-56">
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                {userData?.isPro && <><DropdownMenuGroup>
+                {userData?.isBasic && <><DropdownMenuGroup>
                     <DropdownMenuItem onClick={() => router.push('/billing')}>
                         <CreditCard />
                         <span>Billing</span>
                     </DropdownMenuItem>
                 </DropdownMenuGroup><DropdownMenuSeparator /></>}
-                {userData?.isPro === false && <><DropdownMenuGroup>
+                {userData?.isBasic === false && <><DropdownMenuGroup>
                     <DropdownMenuItem onClick={() =>
                         window.open(process.env.NEXT_PUBLIC_PAYMENT_LINK, '_blank', 'noopener noreferrer')
                     }>

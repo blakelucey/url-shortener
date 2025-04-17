@@ -16,11 +16,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
-import { useAccount } from "wagmi"
-import { useAppKitAccount } from "@reown/appkit/react";
 import { LinkDataTable } from "@/components/link-table"
-import { selectUser } from "@/store/slices/userSlice"
-import { useAppSelector } from "@/store/hooks"
 import { ModeToggle } from "@/components/themeToggle"
 
 export default function Dashboard() {

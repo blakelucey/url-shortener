@@ -25,9 +25,13 @@ const userSchema = new Schema({
     type: String,
     required: true
   },
-  isPro: {
+  isTrial: {
     type: Boolean,
-    default: false,
+    default: true,
+  },
+  isBasic: {
+    type: Boolean,
+    default: true,
   },
 }, { timestamps: true });
 

@@ -9,7 +9,8 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
-  isPro: boolean;
+  isTrial: boolean;
+  isBasic: boolean;
   createdAt: Date;
   updatedAt: Date;
   __v: number;

@@ -30,9 +30,6 @@ import { useAccount } from "wagmi"
 
 // Sample data (unchanged)
 const data = {
-  teams: [
-    { name: "Acme Inc", logo: GalleryVerticalEnd, plan: "Enterprise" },
-  ],
   navMain: [
     {
       title: "Links",
@@ -119,10 +116,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           return { ...subItem, onClick: handleDisconnect };
         }
         if (item.title === "Settings" && subItem.title === "Billing") {
-          return userData?.isPro ? { ...subItem, onClick: () => { } } : null;
+          return userData?.isBasic ? { ...subItem, onClick: () => { } } : null;
         }
         if (item.title === "Settings" && subItem.title === "Upgrade to Pro") {
-          return !userData?.isPro
+          return !userData?.isBasic
             ? {
               ...subItem,
               onClick: (e: React.MouseEvent) => {
@@ -134,7 +131,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             : null;
         }
         if (item.title === "Settings" && subItem.title === "Roadmap") {
-          return !userData?.isPro
+          return !userData?.isBasic
             ? {
               ...subItem,
               onClick: (e: React.MouseEvent) => {
