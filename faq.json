@@ -1,0 +1,46 @@
+[
+    {
+      "question": "What is kliqly.link?",
+      "answer": "kliqly.link is a smart redirection service that lets you shorten, track, and optimize links—without the bloat. Built for speed, privacy, and modern workflows."
+    },
+    {
+      "question": "How is kliqly.link different from Bitly or Branch?",
+      "answer": "We’re not built for bloated enterprise sales funnels. kliqly.link is built for creators, devs, and marketers who want power, speed, and analytics without the noise. Oh—and we actually respect your data."
+    },
+    {
+      "question": "Is kliqly.link free to use?",
+      "answer": "Close, we offer a free 14-day. Then we charge a $1/month flat fee plus usage costs."
+    },
+    {
+      "question": "Do you track users?",
+      "answer": "We track link-level metrics (like clicks, referrers, device types) but never sell or share personal data. You're in control, and our analytics are privacy-focused by default."
+    },
+    {
+      "question": "Can I use my own domain?",
+      "answer": "Soon. We're working on enabling custom branded domains for short links. Stay tuned or shoot us a message if you want early access."
+    },
+    {
+      "question": "Can I edit or delete a link after it’s been created?",
+      "answer": "Yes. If you create a free account, you’ll have access to your dashboard where you can update or remove links anytime."
+    },
+    {
+      "question": "Do links expire?",
+      "answer": "Nope. Links you create stay live unless you manually delete them. We’re not in the business of yanking your content."
+    },
+    {
+      "question": "Does kliqly.link support link analytics?",
+      "answer": "Absolutely. Every link comes with real-time insights like total clicks, traffic sources, devices, and geography—no Google Analytics required."
+    },
+    {
+      "question": "Is there an API?",
+      "answer": "You bet. We’re building a lightweight, developer-friendly API. If you want early access, hit us up at support@kliqly.link."
+    },
+    {
+      "question": "Is kliqly.link built on blockchain or Web3 tech?",
+      "answer": "Not directly—but we borrow a lot from the ethos. Minimal, decentralized-friendly architecture. We’re building with the modern internet in mind, not Web 2.0 baggage."
+    },
+    {
+      "question": "Who’s behind kliqly.link?",
+      "answer": "We’re a small, lean team of builders who got tired of bloated tools. We're shipping fast and listening hard—so if you’ve got ideas, we want to hear them."
+    }
+  ]

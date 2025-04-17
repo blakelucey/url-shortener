@@ -34,7 +34,6 @@ import { useDisconnect } from "@reown/appkit/react";
 import { useRouter } from "next/navigation";
 import { useAccount } from "wagmi"
 import { User } from '@/store/slices/userSlice'
-import { OnboardingDialog } from "./finish-onboarding";
 import { Icons } from "./icons";
 
 export function NavUser({
@@ -45,7 +44,6 @@ export function NavUser({
   const { isConnected } = useAccount();
   const router = useRouter();
   const [userData, setUserData] = useState<User>(user?.user)
-  const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(!user?.user?._id);
 
   useEffect(() => {
     if (!isConnected) {
@@ -103,8 +101,10 @@ export function NavUser({
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              {userData?.isPro === false && <><DropdownMenuGroup>
-                <DropdownMenuItem>
+              {userData?.isBasic === false && <><DropdownMenuGroup>
+                <DropdownMenuItem onClick={() =>
+                  window.open(process.env.NEXT_PUBLIC_PAYMENT_LINK, '_blank', 'noopener noreferrer')
+                }>
                   <Sparkles />
                   Upgrade to Pro
                 </DropdownMenuItem>
@@ -115,11 +115,12 @@ export function NavUser({
                   <BadgeCheck />
                   Account
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => router.push('/billing')}>
-                  <CreditCard />
-                  Billing
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => router.push("https://kliqlylink.canny.io/")}>
+                {userData?.isBasic &&
+                  <DropdownMenuItem onClick={() => router.push('/billing')}>
+                    <CreditCard />
+                    Billing
+                  </DropdownMenuItem>}
+                <DropdownMenuItem onClick={() => window.open("https://kliqlylink.canny.io/", "blank", "noopener noreferrer")}>
                   <Icons.LucideMap />
                   Roadmap
                 </DropdownMenuItem>
@@ -133,8 +134,6 @@ export function NavUser({
           </DropdownMenu>
         </SidebarMenuItem>
       </SidebarMenu>
-      {isOnboardingOpen && <OnboardingDialog open={isOnboardingOpen}
-        onOpenChange={setIsOnboardingOpen} />}
     </>
   )
 }

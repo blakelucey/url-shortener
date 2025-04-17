@@ -48,10 +48,10 @@ export function ContactDialog({ open, onOpenChange }: ContactDialogProps) {
             if (response.status === 200) {
                 onOpenChange(false); // Close dialog on success
             } else {
-                console.error("Failed to submit onboarding data");
+                console.error("Failed to submit contact data");
             }
         } catch (error) {
-            console.error("Error submitting onboarding:", error);
+            console.error("Error submitting contact:", error);
         } finally {
             setIsSubmitting(false);
         }
@@ -64,9 +64,9 @@ export function ContactDialog({ open, onOpenChange }: ContactDialogProps) {
                     <DialogClose onClick={() => onOpenChange(false)} className="transition-transform duration-300 hover:rotate-180" />
                 </div>
                 <DialogHeader>
-                    <DialogTitle>Complete Your Profile</DialogTitle>
+                    <DialogTitle>Contact Us</DialogTitle>
                     <DialogDescription>
-                        Please provide your first name, last name, and email to complete your profile.
+                        Let us know how we can help you.
                     </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSubmit}>

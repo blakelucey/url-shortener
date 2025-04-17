@@ -44,7 +44,6 @@ import { TopUTMCampaign } from "@/components/charts/AccountPage/TopUTMCampaign/p
 
 export default function Account() {
     const { embeddedWalletInfo, caipAddress } = useAppKitAccount();
-    const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(false);
     const { isConnected, address } = useAccount();
     const user: any = useAppSelector(selectUser)
     const [userData, setUserData] = useState<User>(user?.user)
@@ -116,7 +115,7 @@ export default function Account() {
                                     </BreadcrumbItem>
                                     <BreadcrumbSeparator className="hidden md:block" />
                                     <BreadcrumbItem>
-                                        <BreadcrumbPage>Paid Account: {userData?.isPro === false ? 'No' : userData?.isPro === true ? 'Yes' : ""}</BreadcrumbPage>
+                                        <BreadcrumbPage>Paid Account: {userData?.isBasic === false ? 'No' : userData?.isBasic === true ? 'Yes' : ""}</BreadcrumbPage>
                                     </BreadcrumbItem>
                                 </BreadcrumbList>
                             </Breadcrumb>

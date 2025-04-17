@@ -9,7 +9,7 @@ const TypingText = () => {
   useEffect(() => {
     const text = textRef.current;
     const cursor = cursorRef.current;
-    const lines = ["Transform Long URLs into Short, Shareable Links in Seconds"];
+    const lines = ["The simplest way to manage, track, and elevate your links in a decentralized web."];
     const line = lines[0];
     const lineLength = line.length;
     let currentCharacterIndex = 0;
