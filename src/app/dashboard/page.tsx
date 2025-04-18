@@ -27,13 +27,13 @@ export default function Dashboard() {
   const user: any = useAppSelector(selectUser)
   const stripeCustomerId = useAppSelector(selectCustomer)
   const stripeSubscription = useAppSelector(selectSubscription)
-  const [trialEnd, setTrialEnd] = useState(stripeSubscription.data[0]?.trial_end)
+  const [trialEnd, setTrialEnd] = useState(stripeSubscription?.data[0]?.trial_end)
   const [userData, setUserData] = useState<User>(user?.user)
   const dispatch = useAppDispatch();
 
 
-  console.log('stripe customer id', stripeCustomerId.id)
-  console.log('stripe subscription', stripeSubscription.data[0].trial_end)
+  console.log('stripe customer id', stripeCustomerId?.id)
+  console.log('stripe subscription', stripeSubscription?.data[0]?.trial_end)
 
 
   useEffect(() => {
@@ -44,7 +44,7 @@ export default function Dashboard() {
 
     const handleUpdateStripeCustomerId = async () => {
       try {
-        if (userData._id && !userData.stripeCustomerId) {
+        if (userData?._id && !userData?.stripeCustomerId) {
           const response = await axios.post(`/api/users`, { userId: userData?.userId, stripeCustomerId: stripeCustomerId?.id, type: "update" })
           console.log('response', response);
           if (response.status === 200) {
@@ -58,7 +58,7 @@ export default function Dashboard() {
 
     handleFetchStripeCustomer().catch((e) => { console.error(e) })
     handleUpdateStripeCustomerId().catch((e) => { console.error(e) })
-  }, [dispatch, stripeCustomerId?.id, userData._id, userData?.email, userData.stripeCustomerId, userData?.userId])
+  }, [dispatch, stripeCustomerId?.id, userData?._id, userData?.email, userData?.stripeCustomerId, userData?.userId])
   return (
     <div>
       <SidebarProvider>
@@ -77,11 +77,11 @@ export default function Dashboard() {
                   <BreadcrumbItem>
                     <BreadcrumbPage>Create a new Link</BreadcrumbPage>
                   </BreadcrumbItem>
-                  {stripeSubscription.data[0].status === "trialing" ?
+                  {stripeSubscription?.data[0]?.status === "trialing" ?
                     <><BreadcrumbSeparator className="hidden md:block" /><BreadcrumbItem>
                       <BreadcrumbPage><AnimeCountdown trialEnd={trialEnd} /></BreadcrumbPage>
                     </BreadcrumbItem></> : null}
-                    {stripeSubscription.data[0].status === "active" ? 
+                    {stripeSubscription?.data[0]?.status === "active" ? 
                       <><BreadcrumbSeparator className="hidden md:block" /><BreadcrumbItem>
                       <BreadcrumbPage>Basic Plan</BreadcrumbPage>
                     </BreadcrumbItem></> : null}

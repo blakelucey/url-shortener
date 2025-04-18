@@ -64,11 +64,11 @@ export default function Analytics() {
                                     <BreadcrumbItem className="hidden md:block">
                                         <BreadcrumbLink href="/analytics">Analytics</BreadcrumbLink>
                                     </BreadcrumbItem>
-                                    {stripeSubscription.data[0].status === "trialing" ?
+                                    {stripeSubscription?.data[0]?.status === "trialing" ?
                                         <><BreadcrumbSeparator className="hidden md:block" /><BreadcrumbItem>
                                             <BreadcrumbPage><AnimeCountdown trialEnd={trialEnd} /></BreadcrumbPage>
                                         </BreadcrumbItem></> : null}
-                                    {stripeSubscription.data[0].status === "active" ?
+                                    {stripeSubscription?.data[0]?.status === "active" ?
                                         <><BreadcrumbSeparator className="hidden md:block" /><BreadcrumbItem>
                                             <BreadcrumbPage>Basic Plan</BreadcrumbPage>
                                         </BreadcrumbItem></> : null}
