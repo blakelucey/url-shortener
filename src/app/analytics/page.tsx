@@ -23,6 +23,8 @@ import {
     SidebarProvider,
     SidebarTrigger,
 } from "@/components/ui/sidebar"
+import { selectSubscription } from "@/store/slices/userSlice"
+import { useAppSelector } from "@/store/hooks"
 import { AreaChartInteractive } from "@/components/charts/AnalyticsPage/AreaChartInteractive/page"
 import { BarChartBrowser } from "@/components/charts/AnalyticsPage/BarChartBrowser/page"
 import { BarChartOS } from "@/components/charts/AnalyticsPage/BarChartOS/page"
@@ -42,8 +44,11 @@ const DynamicMap = dynamic(() => import("@/components/charts/AnalyticsPage/MapLi
     ssr: false,
 });
 import { cn } from "@/lib/utils";
+import AnimeCountdown from "@/components/anime-countdown"
 
 export default function Analytics() {
+    const stripeSubscription = useAppSelector(selectSubscription)
+    const trialEnd = stripeSubscription?.data[0]?.trial_end;
 
     return (
         <div className="analytics-page">
@@ -59,10 +64,14 @@ export default function Analytics() {
                                     <BreadcrumbItem className="hidden md:block">
                                         <BreadcrumbLink href="/analytics">Analytics</BreadcrumbLink>
                                     </BreadcrumbItem>
-                                    <BreadcrumbSeparator className="hidden md:block" />
-                                    <BreadcrumbItem>
-                                        <BreadcrumbPage></BreadcrumbPage>
-                                    </BreadcrumbItem>
+                                    {stripeSubscription.data[0].status === "trialing" ?
+                                        <><BreadcrumbSeparator className="hidden md:block" /><BreadcrumbItem>
+                                            <BreadcrumbPage><AnimeCountdown trialEnd={trialEnd} /></BreadcrumbPage>
+                                        </BreadcrumbItem></> : null}
+                                    {stripeSubscription.data[0].status === "active" ?
+                                        <><BreadcrumbSeparator className="hidden md:block" /><BreadcrumbItem>
+                                            <BreadcrumbPage>Basic Plan</BreadcrumbPage>
+                                        </BreadcrumbItem></> : null}
                                 </BreadcrumbList>
                             </Breadcrumb>
                         </div>

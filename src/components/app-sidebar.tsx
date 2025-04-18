@@ -18,7 +18,7 @@ import {
 import { Icons } from "./icons"
 import { ContactDialog } from "./contact-dialog" // Adjust path
 import { NavUser } from "./nav-user"
-import { fetchUser, selectUser, User } from "@/store/slices/userSlice"
+import { fetchUser, selectUser, User, selectSubscription } from "@/store/slices/userSlice"
 import { fetchLinks } from "@/store/slices/linkSlice";
 import { fetchClicks } from "@/store/slices/clickSlice"
 import { useAppDispatch, useAppSelector } from "@/store/hooks"
@@ -59,7 +59,7 @@ const data = {
       title: "Settings",
       url: "#",
       icon: Icons.LucideSettings,
-      items: [{ title: "Account", url: "/account" }, { title: "Upgrade to Pro", url: process.env.NEXT_PUBLIC_PAYMENT_LINK }, { title: "Billing", url: "/billing" }, { title: "Roadmap", url: "https://kliqlylink.canny.io/" }, { title: "Log out", }],
+      items: [{ title: "Account", url: "/account" }, { title: "Billing", url: "/billing" }, { title: "Roadmap", url: "https://kliqlylink.canny.io/" }, { title: "Log out", }],
     },
   ],
 }
@@ -67,9 +67,11 @@ const data = {
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [isContactDialogOpen, setIsContactDialogOpen] = useState(false);
   const { embeddedWalletInfo, caipAddress } = useAppKitAccount();
+  const stripeSubscription = useAppSelector(selectSubscription)
   const dispatch = useAppDispatch()
   const user = useAppSelector(selectUser)
   const [userData, setUserData] = useState<User>(user!)
+  const [stripeStatus, setStripeStatus] = useState(stripeSubscription?.data[0]?.status)
   const { disconnect } = useDisconnect();
   const { isConnected } = useAccount();
   const router = useRouter();
@@ -116,19 +118,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           return { ...subItem, onClick: handleDisconnect };
         }
         if (item.title === "Settings" && subItem.title === "Billing") {
-          return userData?.isBasic ? { ...subItem, onClick: () => { } } : null;
-        }
-        if (item.title === "Settings" && subItem.title === "Upgrade to Pro") {
-          return !userData?.isBasic
-            ? {
-              ...subItem,
-              onClick: (e: React.MouseEvent) => {
-                e.preventDefault();
-                e.stopPropagation();
-                window.open(process.env.NEXT_PUBLIC_PAYMENT_LINK, '_blank', 'noopener noreferrer');
-              },
-            }
-            : null;
+          return stripeStatus === "trialing" || stripeStatus === "active" ? { ...subItem, onClick: () => { } } : null;
         }
         if (item.title === "Settings" && subItem.title === "Roadmap") {
           return !userData?.isBasic

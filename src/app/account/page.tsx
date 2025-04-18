@@ -20,7 +20,7 @@ import { useAccount } from "wagmi"
 import { useAppKitAccount } from "@reown/appkit/react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks"
 import { ModeToggle } from "@/components/themeToggle"
-import { fetchUser, selectUser, User } from "@/store/slices/userSlice"
+import { fetchUser, selectUser, User, selectSubscription } from "@/store/slices/userSlice"
 import { MostPopularOS } from "@/components/charts/AccountPage/PopularOS/page"
 import { TotalClicks } from "@/components/charts/AccountPage/TotalClicks/page"
 import UpdateEmail from "@/components/update-email"
@@ -39,11 +39,13 @@ import { TopUTMMedium } from "@/components/charts/AccountPage/TopUTMMedium/page"
 import { TopUTMTerm } from "@/components/charts/AccountPage/TopUTMTerm/page"
 import { TopUTMContent } from "@/components/charts/AccountPage/TopUTMContent/page"
 import { TopUTMCampaign } from "@/components/charts/AccountPage/TopUTMCampaign/page"
+import AnimeCountdown from "@/components/anime-countdown"
 
 
 
 export default function Account() {
     const { embeddedWalletInfo, caipAddress } = useAppKitAccount();
+    const stripeSubscription = useAppSelector(selectSubscription)
     const { isConnected, address } = useAccount();
     const user: any = useAppSelector(selectUser)
     const [userData, setUserData] = useState<User>(user?.user)
@@ -59,6 +61,8 @@ export default function Account() {
     const topUTMTerm = useAppSelector(selectTopUTMTerm);
     const topUTMContent = useAppSelector(selectTopUTMContent);
     const topUTMCampaign = useAppSelector(selectTopUTMCampaign);
+
+    const trialEnd = stripeSubscription?.data[0]?.trial_end
 
 
 
@@ -113,10 +117,14 @@ export default function Account() {
                                     <BreadcrumbItem>
                                         <BreadcrumbPage>Account Created: {createdDate}</BreadcrumbPage>
                                     </BreadcrumbItem>
-                                    <BreadcrumbSeparator className="hidden md:block" />
-                                    <BreadcrumbItem>
-                                        <BreadcrumbPage>Paid Account: {userData?.isBasic === false ? 'No' : userData?.isBasic === true ? 'Yes' : ""}</BreadcrumbPage>
-                                    </BreadcrumbItem>
+                                    {stripeSubscription.data[0].status === "trialing" ?
+                                        <><BreadcrumbSeparator className="hidden md:block" /><BreadcrumbItem>
+                                            <BreadcrumbPage><AnimeCountdown trialEnd={trialEnd} /></BreadcrumbPage>
+                                        </BreadcrumbItem></> : null}
+                                    {stripeSubscription.data[0].status === "active" ?
+                                        <><BreadcrumbSeparator className="hidden md:block" /><BreadcrumbItem>
+                                            <BreadcrumbPage>Basic Plan</BreadcrumbPage>
+                                        </BreadcrumbItem></> : null}
                                 </BreadcrumbList>
                             </Breadcrumb>
                         </div>

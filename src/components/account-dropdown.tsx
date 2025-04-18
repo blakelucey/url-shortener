@@ -23,16 +23,18 @@ import { Icons } from "./icons"
 import { useAppKitAccount, useDisconnect } from "@reown/appkit/react";
 import { useRouter } from "next/navigation";
 import { useAccount } from "wagmi"
-import { deleteUserAsync, selectUser, User } from "@/store/slices/userSlice";
+import { deleteUserAsync, selectUser, User, selectSubscription } from "@/store/slices/userSlice";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 
 export function AccountDropdownMenu() {
     const router = useRouter();
     const dispatch = useAppDispatch()
+    const stripeSubscription = useAppSelector(selectSubscription)
     const { caipAddress } = useAppKitAccount();
     const { disconnect } = useDisconnect();
     const { isConnected } = useAccount();
     const user: any = useAppSelector(selectUser)
+    const [stripeStatus, setStripeStatus] = useState(stripeSubscription?.data[0]?.status)
     const [userData, setUserData] = useState<User>(user?.user)
     const userId = caipAddress!
 
@@ -67,20 +69,20 @@ export function AccountDropdownMenu() {
             <DropdownMenuContent className="w-56">
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                {userData?.isBasic && <><DropdownMenuGroup>
+                {stripeStatus === "trialing" || stripeStatus === "active" ? <>
                     <DropdownMenuItem onClick={() => router.push('/billing')}>
                         <CreditCard />
                         <span>Billing</span>
                     </DropdownMenuItem>
-                </DropdownMenuGroup><DropdownMenuSeparator /></>}
-                {userData?.isBasic === false && <><DropdownMenuGroup>
+                </> : null}
+                {/* {userData?.isBasic === false && <><DropdownMenuGroup>
                     <DropdownMenuItem onClick={() =>
                         window.open(process.env.NEXT_PUBLIC_PAYMENT_LINK, '_blank', 'noopener noreferrer')
                     }>
                         <Sparkles />
                         Upgrade to Pro
                     </DropdownMenuItem>
-                </DropdownMenuGroup><DropdownMenuSeparator /></>}
+                </DropdownMenuGroup><DropdownMenuSeparator /></>} */}
                 <DropdownMenuGroup>
                     <DropdownMenuItem onClick={() => window.open("https://kliqlylink.canny.io/", "blank", "noopener noreferrer")}>
                         <Icons.LucideMap />

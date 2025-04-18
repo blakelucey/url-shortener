@@ -19,16 +19,22 @@ import {
 import { LinkDataTable } from "@/components/link-table"
 import { ModeToggle } from "@/components/themeToggle"
 import { useAppDispatch, useAppSelector } from "@/store/hooks"
-import { fetchStripeCustomer, selectUser, User, selectCustomer } from "@/store/slices/userSlice"
+import { fetchStripeCustomer, selectUser, User, selectCustomer, selectSubscription } from "@/store/slices/userSlice"
+import AnimeCountdown from '@/components/anime-countdown';
 import axios from "axios"
 
 export default function Dashboard() {
   const user: any = useAppSelector(selectUser)
   const stripeCustomerId = useAppSelector(selectCustomer)
+  const stripeSubscription = useAppSelector(selectSubscription)
+  const [trialEnd, setTrialEnd] = useState(stripeSubscription.data[0]?.trial_end)
   const [userData, setUserData] = useState<User>(user?.user)
   const dispatch = useAppDispatch();
 
+
   console.log('stripe customer id', stripeCustomerId.id)
+  console.log('stripe subscription', stripeSubscription.data[0].trial_end)
+
 
   useEffect(() => {
     const handleFetchStripeCustomer = async () => {
@@ -71,6 +77,14 @@ export default function Dashboard() {
                   <BreadcrumbItem>
                     <BreadcrumbPage>Create a new Link</BreadcrumbPage>
                   </BreadcrumbItem>
+                  {stripeSubscription.data[0].status === "trialing" ?
+                    <><BreadcrumbSeparator className="hidden md:block" /><BreadcrumbItem>
+                      <BreadcrumbPage><AnimeCountdown trialEnd={trialEnd} /></BreadcrumbPage>
+                    </BreadcrumbItem></> : null}
+                    {stripeSubscription.data[0].status === "active" ? 
+                      <><BreadcrumbSeparator className="hidden md:block" /><BreadcrumbItem>
+                      <BreadcrumbPage>Basic Plan</BreadcrumbPage>
+                    </BreadcrumbItem></> : null}
                 </BreadcrumbList>
               </Breadcrumb>
             </div>
