@@ -45,7 +45,6 @@ export function NavUser({
   const { isConnected } = useAccount();
   const stripeSubscription = useAppSelector(selectSubscription)
   const router = useRouter();
-  const [stripeStatus, setStripeStatus] = useState(stripeSubscription?.data[0]?.status)
   const [userData, setUserData] = useState<User>(user?.user)
 
   useEffect(() => {
@@ -118,12 +117,12 @@ export function NavUser({
                   <BadgeCheck />
                   Account
                 </DropdownMenuItem>
-                {stripeStatus === "trialing" || stripeStatus === "active" ? <><DropdownMenuGroup>
-                  <DropdownMenuItem onClick={() => router.push('/billing')}>
+                <DropdownMenuGroup>
+                  <DropdownMenuItem onClick={() => window.open(process.env.NEXT_PUBLIC_STRIPE_CUSTOMER_PORTAL, "_blank", "noopener noreferrer")}>
                     <CreditCard />
                     <span>Billing</span>
                   </DropdownMenuItem>
-                </DropdownMenuGroup><DropdownMenuSeparator /></> : null}
+                </DropdownMenuGroup><DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => window.open("https://kliqlylink.canny.io/", "blank", "noopener noreferrer")}>
                   <Icons.LucideMap />
                   Roadmap

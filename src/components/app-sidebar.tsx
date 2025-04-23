@@ -18,7 +18,7 @@ import {
 import { Icons } from "./icons"
 import { ContactDialog } from "./contact-dialog" // Adjust path
 import { NavUser } from "./nav-user"
-import { fetchUser, selectUser, User, selectSubscription } from "@/store/slices/userSlice"
+import { fetchUser, selectUser, User, selectSubscription, selectCustomer } from "@/store/slices/userSlice"
 import { fetchLinks } from "@/store/slices/linkSlice";
 import { fetchClicks } from "@/store/slices/clickSlice"
 import { useAppDispatch, useAppSelector } from "@/store/hooks"
@@ -59,19 +59,19 @@ const data = {
       title: "Settings",
       url: "#",
       icon: Icons.LucideSettings,
-      items: [{ title: "Account", url: "/account" }, { title: "Billing", url: "/billing" }, { title: "Roadmap", url: "https://kliqlylink.canny.io/" }, { title: "Log out", }],
+      items: [{ title: "Account", url: "/account" }, { title: "Billing", }, { title: "Roadmap", url: "https://kliqlylink.canny.io/" }, { title: "Log out", }],
     },
   ],
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [isContactDialogOpen, setIsContactDialogOpen] = useState(false);
+  const stripeCustomerId = useAppSelector(selectCustomer)
   const { embeddedWalletInfo, caipAddress } = useAppKitAccount();
   const stripeSubscription = useAppSelector(selectSubscription)
   const dispatch = useAppDispatch()
   const user = useAppSelector(selectUser)
   const [userData, setUserData] = useState<User>(user!)
-  const [stripeStatus, setStripeStatus] = useState(stripeSubscription?.data[0]?.status)
   const { disconnect } = useDisconnect();
   const { isConnected } = useAccount();
   const router = useRouter();
@@ -118,7 +118,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           return { ...subItem, onClick: handleDisconnect };
         }
         if (item.title === "Settings" && subItem.title === "Billing") {
-          return stripeStatus === "trialing" || stripeStatus === "active" ? { ...subItem, onClick: () => { } } : null;
+          return { ...subItem, onClick: () => window.open(process.env.NEXT_PUBLIC_STRIPE_CUSTOMER_PORTAL, "_blank", "noopener noreferrer") };
         }
         if (item.title === "Settings" && subItem.title === "Roadmap") {
           return !userData?.isBasic

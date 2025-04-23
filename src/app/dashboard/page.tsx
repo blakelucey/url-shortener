@@ -81,8 +81,8 @@ export default function Dashboard() {
                     <><BreadcrumbSeparator className="hidden md:block" /><BreadcrumbItem>
                       <BreadcrumbPage><AnimeCountdown trialEnd={trialEnd} /></BreadcrumbPage>
                     </BreadcrumbItem></> : null}
-                    {stripeSubscription?.data[0]?.status === "active" ? 
-                      <><BreadcrumbSeparator className="hidden md:block" /><BreadcrumbItem>
+                  {stripeSubscription?.data[0]?.status === "active" ?
+                    <><BreadcrumbSeparator className="hidden md:block" /><BreadcrumbItem>
                       <BreadcrumbPage>Basic Plan</BreadcrumbPage>
                     </BreadcrumbItem></> : null}
                 </BreadcrumbList>

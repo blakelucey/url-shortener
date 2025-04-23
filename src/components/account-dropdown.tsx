@@ -34,7 +34,6 @@ export function AccountDropdownMenu() {
     const { disconnect } = useDisconnect();
     const { isConnected } = useAccount();
     const user: any = useAppSelector(selectUser)
-    const [stripeStatus, setStripeStatus] = useState(stripeSubscription?.data[0]?.status)
     const [userData, setUserData] = useState<User>(user?.user)
     const userId = caipAddress!
 
@@ -69,12 +68,10 @@ export function AccountDropdownMenu() {
             <DropdownMenuContent className="w-56">
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                {stripeStatus === "trialing" || stripeStatus === "active" ? <>
-                    <DropdownMenuItem onClick={() => router.push('/billing')}>
-                        <CreditCard />
-                        <span>Billing</span>
-                    </DropdownMenuItem>
-                </> : null}
+                <DropdownMenuItem onClick={() => window.open(process.env.NEXT_PUBLIC_STRIPE_CUSTOMER_PORTAL, "_blank", "noopener noreferrer")}>
+                    <CreditCard />
+                    <span>Billing</span>
+                </DropdownMenuItem>
                 {/* {userData?.isBasic === false && <><DropdownMenuGroup>
                     <DropdownMenuItem onClick={() =>
                         window.open(process.env.NEXT_PUBLIC_PAYMENT_LINK, '_blank', 'noopener noreferrer')
