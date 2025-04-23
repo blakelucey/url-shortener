@@ -1,10 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Rendering } from "@/components/rendering"
-import { useAppKitAccount } from "@reown/appkit/react"
+import { useAppKit, useAppKitAccount } from "@reown/appkit/react"
 import { createUserAsync } from "@/store/slices/userSlice"
 import { useAppDispatch } from "@/store/hooks"
 import {
@@ -37,12 +37,27 @@ export default function Onboarding() {
     // This flag allows closing only after a successful submission.
     const [canClose, setCanClose] = useState<boolean>(false)
     const { caipAddress, embeddedWalletInfo } = useAppKitAccount()
+    const { open } = useAppKit()
     const dispatch = useAppDispatch()
 
     const router = useRouter();
 
     const userId = caipAddress!
     const authType = embeddedWalletInfo?.authProvider
+
+
+
+    useEffect(() => {
+        const handleConnect = async () => {
+            console.log("Opening AppKit modal...");
+            open();
+        };
+
+        
+        handleConnect().catch((error) => {
+            console.error("Error connecting to AppKit:", error);
+        })
+    }, [open])
 
     // Initialize the form context with react-hook-form and Zod schema.
     const form = useForm<z.infer<typeof formSchema>>({
@@ -83,6 +98,8 @@ export default function Onboarding() {
     if (isSubmitting) {
         return <Rendering />
     }
+
+
 
     return (
         <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10">
