@@ -37,7 +37,22 @@ const userSchema = new Schema({
     type: String,
     unique: true,
     required: false
-  }
+  },
+  stripeSubscriptionId: {
+    type: String,
+    unique: true,
+    required: false
+  },
+  subscriptionStatus: {
+    type: String,
+  },
+  subscriptionEndsAt: {
+    type: Date,     // when their current paid period actually ends
+  },
+  deletionScheduledAt: {
+    type: Date,
+    default: null,
+  },
 }, { timestamps: true });
 
 const User = models.User || model('User', userSchema)

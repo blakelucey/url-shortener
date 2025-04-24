@@ -17,6 +17,10 @@ export interface User {
   isTrial: boolean;
   isBasic: boolean;
   stripeCustomerId: string;
+  stripeSubscriptionId: string;
+  subscriptionStatus: string;
+  subscriptionEndsAt: Date;
+  deletionScheduledAt: Date;
   createdAt: Date;
   updatedAt: Date;
   __v: number;
@@ -58,7 +62,7 @@ export const fetchUser = createAsyncThunk<User, string, { rejectValue: string }>
 
 export const createUserAsync = createAsyncThunk<
   User,
-  { userId: string; firstName: string; lastName: string; email: string; authType?: string },
+  { userId: string; firstName: string; lastName: string; email: string; sessionId: string; authType?: string },
   { rejectValue: string }
 >(
   'user/createUser',
