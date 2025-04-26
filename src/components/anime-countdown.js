@@ -1,93 +1,65 @@
 // components/AnimeCountdown.jsx
-import React, { useEffect, useRef } from 'react';
-import anime from 'animejs';
+import React from 'react'
+import Countdown, { zeroPad } from 'react-countdown'
 
-/**
- * Given a Unix timestamp (seconds) in the future, returns an object
- * with days, hours, minutes, and seconds remaining.
- */
-function getTimeUnits(trialEnd) {
-  const now = Math.floor(Date.now() / 1000);
-  const diff = Math.max(trialEnd - now, 0);
-  const days = Math.floor(diff / (24 * 3600));
-  const hours = Math.floor((diff % (24 * 3600)) / 3600);
-  const minutes = Math.floor((diff % 3600) / 60);
-  const seconds = diff % 60;
-  return { days, hours, minutes, seconds };
-}
+// Shown when the countdown reaches zero
+const Completionist = () => <span>Trial Ended!</span>
 
 export default function AnimeCountdown({ trialEnd }) {
-  // Pass the raw subscription.trial_end here – do NOT sum it with trial_start
-  // trialEnd must be the timestamp when the trial actually ends.
+  const renderer = ({
+    days,
+    hours,
+    minutes,
+    seconds,
+    completed,
+  }) => {
+    if (completed) return <Completionist />
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const refs = {
-    days: useRef(null),
-    hours: useRef(null),
-    minutes: useRef(null),
-    seconds: useRef(null),
-  };
+    return (
+      // ← one row instead of column
+      <div className="flex items-center justify-center space-x-6">
+        {/* Label and countdown side-by-side */}
+        <p className="text-sm font-medium text-primary">Trial Ends In:</p>
 
-  useEffect(() => {
-    // Initialize the display
-    let last = getTimeUnits(trialEnd);
-    Object.entries(last).forEach(([unit, val]) => {
-      const el = refs[unit].current;
-      if (el) el.textContent = String(val).padStart(2, '0');
-    });
+        {/* Day cell */}
+        <div className="flex flex-col items-center">
+          <span className="block text-lg  font-semibold">
+            {zeroPad(days)}
+          </span>
+          <span className="text-xs lowercase">Days</span>
+        </div>
 
-    const tick = () => {
-      const next = getTimeUnits(trialEnd);
+        {/* Hour cell */}
+        <div className="flex flex-col items-center">
+          <span className="block text-lg  font-semibold">
+            {zeroPad(hours)}
+          </span>
+          <span className="text-xs lowercase">Hours</span>
+        </div>
 
-      Object.entries(next).forEach(([unit, newVal]) => {
-        const oldVal = last[unit];
-        const el = refs[unit].current;
-        if (el && newVal !== oldVal) {
-          anime.remove(el); // clear any in‑flight animations
-          anime({
-            targets: el,
-            innerHTML: [
-              String(oldVal).padStart(2, '0'),
-              String(newVal).padStart(2, '0'),
-            ],
-            round: 1,
-            easing: 'easeOutQuad',
-            duration: 800,
-          });
-        }
-      });
+        {/* Minute cell */}
+        <div className="flex flex-col items-center">
+          <span className="block text-lg  font-semibold">
+            {zeroPad(minutes)}
+          </span>
+          <span className="text-xs lowercase">Minutes</span>
+        </div>
 
-      last = next;
-    };
-
-    const id = setInterval(tick, 1000);
-    return () => clearInterval(id);
-  }, [refs, trialEnd]);
-
-  const Cell = ({ label, unit }) => (
-    <div className='flex flex-col text-center'>
-      <p
-        ref={refs[unit]}
-        className="block text-xl text-primary"
-      >00</p>
-      <p className='text-primary'>{label}</p>
-    </div>
-  );
+        {/* Second cell */}
+        <div className="flex flex-col items-center">
+          <span className="block text-lg font-semibold">
+            {zeroPad(seconds)}
+          </span>
+          <span className="text-xs lowercase">Seconds</span>
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div className="flex items-center justify-center space-x-6">
-      <small className="hidden dark:block text-sm font-medium text-primary">
-        Trial Ends In:
-      </small>
-      <small className="dark:hidden text-sm font-medium text-primary">
-        Trial Ends In:
-      </small>
-      <div className="flex items-end space-x-4">
-        <Cell unit="days" label="Days" />
-        <Cell unit="hours" label="Hours" />
-        <Cell unit="minutes" label="Minutes" />
-        <Cell unit="seconds" label="Seconds" />
-      </div>
-    </div>
-  );
+    <Countdown
+      date={trialEnd * 1000} // seconds → ms
+      renderer={renderer}
+    />
+  )
 }
