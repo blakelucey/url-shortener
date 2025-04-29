@@ -36,7 +36,11 @@ export async function POST(req) {
                 await User.updateOne(
                     { stripeCustomerId: sub.customer },
                     {
+                        stripeSubscriptionId: sub.id,
                         subscriptionStatus: sub.status,
+                        isTrial: sub.status != "trialing" ? false : true,
+                        subscriptionEndsAt: null,
+                        deletionScheduledAt: null
                     }
                 );
                 break;

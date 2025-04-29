@@ -46,6 +46,7 @@ const DynamicMap = dynamic(() => import("@/components/charts/AnalyticsPage/MapLi
 import { cn } from "@/lib/utils";
 import AnimeCountdown from "@/components/anime-countdown"
 import { Button } from "@/components/ui/button"
+import axios from "axios"
 
 export default function Analytics() {
     const stripeSubscription = useAppSelector(selectSubscription)
@@ -55,7 +56,18 @@ export default function Analytics() {
 
     const trialEnd = stripeSubscription?.data[0]?.trial_end;
 
-    const deletionDate: any = userData?.deletionScheduledAt ?? null;
+    const handleReactivate = async () => {
+        const customerId = userData?.stripeCustomerId;
+        const deleteAt = userData?.deletionScheduledAt;
+        const response = await axios.post(`${process.env.NEXT_PUBLIC_FRONTEND_URL}/api/stripe/reactivate-subscription`, { customerId, deleteAt })
+    
+    
+        if (response.status === 200) {
+          console.log('success')
+          window.open(response.data.url, "_blank", "noopener noreferrer")
+        }
+      }
+
     return (
         <div className="analytics-page">
             <SidebarProvider>
@@ -70,14 +82,12 @@ export default function Analytics() {
                                     <BreadcrumbItem className="hidden md:block">
                                         <BreadcrumbLink href="/analytics">Analytics</BreadcrumbLink>
                                     </BreadcrumbItem>
-                                    {stripeSubscription?.data[0]?.status === "trialing" ?
-                                        <><BreadcrumbSeparator className="hidden md:block" /><BreadcrumbItem>
+                                    {userData?.subscriptionStatus === "trialing" ?
+                                        (<><BreadcrumbSeparator className="hidden md:block" /><BreadcrumbItem>
                                             <BreadcrumbPage><AnimeCountdown trialEnd={trialEnd} /></BreadcrumbPage>
-                                        </BreadcrumbItem></> : null}
-                                    {stripeSubscription?.data[0]?.status === "active" ?
-                                        <><BreadcrumbSeparator className="hidden md:block" /><BreadcrumbItem>
+                                        </BreadcrumbItem></>) : (<><BreadcrumbSeparator className="hidden md:block" /><BreadcrumbItem>
                                             <BreadcrumbPage>Basic Plan</BreadcrumbPage>
-                                        </BreadcrumbItem></> : null}
+                                        </BreadcrumbItem></>)}
                                 </BreadcrumbList>
                             </Breadcrumb>
                         </div>
@@ -90,7 +100,7 @@ export default function Analytics() {
                             Please re-activate your subscription to access features</h1>
                         <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">
                             If you do not re-activate your subscription by {new Date(userData?.deletionScheduledAt).toLocaleDateString()}, your data will be deleted.</h4>
-                        <Button onClick={() => window.open(process.env.NEXT_PUBLIC_STRIPE_CUSTOMER_PORTAL, "_blank", "noopener noreferrer")} style={{ cursor: "pointer" }} variant="outline">re-activate my subscription</Button>
+                        <Button onClick={() => handleReactivate().catch((e) => console.error(e))} style={{ cursor: "pointer" }} variant="outline">re-activate my subscription</Button>
                     </div>) : (
                         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
                             <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min">

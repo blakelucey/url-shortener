@@ -22,6 +22,7 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks"
 import { fetchStripeCustomer, selectUser, User, selectCustomer, selectSubscription } from "@/store/slices/userSlice"
 import AnimeCountdown from '@/components/anime-countdown';
 import { Button } from "@/components/ui/button"
+import axios from "axios"
 
 export default function Dashboard() {
   const user: any = useAppSelector(selectUser)
@@ -45,6 +46,19 @@ export default function Dashboard() {
 
     handleFetchStripeCustomer().catch((e) => { console.error(e) })
   }, [dispatch, stripeCustomerId?.id, userData?._id, userData?.email, userData?.stripeCustomerId, userData?.userId])
+
+
+  const handleReactivate = async () => {
+    const customerId = userData?.stripeCustomerId;
+    const deleteAt = userData?.deletionScheduledAt;
+    const response = await axios.post(`${process.env.NEXT_PUBLIC_FRONTEND_URL}/api/stripe/reactivate-subscription`, { customerId, deleteAt })
+
+
+    if (response.status === 200) {
+      console.log('success')
+      window.open(response.data.url, "_blank", "noopener noreferrer")
+    }
+  }
   return (
     <div>
       <SidebarProvider>
@@ -63,14 +77,12 @@ export default function Dashboard() {
                   <BreadcrumbItem>
                     <BreadcrumbPage>Create a new Link</BreadcrumbPage>
                   </BreadcrumbItem>
-                  {stripeSubscription?.data[0]?.status === "trialing" ?
-                    <><BreadcrumbSeparator className="hidden md:block" /><BreadcrumbItem>
+                  {userData?.subscriptionStatus === "trialing" ?
+                    (<><BreadcrumbSeparator className="hidden md:block" /><BreadcrumbItem>
                       <BreadcrumbPage><AnimeCountdown trialEnd={trialEnd} /></BreadcrumbPage>
-                    </BreadcrumbItem></> : null}
-                  {stripeSubscription?.data[0]?.status === "active" ?
-                    <><BreadcrumbSeparator className="hidden md:block" /><BreadcrumbItem>
+                    </BreadcrumbItem></>) : (<><BreadcrumbSeparator className="hidden md:block" /><BreadcrumbItem>
                       <BreadcrumbPage>Basic Plan</BreadcrumbPage>
-                    </BreadcrumbItem></> : null}
+                    </BreadcrumbItem></>)}
                 </BreadcrumbList>
               </Breadcrumb>
             </div>
@@ -84,7 +96,7 @@ export default function Dashboard() {
                 Please re-activate your subscription to access features</h1>
               <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">
                 If you do not re-activate your subscription by {new Date(userData?.deletionScheduledAt).toLocaleDateString()}, your data will be deleted.</h4>
-              <Button onClick={() => window.open(process.env.NEXT_PUBLIC_STRIPE_CUSTOMER_PORTAL, "_blank", "noopener noreferrer")} style={{cursor: "pointer"}}>re-activate my subscription</Button>
+              <Button onClick={() => handleReactivate().catch((e) => console.error(e))} style={{ cursor: "pointer" }}>re-activate my subscription</Button>
             </div>) : (<div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min">
               <LinkDataTable />
             </div>)}
