@@ -7,6 +7,7 @@ import "./globals.css";
 import Providers from "./Providers";
 import { Toaster } from "@/components/ui/sonner";
 import { PostHogProvider } from "@/components/PostHogProvider";
+import { Analytics } from "@vercel/analytics/react"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,6 +34,7 @@ export default async function RootLayout({
         <StoreProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <PostHogProvider>
+              <Analytics />
               <Providers cookies={cookies}>{children}</Providers>
             </PostHogProvider>
           </ThemeProvider>
