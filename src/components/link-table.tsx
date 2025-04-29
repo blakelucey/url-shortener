@@ -44,6 +44,7 @@ import { useAppKitAccount } from "@reown/appkit/react";
 import { useEffect, useMemo, useState } from "react";
 import { fetchClicks } from "@/store/slices/clickSlice"
 import { selectUniqueClicksByLink } from "@/store/selectors/clickSelectors";
+import { useIsMobile } from "@/hooks/use-mobile";
 // Define the type used for rendering data in the table.
 export type LinkData = {
   id: string;
@@ -162,6 +163,7 @@ export function LinkDataTable() {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
+  const isMobile = useIsMobile()
 
   // Fetch links on component mount.
   useEffect(() => {
@@ -261,7 +263,7 @@ export function LinkDataTable() {
   };
 
   return (
-    <div className="w-full">
+    <div className={`${isMobile ? "max-w-[600px]" : "w-full"}`}>
       <div className="flex items-center py-4">
         <Input
           placeholder="Filter links..."
