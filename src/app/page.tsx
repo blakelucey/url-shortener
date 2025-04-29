@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 import { NavigationMenuUI } from "@/components/navigation-menu";
 import TypingText from '../components/textAnimation'
@@ -10,13 +10,59 @@ import AnalyticsPreview from "@/components/landing-page-analytics-preview";
 import LandingPagePricing from "@/components/landing-page-pricing";
 import Footer from "@/components/footer";
 import FAQ from "@/components/faq/page";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { useAppKit, useAppKitAccount } from "@reown/appkit/react";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { fetchUser, selectUser } from "@/store/slices/userSlice";
+import { useAccount } from "wagmi";
+import { Rendering } from "@/components/rendering";
+import { useRouter } from "next/navigation";
 
 export default function HomePage() {
   const { theme } = useTheme();
+  const { open } = useAppKit()
+  const dispatch = useAppDispatch();
+  const { embeddedWalletInfo, caipAddress } = useAppKitAccount();
+  const { isConnected } = useAccount();
+  const user: any = useAppSelector(selectUser)
+  const router = useRouter();
+  const [isMounted, setIsMounted] = useState(false); // Use isMounted instead of isClient
+  const [loading, setLoading] = useState<boolean>(false);
+
+
+
+  const isMobile = useIsMobile();
+
+  useEffect(() => {
+    setIsMounted(true); // Set after client-side mount
+    if (caipAddress) {
+      void dispatch(fetchUser(caipAddress));
+    }
+    if (isConnected) {
+      if (user?.user?._id && user?.user?.isBasic) {
+        router.push('/dashboard');
+        setLoading(true)
+      } else {
+        alert("User does not exist, please finish onboarding")
+        window.open(process.env.NEXT_PUBLIC_PAYMENT_LINK, '_blank', 'noopener noreferrer')
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [caipAddress, dispatch, isConnected, router]);
+
+  // Show a loading screen if data is still being fetched.
+  if (loading) {
+    return <Rendering />;
+  }
 
   const handlePayment = () => {
     window.open(process.env.NEXT_PUBLIC_PAYMENT_LINK, '_blank', 'noopener noreferrer')
   }
+
+  const handleConnect = async () => {
+    console.log("Opening AppKit modal...");
+    open();
+  };
 
   return (
     <div className={theme}>
@@ -39,6 +85,13 @@ export default function HomePage() {
                     Try It Now
                   </Button>
                 </div>
+                {isMobile && (
+                  <div className="flex items-center justify-center space-x-2 tracking-tight">
+                    <Button onClick={handleConnect} variant={"secondary"} className="inline-flex items-center w-full" style={{ cursor: "pointer" }}>
+                      Sign In
+                    </Button>
+                  </div>
+                )}
               </div>
             </main>
           </div>
@@ -52,7 +105,7 @@ export default function HomePage() {
         </a>
         <div className="my-30" />
         <a id="faq">
-        <FAQ />
+          <FAQ />
         </a>
         <div className="my-30" />
         <div>
