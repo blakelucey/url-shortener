@@ -47,11 +47,14 @@ import { cn } from "@/lib/utils";
 import AnimeCountdown from "@/components/anime-countdown"
 import { Button } from "@/components/ui/button"
 import axios from "axios"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 export default function Analytics() {
     const stripeSubscription = useAppSelector(selectSubscription)
     const user: any = useAppSelector(selectUser)
     const [userData, setUserData] = useState<User>(user?.user)
+
+    const isMobile = useIsMobile();
 
 
     const trialEnd = stripeSubscription?.data[0]?.trial_end;
@@ -60,13 +63,13 @@ export default function Analytics() {
         const customerId = userData?.stripeCustomerId;
         const deleteAt = userData?.deletionScheduledAt;
         const response = await axios.post(`${process.env.NEXT_PUBLIC_FRONTEND_URL}/api/stripe/reactivate-subscription`, { customerId, deleteAt })
-    
-    
+
+
         if (response.status === 200) {
-          console.log('success')
-          window.open(response.data.url, "_blank", "noopener noreferrer")
+            console.log('success')
+            window.open(response.data.url, "_blank", "noopener noreferrer")
         }
-      }
+    }
 
     return (
         <div className="analytics-page">
@@ -103,72 +106,73 @@ export default function Analytics() {
                         <Button onClick={() => handleReactivate().catch((e) => console.error(e))} style={{ cursor: "pointer" }} variant="outline">re-activate my subscription</Button>
                     </div>) : (
                         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-                            <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min">
+                            <div className={`${isMobile ? "hidden" : "min-h-[100vh] flex-1 rounded-xl md:min-h-min"}`}>
                                 <AreaChartInteractive />
                             </div>
-                            <div className="flex flex-row gap-4 p-4">
+                            <div className={`${isMobile ? "flex flex-col max-w-[400px] gap-4 p-10 overflow-scroll" : "flex flex-row gap-4 p-4"}`}>
                                 <BarChartBrowser />
                                 <BarChartOS />
-                                <div className="mx-auto">
+                                <div className={`${isMobile ? "" : "mx-auto"}`}>
                                     <CarouselAnalytics />
                                 </div>
                             </div>
                             <div>
                             </div>
-                            <div className="flex flex-row gap-4 p-4">
+                            <div className={`${isMobile ? "flex flex-col max-w-[400px] gap-4 p-10 overflow-scroll" : "flex flex-row gap-4 p-4"}`}>
                                 <PieChartReferrer />
                                 <PieChartChannels />
                                 <PieChartCampaigns />
                             </div>
-                            <Accordion type="single" collapsible className="w-full">
-                                <div className={cn(
-                                    "border-border/50 bg-background grid min-w-[8rem] items-start gap-4 rounded-lg border px-2.5 py-1.5 text-xs shadow-md",
-                                )}>
-                                    <AccordionItem value="accordion-1" >
-                                        <AccordionTrigger style={{ cursor: "pointer" }}>
-                                            View UTM Parameters
-                                        </AccordionTrigger>
-                                        <AccordionContent>
-                                            <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min mb-4">
-                                                <LineChartLinks />
-                                            </div>
-                                            <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min mb-4">
-                                                <LineChartUTMSource />
-                                            </div>
-                                            <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min mb-4">
-                                                <LineChartUTMMedium />
-                                            </div>
-                                            <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min mb-4">
-                                                <LineChartUTMCampaign />
-                                            </div>
-                                            <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min mb-4">
-                                                <LineChartUTMTerm />
-                                            </div>
-                                            <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min mb-4">
-                                                <LineChartUTMContent />
-                                            </div>
-                                        </AccordionContent>
-                                    </AccordionItem>
-                                </div>
-                            </Accordion>
-                            <div>
-                                <Accordion type="single" collapsible className="w-full">
+                            {!isMobile && (
+                                <><Accordion type="single" collapsible className="w-full">
                                     <div className={cn(
-                                        "border-border/50 bg-background grid min-w-[8rem] items-start gap-4 rounded-lg border px-2.5 py-1.5 text-xs shadow-md",
+                                        "border-border/50 bg-background grid min-w-[8rem] items-start gap-4 rounded-lg border px-2.5 py-1.5 text-xs shadow-md"
                                     )}>
-                                        <AccordionItem value="accordion-1" >
+                                        <AccordionItem value="accordion-1">
                                             <AccordionTrigger style={{ cursor: "pointer" }}>
-                                                View Geo Data
+                                                View UTM Parameters
                                             </AccordionTrigger>
                                             <AccordionContent>
                                                 <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min mb-4">
-                                                    <DynamicMap />
+                                                    <LineChartLinks />
+                                                </div>
+                                                <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min mb-4">
+                                                    <LineChartUTMSource />
+                                                </div>
+                                                <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min mb-4">
+                                                    <LineChartUTMMedium />
+                                                </div>
+                                                <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min mb-4">
+                                                    <LineChartUTMCampaign />
+                                                </div>
+                                                <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min mb-4">
+                                                    <LineChartUTMTerm />
+                                                </div>
+                                                <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min mb-4">
+                                                    <LineChartUTMContent />
                                                 </div>
                                             </AccordionContent>
                                         </AccordionItem>
                                     </div>
-                                </Accordion>
-                            </div>
+                                </Accordion><div>
+                                        <Accordion type="single" collapsible className="w-full">
+                                            <div className={cn(
+                                                "border-border/50 bg-background grid min-w-[8rem] items-start gap-4 rounded-lg border px-2.5 py-1.5 text-xs shadow-md"
+                                            )}>
+                                                <AccordionItem value="accordion-1">
+                                                    <AccordionTrigger style={{ cursor: "pointer" }}>
+                                                        View Geo Data
+                                                    </AccordionTrigger>
+                                                    <AccordionContent>
+                                                        <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min mb-4">
+                                                            <DynamicMap />
+                                                        </div>
+                                                    </AccordionContent>
+                                                </AccordionItem>
+                                            </div>
+                                        </Accordion>
+                                    </div></>
+                            )}
                         </div>
                     )}
                 </SidebarInset>
