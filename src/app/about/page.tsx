@@ -1,3 +1,5 @@
+"use client"
+
 import React from 'react'
 import { NavigationMenuUI } from '@/components/navigation-menu'
 import Footer from '@/components/footer'
@@ -32,7 +34,7 @@ export default function AboutPage() {
           Got feedback? Want to collaborate? Just want to chat? <a href="mailto:support@kliqly.link" className="underline hover:text-foreground">Email us</a> — we read everything.
         </p>
       </main>
-      <Footer/>
+      <Footer />
     </div>
   )
 }

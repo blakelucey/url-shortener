@@ -21,6 +21,7 @@ import { ModeToggle } from "@/components/themeToggle"
 import { useAppDispatch, useAppSelector } from "@/store/hooks"
 import { fetchStripeCustomer, selectUser, User, selectCustomer, selectSubscription } from "@/store/slices/userSlice"
 import AnimeCountdown from '@/components/anime-countdown';
+import { Button } from "@/components/ui/button"
 
 export default function Dashboard() {
   const user: any = useAppSelector(selectUser)
@@ -33,6 +34,7 @@ export default function Dashboard() {
 
   console.log('stripe customer id', stripeCustomerId?.id)
   console.log('stripe subscription', stripeSubscription?.data[0]?.trial_end)
+
 
 
   useEffect(() => {
@@ -77,9 +79,16 @@ export default function Dashboard() {
             </div>
           </header>
           <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-            <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min">
+            {userData?.subscriptionStatus === "canceled" ? (<div className="flex flex-col p-4 m-4 gap-12">
+              <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
+                Please re-activate your subscription to access features</h1>
+              <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">
+                If you do not re-activate your subscription by {new Date(userData?.deletionScheduledAt).toLocaleDateString()}, your data will be deleted.</h4>
+              <Button onClick={() => window.open(process.env.NEXT_PUBLIC_STRIPE_CUSTOMER_PORTAL, "_blank", "noopener noreferrer")} style={{cursor: "pointer"}}>re-activate my subscription</Button>
+            </div>) : (<div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min">
               <LinkDataTable />
-            </div>
+            </div>)}
+
           </div>
         </SidebarInset>
       </SidebarProvider>

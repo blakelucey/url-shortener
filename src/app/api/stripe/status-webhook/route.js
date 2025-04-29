@@ -58,6 +58,8 @@ export async function POST(req) {
                     { stripeCustomerId: sub.customer },
                     {
                         subscriptionStatus: sub.status,
+                        subscriptionEndsAt: null,
+                        deletionScheduledAt: null
                     }
                 );
                 break;
@@ -67,6 +69,8 @@ export async function POST(req) {
                     { stripeCustomerId: sub.customer },
                     {
                         subscriptionStatus: sub.status,
+                        subscriptionEndsAt: null,
+                        deletionScheduledAt: null
                     }
                 );
                 break;

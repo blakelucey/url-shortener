@@ -2,11 +2,6 @@
 
 import * as React from "react"
 import { useEffect, useState } from "react"
-import {
-  Contact,
-  GalleryVerticalEnd,
-  LogOutIcon,
-} from "lucide-react"
 import { NavMain } from "@/components/nav-main"
 import {
   Sidebar,

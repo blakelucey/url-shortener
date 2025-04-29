@@ -40,6 +40,7 @@ import { TopUTMTerm } from "@/components/charts/AccountPage/TopUTMTerm/page"
 import { TopUTMContent } from "@/components/charts/AccountPage/TopUTMContent/page"
 import { TopUTMCampaign } from "@/components/charts/AccountPage/TopUTMCampaign/page"
 import AnimeCountdown from "@/components/anime-countdown"
+import { Button } from "@/components/ui/button"
 
 
 
@@ -95,6 +96,8 @@ export default function Account() {
 
     }, [isConnected, caipAddress, dispatch]);
 
+    const deletionDate: any = userData?.deletionScheduledAt ?? null;
+
     return (
         <div>
             <SidebarProvider>
@@ -133,33 +136,41 @@ export default function Account() {
                         </div>
                     </header>
                     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-                        <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min">
-                            <div className="rounded-xl flex flex-1 flex-row p-4 gap-4">
-                                <UpdateEmail />
-                                <AccountDropdownMenu />
+                        {userData?.subscriptionStatus === "canceled" ? (<div className="flex flex-col p-4 m-4 gap-12">
+                            <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
+                                Please re-activate your subscription to access features</h1>
+                            <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">
+                                If you do not re-activate your subscription by {new Date(userData?.deletionScheduledAt).toLocaleDateString()}, your data will be deleted.</h4>
+                            <Button onClick={() => window.open(process.env.NEXT_PUBLIC_STRIPE_CUSTOMER_PORTAL, "_blank", "noopener noreferrer")} style={{ cursor: "pointer" }}>re-activate my subscription</Button>
+                        </div>) : (
+                            <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min">
+                                <div className="rounded-xl flex flex-1 flex-row p-4 gap-4">
+                                    <UpdateEmail />
+                                    <AccountDropdownMenu />
+                                </div>
+                                <div className="flex flex-1 flex-row gap-4 p-4">
+                                    <UniqueLinks uniqueLinks={userAnalytics?.uniqueLinks} />
+                                    <TotalClicks totalClicks={userAnalytics?.totalClicks} />
+                                    <AverageClicks averageClicks={userAnalytics?.averageClicksPerLink} />
+                                    <MostPopularLink mostPopularLink={userAnalytics?.mostPopular} />
+                                </div>
+                                <div className="flex flex-1 flex-row gap-4 p-4">
+                                    <MostPopularOS os={osCounts} />
+                                    <MostPopularBrowser MostPopularBrowser={browserCounts} />
+                                    <TopReferrers topReferrers={topReferrers} />
+                                    <TopCountry topCountry={topCountry} />
+                                    <TopRegion topRegion={topRegion} />
+                                    <TopCity topCity={topCity} />
+                                </div>
+                                <div className="flex flex-1 flex-row gap-4 p-4">
+                                    <TopUTMSource topUTMSource={topUTMSource} />
+                                    <TopUTMMedium topUTMMedium={topUTMMedium} />
+                                    <TopUTMTerm topUTMTerm={topUTMTerm} />
+                                    <TopUTMContent topUTMContent={topUTMContent} />
+                                    <TopUTMCampaign topUTMCampaign={topUTMCampaign} />
+                                </div>
                             </div>
-                            <div className="flex flex-1 flex-row gap-4 p-4">
-                                <UniqueLinks uniqueLinks={userAnalytics?.uniqueLinks} />
-                                <TotalClicks totalClicks={userAnalytics?.totalClicks} />
-                                <AverageClicks averageClicks={userAnalytics?.averageClicksPerLink} />
-                                <MostPopularLink mostPopularLink={userAnalytics?.mostPopular} />
-                            </div>
-                            <div className="flex flex-1 flex-row gap-4 p-4">
-                                <MostPopularOS os={osCounts} />
-                                <MostPopularBrowser MostPopularBrowser={browserCounts} />
-                                <TopReferrers topReferrers={topReferrers} />
-                                <TopCountry topCountry={topCountry} />
-                                <TopRegion topRegion={topRegion} />
-                                <TopCity topCity={topCity} />
-                            </div>
-                            <div className="flex flex-1 flex-row gap-4 p-4">
-                                <TopUTMSource topUTMSource={topUTMSource} />
-                                <TopUTMMedium topUTMMedium={topUTMMedium} />
-                                <TopUTMTerm topUTMTerm={topUTMTerm} />
-                                <TopUTMContent topUTMContent={topUTMContent} />
-                                <TopUTMCampaign topUTMCampaign={topUTMCampaign} />
-                            </div>
-                        </div>
+                        )}
                     </div>
                 </SidebarInset>
             </SidebarProvider>
