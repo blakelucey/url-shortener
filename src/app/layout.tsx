@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { ThemeProvider } from "@/components/theme-provider"
+import { ThemeProvider } from "@/components/theme-provider";
 import { headers } from "next/headers";
 import StoreProvider from "./StoreProvider";
 import "./globals.css";
 import Providers from "./Providers";
-import { Toaster } from "@/components/ui/sonner"
+import { Toaster } from "@/components/ui/sonner";
+import { PostHogProvider } from "@/components/PostHogProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,22 +25,16 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   const cookies = (await headers()).get("cookie");
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <StoreProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-          >
-            <Providers cookies={cookies}>{children}</Providers>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            <PostHogProvider>
+              <Providers cookies={cookies}>{children}</Providers>
+            </PostHogProvider>
           </ThemeProvider>
         </StoreProvider>
         <Toaster />

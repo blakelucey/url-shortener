@@ -9,6 +9,7 @@ services:
       - .env
     environment:
       - NEXT_IPINFO_TOKEN
+      - NEXT_SECRET_STRIPE_API_KEY
 
   shortening:
     build: ./shortening-service

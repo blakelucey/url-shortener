@@ -20,7 +20,7 @@ import { useAccount } from "wagmi"
 import { useAppKitAccount } from "@reown/appkit/react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks"
 import { ModeToggle } from "@/components/themeToggle"
-import { fetchUser, selectUser, User } from "@/store/slices/userSlice"
+import { fetchUser, selectUser, User, selectSubscription } from "@/store/slices/userSlice"
 import { MostPopularOS } from "@/components/charts/AccountPage/PopularOS/page"
 import { TotalClicks } from "@/components/charts/AccountPage/TotalClicks/page"
 import UpdateEmail from "@/components/update-email"
@@ -39,11 +39,15 @@ import { TopUTMMedium } from "@/components/charts/AccountPage/TopUTMMedium/page"
 import { TopUTMTerm } from "@/components/charts/AccountPage/TopUTMTerm/page"
 import { TopUTMContent } from "@/components/charts/AccountPage/TopUTMContent/page"
 import { TopUTMCampaign } from "@/components/charts/AccountPage/TopUTMCampaign/page"
+import AnimeCountdown from "@/components/anime-countdown"
+import { Button } from "@/components/ui/button"
+import axios from "axios"
 
 
 
 export default function Account() {
     const { embeddedWalletInfo, caipAddress } = useAppKitAccount();
+    const stripeSubscription = useAppSelector(selectSubscription)
     const { isConnected, address } = useAccount();
     const user: any = useAppSelector(selectUser)
     const [userData, setUserData] = useState<User>(user?.user)
@@ -59,6 +63,9 @@ export default function Account() {
     const topUTMTerm = useAppSelector(selectTopUTMTerm);
     const topUTMContent = useAppSelector(selectTopUTMContent);
     const topUTMCampaign = useAppSelector(selectTopUTMCampaign);
+    const [reactivateSub, setReactivateSub] = useState<boolean>()
+
+    const trialEnd = stripeSubscription?.data[0]?.trial_end
 
 
 
@@ -89,7 +96,21 @@ export default function Account() {
             console.error(e)
         }
 
-    }, [isConnected, caipAddress, dispatch]);
+    }, [isConnected, caipAddress, dispatch, reactivateSub]);
+
+    const handleReactivate = async () => {
+        const customerId = userData?.stripeCustomerId;
+        const deleteAt = userData?.deletionScheduledAt;
+        const response = await axios.post(`${process.env.NEXT_PUBLIC_FRONTEND_URL}/api/stripe/reactivate-subscription`, { customerId, deleteAt })
+
+
+        if (response.status === 200) {
+            console.log('success')
+            window.open(response.data.url, "_blank", "noopener noreferrer")
+            setReactivateSub(true)
+        }
+    }
+
 
     return (
         <div>
@@ -113,10 +134,12 @@ export default function Account() {
                                     <BreadcrumbItem>
                                         <BreadcrumbPage>Account Created: {createdDate}</BreadcrumbPage>
                                     </BreadcrumbItem>
-                                    <BreadcrumbSeparator className="hidden md:block" />
-                                    <BreadcrumbItem>
-                                        <BreadcrumbPage>Paid Account: {userData?.isBasic === false ? 'No' : userData?.isBasic === true ? 'Yes' : ""}</BreadcrumbPage>
-                                    </BreadcrumbItem>
+                                    {userData?.subscriptionStatus === "trialing" ?
+                                        (<><BreadcrumbSeparator className="hidden md:block" /><BreadcrumbItem>
+                                            <BreadcrumbPage><AnimeCountdown trialEnd={trialEnd} /></BreadcrumbPage>
+                                        </BreadcrumbItem></>) : (<><BreadcrumbSeparator className="hidden md:block" /><BreadcrumbItem>
+                                            <BreadcrumbPage>Basic Plan</BreadcrumbPage>
+                                        </BreadcrumbItem></>)}
                                 </BreadcrumbList>
                             </Breadcrumb>
                         </div>
@@ -125,33 +148,41 @@ export default function Account() {
                         </div>
                     </header>
                     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-                        <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min">
-                            <div className="rounded-xl flex flex-1 flex-row p-4 gap-4">
-                                <UpdateEmail />
-                                <AccountDropdownMenu />
+                        {userData?.subscriptionStatus === "canceled" ? (<div className="flex flex-col p-4 m-4 gap-12">
+                            <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
+                                Please re-activate your subscription to access features</h1>
+                            <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">
+                                If you do not re-activate your subscription by {new Date(userData?.deletionScheduledAt).toLocaleDateString()}, your data will be deleted.</h4>
+                            <Button onClick={() => handleReactivate().catch((e) => console.error(e))} style={{ cursor: "pointer" }}>re-activate my subscription</Button>
+                        </div>) : (
+                            <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min">
+                                <div className="rounded-xl flex flex-1 flex-row p-4 gap-4">
+                                    <UpdateEmail />
+                                    <AccountDropdownMenu />
+                                </div>
+                                <div className="flex flex-1 flex-row gap-4 p-4">
+                                    <UniqueLinks uniqueLinks={userAnalytics?.uniqueLinks} />
+                                    <TotalClicks totalClicks={userAnalytics?.totalClicks} />
+                                    <AverageClicks averageClicks={userAnalytics?.averageClicksPerLink} />
+                                    <MostPopularLink mostPopularLink={userAnalytics?.mostPopular} />
+                                </div>
+                                <div className="flex flex-1 flex-row gap-4 p-4">
+                                    <MostPopularOS os={osCounts} />
+                                    <MostPopularBrowser MostPopularBrowser={browserCounts} />
+                                    <TopReferrers topReferrers={topReferrers} />
+                                    <TopCountry topCountry={topCountry} />
+                                    <TopRegion topRegion={topRegion} />
+                                    <TopCity topCity={topCity} />
+                                </div>
+                                <div className="flex flex-1 flex-row gap-4 p-4">
+                                    <TopUTMSource topUTMSource={topUTMSource} />
+                                    <TopUTMMedium topUTMMedium={topUTMMedium} />
+                                    <TopUTMTerm topUTMTerm={topUTMTerm} />
+                                    <TopUTMContent topUTMContent={topUTMContent} />
+                                    <TopUTMCampaign topUTMCampaign={topUTMCampaign} />
+                                </div>
                             </div>
-                            <div className="flex flex-1 flex-row gap-4 p-4">
-                                <UniqueLinks uniqueLinks={userAnalytics?.uniqueLinks} />
-                                <TotalClicks totalClicks={userAnalytics?.totalClicks} />
-                                <AverageClicks averageClicks={userAnalytics?.averageClicksPerLink} />
-                                <MostPopularLink mostPopularLink={userAnalytics?.mostPopular} />
-                            </div>
-                            <div className="flex flex-1 flex-row gap-4 p-4">
-                                <MostPopularOS os={osCounts} />
-                                <MostPopularBrowser MostPopularBrowser={browserCounts} />
-                                <TopReferrers topReferrers={topReferrers} />
-                                <TopCountry topCountry={topCountry} />
-                                <TopRegion topRegion={topRegion} />
-                                <TopCity topCity={topCity} />
-                            </div>
-                            <div className="flex flex-1 flex-row gap-4 p-4">
-                                <TopUTMSource topUTMSource={topUTMSource} />
-                                <TopUTMMedium topUTMMedium={topUTMMedium} />
-                                <TopUTMTerm topUTMTerm={topUTMTerm} />
-                                <TopUTMContent topUTMContent={topUTMContent} />
-                                <TopUTMCampaign topUTMCampaign={topUTMCampaign} />
-                            </div>
-                        </div>
+                        )}
                     </div>
                 </SidebarInset>
             </SidebarProvider>

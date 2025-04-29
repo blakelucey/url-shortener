@@ -147,7 +147,7 @@ const CreateLinkInput = () => {
                         Add your link, preview the shortened version, select channels and campaigns, then submit.
                     </SheetDescription>
                 </SheetHeader>
-                <form onSubmit={handleSubmit} className="space-y-4 max-w-sm mx-auto">
+                <form onSubmit={handleSubmit} className="space-y-4 max-w-sm mx-auto overflow-scroll">
                     <div className="space-y-1.5">
                         <Label htmlFor="link" className="text-gray-700">Input your link here:</Label>
                         <Input
