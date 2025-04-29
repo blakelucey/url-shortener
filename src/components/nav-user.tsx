@@ -33,8 +33,9 @@ import {
 import { useDisconnect } from "@reown/appkit/react";
 import { useRouter } from "next/navigation";
 import { useAccount } from "wagmi"
-import { User } from '@/store/slices/userSlice'
+import { User, selectSubscription } from '@/store/slices/userSlice'
 import { Icons } from "./icons";
+import { useAppSelector } from "@/store/hooks";
 
 export function NavUser({
   user,
@@ -42,6 +43,7 @@ export function NavUser({
   const { isMobile } = useSidebar()
   const { disconnect } = useDisconnect();
   const { isConnected } = useAccount();
+  const stripeSubscription = useAppSelector(selectSubscription)
   const router = useRouter();
   const [userData, setUserData] = useState<User>(user?.user)
 
@@ -101,25 +103,26 @@ export function NavUser({
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              {userData?.isBasic === false && <><DropdownMenuGroup>
+              {/* {userData?.isBasic === false && <><DropdownMenuGroup>
                 <DropdownMenuItem onClick={() =>
                   window.open(process.env.NEXT_PUBLIC_PAYMENT_LINK, '_blank', 'noopener noreferrer')
                 }>
                   <Sparkles />
                   Upgrade to Pro
                 </DropdownMenuItem>
-              </DropdownMenuGroup><DropdownMenuSeparator /></>}
+              </DropdownMenuGroup><DropdownMenuSeparator /></>} */}
 
               <DropdownMenuGroup>
                 <DropdownMenuItem onClick={() => router.push('/account')}>
                   <BadgeCheck />
                   Account
                 </DropdownMenuItem>
-                {userData?.isBasic &&
-                  <DropdownMenuItem onClick={() => router.push('/billing')}>
+                <DropdownMenuGroup>
+                  <DropdownMenuItem onClick={() => window.open(process.env.NEXT_PUBLIC_STRIPE_CUSTOMER_PORTAL, "_blank", "noopener noreferrer")}>
                     <CreditCard />
-                    Billing
-                  </DropdownMenuItem>}
+                    <span>Billing</span>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup><DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => window.open("https://kliqlylink.canny.io/", "blank", "noopener noreferrer")}>
                   <Icons.LucideMap />
                   Roadmap

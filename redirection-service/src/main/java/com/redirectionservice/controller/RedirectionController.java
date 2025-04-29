@@ -23,14 +23,29 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.time.Instant;
+
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+import com.stripe.Stripe;
+import com.stripe.exception.StripeException;
+import com.stripe.model.billing.MeterEvent;
+import com.stripe.param.billing.MeterEventCreateParams;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.PostConstruct;
+
 @RestController
 public class RedirectionController {
+
+    private static final Logger log = LoggerFactory.getLogger(RedirectionController.class);
 
     @Autowired
     private UrlMappingRepository urlRepository;
@@ -45,6 +60,14 @@ public class RedirectionController {
     @Value("${NEXT_IPINFO_TOKEN}")
     private String ipinfoToken;
 
+    @Value("${NEXT_SECRET_STRIPE_API_KEY}")
+    private String stripeApiKey;
+
+    @PostConstruct
+    public void init() {
+        Stripe.apiKey = stripeApiKey;
+    }
+
     // In-memory cache for geolocation data keyed by IP address.
     private static final ConcurrentHashMap<String, CacheEntry> geoCache = new ConcurrentHashMap<>();
     // Cache TTL: 1 hour.
@@ -55,6 +78,27 @@ public class RedirectionController {
         URL whatismyip = new URL("http://checkip.amazonaws.com");
         try (BufferedReader in = new BufferedReader(new InputStreamReader(whatismyip.openStream()))) {
             return in.readLine();
+        }
+    }
+
+    private void recordMeteredUsage(String stripeCustomerId) {
+        try {
+            // Build the meter event params
+            MeterEventCreateParams params = MeterEventCreateParams.builder()
+                    .setEventName("per_click") // your meter’s name in Stripe
+                    .putPayload("stripe_customer_id", stripeCustomerId)
+                    .putPayload("value", "1")
+                    .setIdentifier(UUID.randomUUID().toString()) // guards against duplicates
+                    .setTimestamp(Instant.now().getEpochSecond()) // now, in seconds
+                    .build();
+
+            // Fire off the event
+            MeterEvent meterEvent = MeterEvent.create(params);
+            log.info("Meter event recorded successfully: {}", meterEvent);
+
+        } catch (StripeException e) {
+            // don’t let Stripe hiccups block your redirect; just log it
+            log.error("Failed to record Stripe meter event", e);
         }
     }
 
@@ -127,6 +171,18 @@ public class RedirectionController {
 
         // Log the click asynchronously.
         asyncClickService.logClick(click);
+
+        Query userQuery = new Query(Criteria.where("userId").is(mapping.getUserId()));
+        Document userDoc = mongoTemplate.findOne(userQuery, Document.class, "users");
+        String stripeCustomerId = null;
+        if (userDoc != null && userDoc.get("stripeCustomerId") != null) {
+            stripeCustomerId = userDoc.getString("stripeCustomerId");
+            System.out.println("Stripe Customer ID: " + stripeCustomerId);
+        } else {
+            System.out.println("No matching user found in users collection for shortHash: " + shortHash);
+        }
+
+        recordMeteredUsage(stripeCustomerId);
 
         // Redirect to the original URL.
         return new RedirectView(mapping.getOriginalUrl());

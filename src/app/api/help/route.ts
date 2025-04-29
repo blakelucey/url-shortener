@@ -1,6 +1,9 @@
 import { NextRequest } from "next/server"; // Import for type safety
 import nodemailer from "nodemailer";
 
+export const runtime ='nodejs';
+export const preferredRegion = 'home';
+
 // Configure Nodemailer transporter
 const transporter = nodemailer.createTransport({
   service: "Zoho",

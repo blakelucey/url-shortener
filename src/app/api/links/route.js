@@ -3,6 +3,9 @@ import Link from '../../../models/link';
 import { verifyToken } from '../../../lib/auth';
 import Clicks from '@/models/click';
 import UrlMapping from '@/models/urlMapping';
+import Stripe from 'stripe';
+import User from '@/models/users';
+const stripe = new Stripe(process.env.NEXT_SECRET_STRIPE_API_KEY);
 
 export async function POST(request) {
     try {
@@ -15,6 +18,11 @@ export async function POST(request) {
         }
         const decoded = verifyToken(token);
         const userId = decoded.userId;
+
+        const user = await User.findOne({ userId: userId });
+        if (!user) {
+            return new Response(JSON.stringify({ error: 'User not found' }), { status: 404 });
+        }
 
         const { originalUrl,
             shortUrl,
@@ -39,7 +47,22 @@ export async function POST(request) {
         });
         await link.save();
 
-        return new Response(JSON.stringify({ message: 'Link created', link }), { status: 201 });
+        const meterEvent = stripe.billing.meterEvents.create({
+            event_name: "per_link",
+            timestamp: Math.floor(Date.now() / 1000),
+            payload: {
+                value: 1,
+                stripe_customer_id: user?.stripeCustomerId,
+            }
+        })
+
+        console.log('meterEvent', meterEvent)
+
+        if (!meterEvent) {
+            return new Response(JSON.stringify({ error: 'Failed to create meter event' }), { status: 500 });
+        }
+
+        return new Response(JSON.stringify({ message: 'Link created', link, meterEvent }), { status: 201 });
     } catch (error) {
         return new Response(JSON.stringify({ error: error.message }), { status: 500 });
     }

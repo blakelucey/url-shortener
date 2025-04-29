@@ -5,7 +5,8 @@ import Clicks from '@/models/click';
 import { verifyToken } from "../../../lib/auth";
 import Link from '../../../models/link';
 import UrlMapping from '@/models/urlMapping';
-
+import Stripe from 'stripe';
+const stripe = new Stripe(process.env.NEXT_SECRET_STRIPE_API_KEY);
 
 export async function DELETE(request) {
     try {
@@ -20,7 +21,31 @@ export async function DELETE(request) {
         const decoded = verifyToken(token);
         const userId = decoded.userId;
 
-        // TODO: ensure user is unsubscribed from billing or automatically cancel the user before deleting them...
+        const user = await User.findOne({ userId: userId });
+        if (!user) {
+            return new Response(
+                JSON.stringify({ error: "User not found" }),
+                { status: 404 }
+            );
+        }
+
+        // Delete the customer from Stripe
+        const subs = await stripe.subscriptions.list({ customer: user.stripeCustomerId });
+
+        if (user && subs.data.length > 0) {
+            try {
+                for (const sub of subs.data) {
+                    await stripe.subscriptions.cancel(sub.id);
+                }
+
+            } catch (e) {
+                console.error("Error deleting subscriptions:", e);
+                return new Response(
+                    JSON.stringify({ error: "Failed to delete subscriptions" }),
+                    { status: 500 }
+                );
+            }
+        }
 
         // Delete all clicks associated with the given userId
         await Clicks.deleteMany({ userId });

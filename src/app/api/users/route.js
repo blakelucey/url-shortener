@@ -2,6 +2,8 @@ import dbConnect from '../../../lib/dbConnect';
 import User from '@/models/users'
 import { MongoClient } from 'mongodb';
 import 'dotenv/config';
+import Stripe from 'stripe';
+const stripe = new Stripe(process.env.NEXT_SECRET_STRIPE_API_KEY)
 
 
 const uri = process.env.NEXT_MONGODB_URI;
@@ -53,23 +55,25 @@ export async function POST(request) {
     console.log("Received data:", data);
 
     // Destructure all necessary fields
-    const { userId, firstName, lastName, email, authType, type, newEmail } = data;
-    console.log("Extracted fields:", { userId, firstName, lastName, email, authType, type, newEmail });
+    const { userId, firstName, lastName, email, authType, type, newEmail, sessionId } = data;
+    console.log("Extracted fields:", { userId, firstName, lastName, email, authType, type, newEmail, sessionId });
 
     if (type === 'update') {
       const existingUser = await User.findOne({ userId });
       if (!existingUser) {
         return new Response(JSON.stringify({ error: "User not found" }), { status: 404 });
       }
-      try {
-        await User.updateOne({ userId }, { $set: { email: newEmail } });
-        return new Response(JSON.stringify({ message: "User email updated successfully", userId, newEmail }), {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        });
-      } catch (e) {
-        console.error(e);
-        return new Response(JSON.stringify({ error: "Update failed" }), { status: 500 });
+      if (newEmail) {
+        try {
+          await User.updateOne({ userId }, { $set: { email: newEmail } });
+          return new Response(JSON.stringify({ message: "User email updated successfully", userId, newEmail }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          });
+        } catch (e) {
+          console.error(e);
+          return new Response(JSON.stringify({ error: "Update failed" }), { status: 500 });
+        }
       }
     } else {
       // Creation branch if not updating
@@ -81,8 +85,13 @@ export async function POST(request) {
           headers: { "Content-Type": "application/json" },
         });
       }
-      console.log("Creating new user");
-      const user = new User({ userId, firstName, lastName, email, authType });
+      // Create new user
+      const session = await stripe.checkout.sessions.retrieve(sessionId, {
+        expand: ["subscription"],
+      });
+      console.log("Session data:", session);
+
+      const user = new User({ userId, firstName, lastName, email, stripeCustomerId: session.customer, stripeSubscriptionId: session.subscription.id, subscriptionStatus: session.subscription.status, subscriptionEndsAt: session.subscription.trial_end, deletionScheduledAt: null, authType });
       await user.save();
       console.log("User saved:", user);
       return new Response(JSON.stringify({ message: "User created successfully", user }), {

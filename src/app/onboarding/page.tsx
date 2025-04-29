@@ -1,10 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Rendering } from "@/components/rendering"
-import { useAppKitAccount } from "@reown/appkit/react"
+import { useAppKit, useAppKitAccount } from "@reown/appkit/react"
 import { createUserAsync } from "@/store/slices/userSlice"
 import { useAppDispatch } from "@/store/hooks"
 import {
@@ -20,10 +20,11 @@ import image from '../../../public/image.png'
 import image_white from '../../../public/image_white.png'
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { z } from "zod"
 import Image from "next/image"
 import { ModeToggle } from "@/components/themeToggle"
+import { useAccount } from "wagmi"
 
 // Define the schema for form validation.
 const formSchema = z.object({
@@ -37,12 +38,34 @@ export default function Onboarding() {
     // This flag allows closing only after a successful submission.
     const [canClose, setCanClose] = useState<boolean>(false)
     const { caipAddress, embeddedWalletInfo } = useAppKitAccount()
+    const { isConnected, address } = useAccount();
+    const { open } = useAppKit()
     const dispatch = useAppDispatch()
+    const searchParams = useSearchParams();
+    const query = Object.fromEntries(searchParams.entries());
+    const sessionId = query?.session_id
+    console.log('sessionId', sessionId)
 
     const router = useRouter();
 
+
     const userId = caipAddress!
     const authType = embeddedWalletInfo?.authProvider
+
+
+
+    useEffect(() => {
+        const handleConnect = async () => {
+            console.log("Opening AppKit modal...");
+            open();
+        };
+
+        if (!isConnected) {
+            handleConnect().catch((error) => {
+                console.error("Error connecting to AppKit:", error);
+            })
+        }
+    }, [isConnected, open])
 
     // Initialize the form context with react-hook-form and Zod schema.
     const form = useForm<z.infer<typeof formSchema>>({
@@ -58,21 +81,15 @@ export default function Onboarding() {
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         setIsSubmitting(true)
         try {
-            const userData = { userId, ...values, authType }
-            const response: any = await dispatch(createUserAsync(userData))
-                .unwrap()
-                .catch((e) => {
-                    console.log(e)
-                })
-
-            console.log("response", response?._id)
-            if (response?._id) {
-                // Allow closing after a successful submission.
+            const userData = { userId, ...values, sessionId, authType }
+            const response: any = await dispatch(createUserAsync(userData)).unwrap().then(() => {
                 setCanClose(true)
                 router.push("/dashboard")
-            } else {
-                console.error("Failed to submit onboarding data")
-            }
+            }).catch((e) => {
+                console.log(e)
+            })
+
+            console.log("User created successfully:", response)
         } catch (error) {
             console.error("Error submitting onboarding:", error)
         } finally {
@@ -83,6 +100,8 @@ export default function Onboarding() {
     if (isSubmitting) {
         return <Rendering />
     }
+
+
 
     return (
         <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10">
