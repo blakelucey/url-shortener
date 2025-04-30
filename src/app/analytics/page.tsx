@@ -109,7 +109,7 @@ export default function Analytics() {
                             <div className={`${isMobile ? "hidden" : "min-h-[100vh] flex-1 rounded-xl md:min-h-min"}`}>
                                 <AreaChartInteractive />
                             </div>
-                            <div className={`${isMobile ? "flex flex-col max-w-[400px] gap-4 p-10 overflow-scroll" : "flex flex-row gap-4 p-4"}`}>
+                            <div className={`${isMobile ? "flex flex-1 flex-col max-w-[400px] items-center gap-4 p-10 overflow-scroll" : "flex flex-row gap-4 p-4"}`}>
                                 <BarChartBrowser />
                                 <BarChartOS />
                                 <div className={`${isMobile ? "" : "mx-auto"}`}>
@@ -118,7 +118,7 @@ export default function Analytics() {
                             </div>
                             <div>
                             </div>
-                            <div className={`${isMobile ? "flex flex-col max-w-[400px] gap-4 p-10 overflow-scroll" : "flex flex-row gap-4 p-4"}`}>
+                            <div className={`${isMobile ? "flex flex-1 flex-col max-w-[400px] items-center gap-4 p-10 overflow-scroll" : "flex flex-row gap-4 p-4"}`}>
                                 <PieChartReferrer />
                                 <PieChartChannels />
                                 <PieChartCampaigns />
