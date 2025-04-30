@@ -42,6 +42,7 @@ import { TopUTMCampaign } from "@/components/charts/AccountPage/TopUTMCampaign/p
 import AnimeCountdown from "@/components/anime-countdown"
 import { Button } from "@/components/ui/button"
 import axios from "axios"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 
 
@@ -64,6 +65,8 @@ export default function Account() {
     const topUTMContent = useAppSelector(selectTopUTMContent);
     const topUTMCampaign = useAppSelector(selectTopUTMCampaign);
     const [reactivateSub, setReactivateSub] = useState<boolean>()
+
+    const isMobile = useIsMobile();
 
     const trialEnd = stripeSubscription?.data[0]?.trial_end
 
@@ -156,17 +159,17 @@ export default function Account() {
                             <Button onClick={() => handleReactivate().catch((e) => console.error(e))} style={{ cursor: "pointer" }}>re-activate my subscription</Button>
                         </div>) : (
                             <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min">
-                                <div className="rounded-xl flex flex-1 flex-row p-4 gap-4">
+                                <div className={`${isMobile ? "rounded-xl flex flex-1 justify-center flex-row p-4 gap-4" : "rounded-xl flex flex-1 flex-row p-4 gap-4"}`}>
                                     <UpdateEmail />
                                     <AccountDropdownMenu />
                                 </div>
-                                <div className="flex flex-1 flex-row gap-4 p-4">
+                                <div className={`${isMobile ? "flex flex-1 max-w-[400px] items-center flex-col gap-4 p-4" : "flex flex-1 flex-row gap-4 p-4"}`}>
                                     <UniqueLinks uniqueLinks={userAnalytics?.uniqueLinks} />
                                     <TotalClicks totalClicks={userAnalytics?.totalClicks} />
                                     <AverageClicks averageClicks={userAnalytics?.averageClicksPerLink} />
                                     <MostPopularLink mostPopularLink={userAnalytics?.mostPopular} />
                                 </div>
-                                <div className="flex flex-1 flex-row gap-4 p-4">
+                                <div className={`${isMobile ? "flex flex-1 max-w-[400px] items-center flex-col gap-4 p-4" : "flex flex-1 flex-row gap-4 p-4"}`}>
                                     <MostPopularOS os={osCounts} />
                                     <MostPopularBrowser MostPopularBrowser={browserCounts} />
                                     <TopReferrers topReferrers={topReferrers} />
@@ -174,7 +177,7 @@ export default function Account() {
                                     <TopRegion topRegion={topRegion} />
                                     <TopCity topCity={topCity} />
                                 </div>
-                                <div className="flex flex-1 flex-row gap-4 p-4">
+                                <div className={`${isMobile ? "flex flex-1 max-w-[400px] items-center flex-col gap-4 p-4" : "flex flex-1 flex-row gap-4 p-4"}`}>
                                     <TopUTMSource topUTMSource={topUTMSource} />
                                     <TopUTMMedium topUTMMedium={topUTMMedium} />
                                     <TopUTMTerm topUTMTerm={topUTMTerm} />
