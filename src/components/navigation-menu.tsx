@@ -28,6 +28,7 @@ import { useRouter } from "next/navigation";
 import { selectUser, fetchUser } from "@/store/slices/userSlice";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { Rendering } from "./rendering";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 
 const components: { title: string; href?: string; description: string, onClick?: any }[] = [
@@ -88,6 +89,8 @@ export function NavigationMenuUI() {
     const [loading, setLoading] = useState<boolean>(false);
     const dispatch = useAppDispatch();
 
+    const isMobile = useIsMobile();
+
     useEffect(() => {
         setIsMounted(true); // Set after client-side mount
         if (caipAddress) {
@@ -134,7 +137,7 @@ export function NavigationMenuUI() {
                                 <NavigationMenuLink asChild>
                                     <Link
                                         className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
-                                        href="/dashboard"
+                                        href="/"
                                     >
                                         <Icons.LayoutDashboard className="h-6 w-6" />
                                         <div className="mb-2 mt-4 text-lg font-medium">
@@ -158,7 +161,7 @@ export function NavigationMenuUI() {
                 <NavigationMenuItem>
                     <NavigationMenuTrigger>About</NavigationMenuTrigger>
                     <NavigationMenuContent>
-                        <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
+                        <ul className={`grid w-full gap-3 p-4 overflow-y-auto ${isMobile ? "grid-cols-1 max-h-[80vh]" : "grid-cols-2"} md:w-[500px] lg:w-[600px]`}>
                             {components.map((component) => (
                                 <ListItem
                                     key={component.title}
@@ -180,31 +183,34 @@ export function NavigationMenuUI() {
                 </NavigationMenuItem>
             </NavigationMenuList>
             {contact && <ContactDialog open={contact} onOpenChange={setContact} />}
-        </NavigationMenu><div className="fixed top-5 right-5 flex flex-row items-center space-x-4">
-                <div className="relative">
-                    <Button onClick={handlePayment} variant={"link"} style={{ cursor: "pointer" }}>
-                        Sign Up
-                    </Button>
-                    <Button onClick={handleConnect} variant={"link"} style={{ cursor: "pointer" }}>
-                        Sign In
-                    </Button>
-                </div>
-                <div className="relative">
-                    <Image
-                        src={image}
-                        width={40}
-                        height={40}
-                        alt="Light mode illustration"
-                        className="dark:hidden object-contain" />
-                    <Image
-                        src={image_white}
-                        width={40}
-                        height={40}
-                        alt="Dark mode illustration"
-                        className="hidden dark:block object-contain" />
-                </div>
+        </NavigationMenu>
+            <div className="fixed top-5 right-5 flex flex-row items-center space-x-4">
+                {!isMobile && (
+                    <><div className="relative">
+                        <Button onClick={handlePayment} variant={"link"} style={{ cursor: "pointer" }}>
+                            Sign Up
+                        </Button>
+                        <Button onClick={handleConnect} variant={"link"} style={{ cursor: "pointer" }}>
+                            Sign In
+                        </Button>
+                    </div><div className="relative">
+                            <Image
+                                src={image}
+                                width={40}
+                                height={40}
+                                alt="Light mode illustration"
+                                className="dark:hidden object-contain" />
+                            <Image
+                                src={image_white}
+                                width={40}
+                                height={40}
+                                alt="Dark mode illustration"
+                                className="hidden dark:block object-contain" />
+                        </div></>
+                )}
                 <ModeToggle />
-            </div></>
+            </div>
+        </>
 
     );
 }
