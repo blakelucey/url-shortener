@@ -16,3 +16,17 @@ export function getTimeUnits(trialEnd: number) {
     seconds: total % 60,
   };
 }
+
+// utils/base64url.ts
+export const toBase64Url = (input: string): string =>
+  Buffer.from(input, "utf8")
+    .toString("base64")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+
+export const fromBase64Url = (input: string): string => {
+  let b64 = input.replace(/-/g, "+").replace(/_/g, "/");
+  while (b64.length % 4) b64 += "="; // pad
+  return Buffer.from(b64, "base64").toString("utf8");
+};
