@@ -4,5 +4,15 @@
             "path": "/api/cron/delete-scheduled-users",
             "schedule": "0 0 * * *"
         }
+    ],
+    "rewrites": [
+        {
+            "source": "/shorten",
+            "destination": "https://kliqly-link-service.fly.dev/shorten"
+        },
+        {
+            "source": "/:slug((?!api/|_next/).+)",
+            "destination": "https://kliqly-link-service.fly.dev/:slug"
+        }
     ]
 }
