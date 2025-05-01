@@ -89,7 +89,12 @@ export default function Onboarding() {
                 console.log(e)
             })
 
-            console.log("User created successfully:", response)
+            if (!response) {
+                console.error("User insert failed")
+                return;
+            } else {
+                console.log("User created successfully:", response)
+            }
         } catch (error) {
             console.error("Error submitting onboarding:", error)
         } finally {
