@@ -12,7 +12,7 @@
         },
         {
             "source": "/:slug((?!api/|_next/).+)",
-            "destination": "https://kliqly-link-service.fly.dev/:slug"
+            "destination": "https://kliqly-redirector.fly.dev/:slug"
         }
     ]
 }
