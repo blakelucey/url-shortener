@@ -17,6 +17,8 @@ import { fetchUser, selectUser } from "@/store/slices/userSlice";
 import { useAccount } from "wagmi";
 import { Rendering } from "@/components/rendering";
 import { useRouter } from "next/navigation";
+import { logFn } from "../../logging/logging";
+const log = logFn("src.app.page.tsx.")
 
 export default function HomePage() {
   const { theme } = useTheme();
@@ -33,6 +35,10 @@ export default function HomePage() {
 
   const isMobile = useIsMobile();
 
+  interface PaymentLinkResponse {
+    url: string
+  }
+
   useEffect(() => {
     setIsMounted(true); // Set after client-side mount
     if (caipAddress) {
@@ -44,7 +50,7 @@ export default function HomePage() {
         setLoading(true)
       } else {
         alert("User does not exist, please finish onboarding")
-        window.open(process.env.NEXT_PUBLIC_PAYMENT_LINK, '_blank', 'noopener noreferrer')
+        handlePayment()
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -55,8 +61,14 @@ export default function HomePage() {
     return <Rendering />;
   }
 
-  const handlePayment = () => {
-    window.open(process.env.NEXT_PUBLIC_PAYMENT_LINK, '_blank', 'noopener noreferrer')
+  const handlePayment = async () => {
+    try {
+      const res = await fetch("/api/stripe/create-checkout-session", { method: "POST" });
+      const { url } = (await res.json()) as PaymentLinkResponse;
+      window.open(url, "_blank", "noopener noreferrer");
+    } catch (e) {
+      log("error", 'error', e)
+    }
   }
 
   const handleConnect = async () => {
