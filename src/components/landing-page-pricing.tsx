@@ -34,7 +34,7 @@ const LandingPagePricing = () => {
                 </div>
                 <div>
                     <div className='flex flex-col'>
-                        <h3 className='text-secondary font-bold tracking-tight lg:text-5xl my-8'>14‑day free trial, $1/month—plus usage fees based on clicks and short link creations.</h3>
+                        <h3 className='text-secondary font-bold tracking-tight lg:text-5xl my-8'>14‑day free trial, $1/month—plus $0.005/click and $0.01/link.</h3>
                         <div className='flex flex-col gap-4'>
                             <div className='flex flex-row gap-4'>
                                 <Icons.LucideBadgeCheck className='text-secondary' />
