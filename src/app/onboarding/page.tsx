@@ -25,6 +25,8 @@ import { z } from "zod"
 import Image from "next/image"
 import { ModeToggle } from "@/components/themeToggle"
 import { useAccount } from "wagmi"
+import { logFn } from "../../../logging/logging"
+const log = logFn("src.app.onboarding.page.tsx.")
 
 // Define the schema for form validation.
 const formSchema = z.object({
@@ -84,19 +86,16 @@ export default function Onboarding() {
             const userData = { userId, ...values, sessionId, authType }
             const response: any = await dispatch(createUserAsync(userData)).unwrap().then(() => {
                 setCanClose(true)
-                router.push("/dashboard")
+                router.replace("/dashboard")
             }).catch((e) => {
                 console.log(e)
             })
 
-            if (!response) {
-                console.error("User insert failed")
-                return;
-            } else {
-                console.log("User created successfully:", response)
+            if (response.status === 200 || 201) {
+                log("user submitted successfully", "info", response.status)
             }
         } catch (error) {
-            console.error("Error submitting onboarding:", error)
+            log("Error submitting onboarding:", 'error', error)
         } finally {
             setIsSubmitting(false)
         }

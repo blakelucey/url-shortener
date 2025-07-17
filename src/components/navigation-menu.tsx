@@ -29,6 +29,8 @@ import { selectUser, fetchUser } from "@/store/slices/userSlice";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { Rendering } from "./rendering";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { logFn } from "../../logging/logging";
+const log = logFn("src.components.navigation-menu.tsx.")
 
 
 const components: { title: string; href?: string; description: string, onClick?: any }[] = [
@@ -102,7 +104,7 @@ export function NavigationMenuUI() {
                 setLoading(true)
             } else {
                 alert("User does not exist, please finish onboarding")
-                window.open(process.env.NEXT_PUBLIC_PAYMENT_LINK, '_blank', 'noopener noreferrer')
+                handlePayment()
             }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -113,8 +115,18 @@ export function NavigationMenuUI() {
         return <Rendering />;
     }
 
-    const handlePayment = () => {
-        window.open(process.env.NEXT_PUBLIC_PAYMENT_LINK, '_blank', 'noopener noreferrer')
+    interface PaymentLinkResponse {
+        url: string
+    }
+
+    const handlePayment = async () => {
+        try {
+            const res = await fetch("/api/stripe/create-checkout-session", { method: "POST" });
+            const { url } = (await res.json()) as PaymentLinkResponse;
+            window.open(url, "_blank", "noopener noreferrer");
+        } catch (e) {
+            log("error", 'error', e)
+        }
     }
 
 
