@@ -5,9 +5,23 @@ import Image from 'next/image'
 import { Button } from './ui/button'
 import { Icons } from './icons'
 import { HoverCardPricing } from './landing-page-hover-card'
-
+import { logFn } from "../../logging/logging";
+const log = logFn("src.components.landing-page-pricing.tsx.")
 
 const LandingPagePricing = () => {
+    interface PaymentLinkResponse {
+        url: string
+    }
+
+    const handlePayment = async () => {
+        try {
+            const res = await fetch("/api/stripe/create-checkout-session", { method: "POST" });
+            const { url } = (await res.json()) as PaymentLinkResponse;
+            window.open(url, "_blank", "noopener noreferrer");
+        } catch (e) {
+            log("error", 'error', e)
+        }
+    }
     return (
         <div className='p-4 bg-primary'>
             <div className='text-right'>
@@ -50,8 +64,7 @@ const LandingPagePricing = () => {
                             </div>
                         </div>
                     </div>
-                    <Button onClick={() => window.open(process.env.NEXT_PUBLIC_PAYMENT_LINK, '_blank', 'noopener noreferrer')
-                    } className='w-full my-8' variant={"secondary"} style={{ cursor: "pointer" }}>
+                    <Button onClick={handlePayment} className='w-full my-8' variant={"secondary"} style={{ cursor: "pointer" }}>
                         Subscribe
                     </Button>
                 </div>

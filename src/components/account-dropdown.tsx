@@ -25,6 +25,8 @@ import { useRouter } from "next/navigation";
 import { useAccount } from "wagmi"
 import { deleteUserAsync, selectUser, User, selectSubscription } from "@/store/slices/userSlice";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { logFn } from "../../logging/logging";
+const log = logFn("src.components.account-dropdown.tsx.")
 
 export function AccountDropdownMenu() {
     const router = useRouter();
@@ -47,6 +49,19 @@ export function AccountDropdownMenu() {
         console.log("Disconnecting wallet...");
         disconnect();
     };
+
+    interface PaymentLinkResponse {
+        url: string
+    }
+    const handlePayment = async () => {
+        try {
+            const res = await fetch("/api/stripe/create-checkout-session", { method: "POST" });
+            const { url } = (await res.json()) as PaymentLinkResponse;
+            window.open(url, "_blank", "noopener noreferrer");
+        } catch (e) {
+            log("error", 'error', e)
+        }
+    }
 
     const handleUserDeletion = async () => {
         const response = await dispatch(deleteUserAsync(userId)).unwrap().then(() => {
@@ -73,9 +88,7 @@ export function AccountDropdownMenu() {
                     <span>Billing</span>
                 </DropdownMenuItem>
                 {/* {userData?.isBasic === false && <><DropdownMenuGroup>
-                    <DropdownMenuItem onClick={() =>
-                        window.open(process.env.NEXT_PUBLIC_PAYMENT_LINK, '_blank', 'noopener noreferrer')
-                    }>
+                    <DropdownMenuItem onClick={handlePayment}>
                         <Sparkles />
                         Upgrade to Pro
                     </DropdownMenuItem>

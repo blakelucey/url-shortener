@@ -36,6 +36,8 @@ import { useAccount } from "wagmi"
 import { User, selectSubscription } from '@/store/slices/userSlice'
 import { Icons } from "./icons";
 import { useAppSelector } from "@/store/hooks";
+import { logFn } from "../../logging/logging";
+const log = logFn("src.components.nav-user.tsx.")
 
 export function NavUser({
   user,
@@ -58,6 +60,20 @@ export function NavUser({
     console.log("Disconnecting wallet...");
     disconnect();
   };
+
+      interface PaymentLinkResponse {
+        url: string
+    }
+
+    const handlePayment = async () => {
+        try {
+            const res = await fetch("/api/stripe/create-checkout-session", { method: "POST" });
+            const { url } = (await res.json()) as PaymentLinkResponse;
+            window.open(url, "_blank", "noopener noreferrer");
+        } catch (e) {
+            log("error", 'error', e)
+        }
+    }
 
   return (
     <>
@@ -104,9 +120,7 @@ export function NavUser({
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               {/* {userData?.isBasic === false && <><DropdownMenuGroup>
-                <DropdownMenuItem onClick={() =>
-                  window.open(process.env.NEXT_PUBLIC_PAYMENT_LINK, '_blank', 'noopener noreferrer')
-                }>
+                <DropdownMenuItem onClick={handlePayment}>
                   <Sparkles />
                   Upgrade to Pro
                 </DropdownMenuItem>
