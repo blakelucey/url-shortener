@@ -6,6 +6,7 @@ import UrlMapping from '@/models/urlMapping';
 import Stripe from 'stripe';
 import User from '@/models/users';
 const stripe = new Stripe(process.env.NEXT_SECRET_STRIPE_API_KEY);
+import crypto from 'crypto';
 
 export async function POST(request) {
     try {
@@ -49,11 +50,11 @@ export async function POST(request) {
 
         const meterEvent = stripe.billing.meterEvents.create({
             event_name: "per_link",
-            timestamp: Math.floor(Date.now() / 1000),
             payload: {
-                value: 1,
+                value: '1',
                 stripe_customer_id: user?.stripeCustomerId,
-            }
+            },
+            identifier: crypto.randomUUID().toString()
         })
 
         console.log('meterEvent', meterEvent)
