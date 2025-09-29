@@ -21,6 +21,7 @@
 /build
 /target/
 **/target/
+**/build/
 
 # misc
 .DS_Store
@@ -43,3 +44,11 @@ yarn-error.log*
 next-env.d.ts
 
 .env.local
+
+# IDE
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+EOF
