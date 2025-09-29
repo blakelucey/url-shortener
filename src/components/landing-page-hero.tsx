@@ -1,97 +1,53 @@
-import React, { useState } from "react";
+import React from "react";
 import { Icons } from "./icons";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
-import { nanoid } from "@reduxjs/toolkit";
-import axios from 'axios';
-import { nullable } from "zod";
 
 const LandingPageHero = () => {
-    const [link, setLink] = useState("")
-    const [copied, setCopied] = useState<boolean>(false);
     const features = [
-        { title: "Real-Time Analytics", icon: Icons.LucideChartNetwork },
-        { title: "Advanced Routing", icon: Icons.LucideNetwork },
-        { title: "Secure Sharing", icon: Icons.Share2Icon },
+        {
+            title: "Transparent pricing",
+            description: "Pay $1/month plus low usage fees—no hidden upgrades.",
+            icon: Icons.LucideDollarSign,
+        },
+        {
+            title: "Conversion routing tools (coming soon)",
+            description: "Plan device, geo, and campaign targeting that will roll out in upcoming releases.",
+            icon: Icons.LucideSplit,
+        },
+        {
+            title: "In-app analytics",
+            description: "Track clicks, referrers, and engagement inside the Kliqly dashboard.",
+            icon: Icons.LucideBarChart3,
+        },
+        {
+            title: "Wallet-ready access (coming soon)",
+            description: "Future releases will add wallet sign-in alongside email onboarding.",
+            icon: Icons.LucideWallet,
+        },
     ];
 
-    const handleDemo: React.ChangeEventHandler<HTMLInputElement> = async (e) => {
-        const raw = e.target.value.trim();      // grab the text once
-
-        // 1 · if field is empty, stop here
-        if (!raw) {
-            setLink("");                          // clear the UI copy-link
-            return;
-        }
-
-        // 2 · (optional) naive URL sanity check – skip if it’s garbage
-        try {
-            // adds "https://" if the user forgets it, then validates
-            new URL(raw.startsWith("http") ? raw : `https://${raw}`);
-        } catch {
-            return;                               // don’t POST junk
-        }
-
-        // 3 · it’s non-empty & looks like a URL → generate slug & POST
-        const slug = nanoid(5);
-
-        try {
-            const res = await axios.post(
-                `${process.env.NEXT_PUBLIC_FRONTEND_URL}/api/go`,
-                { slug, url: raw, ttl: 900 },
-            );
-
-            // Upstash route returns 201; accept any 2xx
-            if (res.status >= 200 && res.status < 300) {
-                setLink(`${process.env.NEXT_PUBLIC_FRONTEND_URL}/api/go/${slug}`);
-            }
-        } catch (err) {
-            console.error(err);
-        }
-    };
-
     return (
-        <div className="w-full min-h-[60vh] bg-primary flex flex-col items-center justify-center p-4">
-            <h1 className="text-secondary font-bold tracking-tight lg:text-5xl my-8">
-                Links That Work Harder for You
-            </h1>
-            <div className="w-full max-w-3xl flex flex-row justify-between items-center">
-                <div className="flex flex-col space-y-4 w-full max-w-md">
+        <section className="w-full bg-primary px-4 py-16 text-secondary">
+            <div className="mx-auto flex w-full max-w-5xl flex-col gap-8">
+                <div className="space-y-4 text-center">
+                    <span className="text-sm font-semibold uppercase tracking-wide text-secondary/70">Product highlights</span>
+                    <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
+                        Powerful link management without the enterprise price tag.
+                    </h2>
+                    <p className="text-base text-secondary/80">
+                        Launch curated link hubs today, monitor performance instantly, and preview routing automation coming soon.
+                    </p>
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
                     {features.map((feature, index) => (
-                        <div key={index} className="flex items-center space-x-2">
-                            <h2 className="text-secondary">{feature.title}</h2>
-                            <feature.icon className="text-secondary" />
+                        <div key={index} className="flex flex-col gap-3 rounded-3xl bg-secondary/10 p-6">
+                            <feature.icon className="h-6 w-6" />
+                            <h3 className="text-xl font-semibold">{feature.title}</h3>
+                            <p className="text-sm text-secondary/80">{feature.description}</p>
                         </div>
                     ))}
                 </div>
-                <div className="flex flex-col items-center w-full max-w-md space-y-2">
-                    <Label htmlFor="link" className="text-secondary">
-                        Shorten your link:
-                    </Label>
-                    <Input id="link" className="text-secondary" onChange={handleDemo} />
-                    <p className="text-secondary">
-                        Your link:&nbsp;
-                        {link && (
-                            <span
-                                role="button"
-                                tabIndex={0}
-                                onClick={() => {
-                                    navigator.clipboard.writeText(link);
-                                    setCopied(true);
-                                    setTimeout(() => setCopied(false), 1500); // brief feedback
-                                }}
-                                className={`
-            cursor-pointer underline font-semibold transition
-            hover:opacity-80 active:scale-95 focus:outline-none
-          `}
-                            >
-                                {copied ? "Copied ✔" : link}
-                            </span>
-                        )}
-                    </p>
-                </div>
             </div>
-        </div>
+        </section>
     );
 };
 

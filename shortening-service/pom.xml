@@ -33,6 +33,11 @@
         <version>2.2.0</version>
         </dependency>
         <!-- Add more dependencies (e.g., spring-boot-starter-data-mongodb) as needed -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
