@@ -16,9 +16,10 @@ import {
 } from "@/components/ui/sheet";
 
 import { createLinkAsync } from '@/store/slices/linkSlice';
-import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { fetchUser, selectUser, User } from "@/store/slices/userSlice"
+import { useAppDispatch } from '@/store/hooks';
+import { fetchUser } from "@/store/slices/userSlice"
 import { useAccount } from 'wagmi';
+import { useCurrentUser } from '@/hooks/use-current-user';
 
 
 const UpdateEmail = () => {
@@ -26,42 +27,27 @@ const UpdateEmail = () => {
     const [isSubmitting, setIsSubmitting] = useState(false); // Submission state
     const { isConnected, address } = useAccount();
     const { caipAddress } = useAppKitAccount(); // User ID from AppKit
-    const user: any = useAppSelector(selectUser)
-    const [userData, setUserData] = useState<User>(user?.user)
-    const [oldEmail, setOldEmail] = useState(userData?.email)
+    const { user, loading, exists } = useCurrentUser({ requireAuthenticated: true, requireCompletedProfile: true });
+    const [oldEmail, setOldEmail] = useState(user?.email)
     const [emailError, setEmailError] = useState("");
-    const userId = caipAddress!;
+    const userId = (user?.userId ?? caipAddress) ?? '';
     const dispatch = useAppDispatch()
 
 
     useEffect(() => {
-        console.log('isConnected:', isConnected);
-        console.log('caipAddress:', caipAddress);
-        try {
-            if (caipAddress) {
-                dispatch(fetchUser(caipAddress)).catch((e) => {
-                    console.error(e)
-                })
-            }
+        if (user?.email) {
+            setOldEmail(user.email);
         }
-        catch (e) {
-            console.error(e)
-        }
-    }, [isConnected, caipAddress, dispatch]);
+    }, [user?.email]);
 
-
-    useEffect(() => {
-        if (user?.user?.email) {
-            setOldEmail(user.user.email);
-            setUserData(user.user);
-        }
-    }, [user]);
-
+    if (loading || !exists || !user || !userId) {
+        return null;
+    }
 
     // Handle form submission
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!userId) {
+        if (!userId || !user) {
             console.error("Missing required fields or invalid short hash");
             return;
         }
@@ -76,7 +62,7 @@ const UpdateEmail = () => {
 
             if (response.status === 200) {
                 console.log('Success:', response);
-                await dispatch(fetchUser(caipAddress)).catch((e) => {
+                await dispatch(fetchUser(userId)).catch((e) => {
                     console.error(e)
                 })
             } else {

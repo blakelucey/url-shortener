@@ -2,16 +2,14 @@
 import React, { useState } from 'react'
 import { Icons } from './icons'
 import { ContactDialog } from './contact-dialog';
-import Link from 'next/link';
 import { Button } from './ui/button';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 const Footer = () => {
   const [contact, setContact] = useState<boolean>(false)
 
-  const isMobile = useIsMobile();
+
   return (
-    <footer className={`${isMobile ? "bottom-0 left-0 w-full border-t border-muted bg-background z-50" : "fixed bottom-0 left-0 w-full border-t border-muted bg-background z-50"}`}>
+    <footer className="w-full border-t border-muted bg-background">
       <div className="max-w-7xl mx-auto px-4 py-8 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
         <div className="text-center md:text-left">
           <p>&copy; {new Date().getFullYear()} <span className="font-semibold text-foreground">kliqly.link</span>. All rights reserved.</p>
@@ -24,6 +22,14 @@ const Footer = () => {
         </div>
 
         <div className="flex gap-4 items-center justify-center">
+          <Button onClick={() => window.open("https://www.tiktok.com/@kliqly.link", '_blank', 'noopener noreferrer')} variant="link" style={{ cursor: "pointer" }} aria-label="TikTok" className="hover:text-foreground transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-tiktok" viewBox="0 0 16 16">
+              <path d="M9 0h1.98c.144.715.54 1.617 1.235 2.512C12.895 3.389 13.797 4 15 4v2c-1.753 0-3.07-.814-4-1.829V11a5 5 0 1 1-5-5v2a3 3 0 1 0 3 3z" />
+            </svg>
+          </Button>
+          <Button onClick={() => window.open("https://www.instagram.com/kliqly.link/", '_blank', 'noopener noreferrer')} variant="link" style={{ cursor: "pointer" }} aria-label="Instagram" className="hover:text-foreground transition-colors">
+            <Icons.Instagram />
+          </Button>
           <Button onClick={() => window.open("https://www.linkedin.com/company/kliqly-link", '_blank', 'noopener noreferrer')} variant="link" style={{ cursor: "pointer" }} aria-label="LinkedIn" className="hover:text-foreground transition-colors">
             <Icons.Linkedin />
           </Button>

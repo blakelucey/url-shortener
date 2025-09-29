@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAppSelector } from "@/store/hooks";
-import { selectUser, User } from "@/store/slices/userSlice"
+import { selectUser } from "@/store/slices/userSlice"
 
 interface MostPopularBrowserProps {
     MostPopularBrowser: {
@@ -13,9 +13,8 @@ interface MostPopularBrowserProps {
 export function MostPopularBrowser({ MostPopularBrowser }: MostPopularBrowserProps) {
     // Convert the os object into an array of [osName, count] pairs.
     const osEntries = Object.entries(MostPopularBrowser);
-    const user: any = useAppSelector(selectUser)
-
-    const createdAt = new Date(user?.user?.createdAt).toDateString()
+    const user = useAppSelector(selectUser)
+    const createdAt = user ? new Date(user.createdAt).toDateString() : '—'
 
     // Optionally, sort by count (highest first)
     const sortedOSEntries = osEntries.sort(([, aCount], [, bCount]) => bCount - aCount);

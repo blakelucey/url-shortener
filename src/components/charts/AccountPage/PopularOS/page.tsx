@@ -11,9 +11,9 @@ interface MostPopularOSProps {
 export function MostPopularOS({ os }: MostPopularOSProps) {
     // Convert the os object into an array of [osName, count] pairs.
     const osEntries = Object.entries(os);
-    const user: any = useAppSelector(selectUser)
+    const user = useAppSelector(selectUser)
 
-    const createdAt = new Date(user?.user?.createdAt).toDateString()
+    const createdAt = user ? new Date(user.createdAt).toDateString() : '—'
 
     // Optionally, sort by count (highest first)
     const sortedOSEntries = osEntries.sort(([, aCount], [, bCount]) => bCount - aCount);

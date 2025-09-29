@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Rendering } from "@/components/rendering"
@@ -26,9 +26,9 @@ import Image from "next/image"
 import { ModeToggle } from "@/components/themeToggle"
 import { useAccount } from "wagmi"
 import { logFn } from "../../../logging/logging"
+import { useCurrentUser } from "@/hooks/use-current-user";
 const log = logFn("src.app.onboarding.page.tsx.")
 
-// Define the schema for form validation.
 const formSchema = z.object({
     firstName: z.string().min(1, { message: "First name is required" }),
     lastName: z.string().min(1, { message: "Last name is required" }),
@@ -37,39 +37,32 @@ const formSchema = z.object({
 
 export default function Onboarding() {
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
-    // This flag allows closing only after a successful submission.
-    const [canClose, setCanClose] = useState<boolean>(false)
     const { caipAddress, embeddedWalletInfo } = useAppKitAccount()
-    const { isConnected, address } = useAccount();
+    const { isConnected } = useAccount();
     const { open } = useAppKit()
     const dispatch = useAppDispatch()
     const searchParams = useSearchParams();
-    const query = Object.fromEntries(searchParams.entries());
-    const sessionId = query?.session_id
-    console.log('sessionId', sessionId)
-
+    const sessionId = searchParams.get('session_id') ?? ''
     const router = useRouter();
+    const { user, exists, loading, wallet } = useCurrentUser();
 
-
-    const userId = caipAddress!
+    const userId = (wallet ?? caipAddress) ?? ''
     const authType = embeddedWalletInfo?.authProvider
 
-
-
     useEffect(() => {
-        const handleConnect = async () => {
-            console.log("Opening AppKit modal...");
-            open();
-        };
-
         if (!isConnected) {
-            handleConnect().catch((error) => {
+            open().catch((error) => {
                 console.error("Error connecting to AppKit:", error);
-            })
+            });
         }
     }, [isConnected, open])
 
-    // Initialize the form context with react-hook-form and Zod schema.
+    useEffect(() => {
+        if (exists && user?.isBasic) {
+            router.replace('/dashboard');
+        }
+    }, [exists, user?.isBasic, router])
+
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -79,21 +72,17 @@ export default function Onboarding() {
         },
     })
 
-    // onSubmit receives the validated values from the form.
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
+        if (!userId) {
+            log('Missing userId while submitting onboarding form', 'error', userId);
+            return;
+        }
+
         setIsSubmitting(true)
         try {
             const userData = { userId, ...values, sessionId, authType }
-            const response: any = await dispatch(createUserAsync(userData)).unwrap().then(() => {
-                setCanClose(true)
-                router.replace("/dashboard")
-            }).catch((e) => {
-                console.log(e)
-            })
-
-            if (response.status === 200 || 201) {
-                log("user submitted successfully", "info", response.status)
-            }
+            await dispatch(createUserAsync(userData)).unwrap()
+            router.replace("/dashboard")
         } catch (error) {
             log("Error submitting onboarding:", 'error', error)
         } finally {
@@ -101,11 +90,9 @@ export default function Onboarding() {
         }
     }
 
-    if (isSubmitting) {
+    if (loading || isSubmitting) {
         return <Rendering />
     }
-
-
 
     return (
         <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10">
@@ -121,7 +108,7 @@ export default function Onboarding() {
                                 width={40}
                                 height={40}
                                 alt="Light mode illustration"
-                                className="hidden dark:block  object-contain" />
+                                className="hidden dark:block object-contain" />
                             <Image
                                 src={image_white}
                                 width={40}
@@ -191,7 +178,7 @@ export default function Onboarding() {
                                             <Input
                                                 id="email"
                                                 type="email"
-                                                placeholder="john.doe@example.com"
+                                                placeholder="you@example.com"
                                                 {...field}
                                             />
                                         </FormControl>
@@ -199,13 +186,13 @@ export default function Onboarding() {
                                     </FormItem>
                                 )}
                             />
-                            <Button type="submit" disabled={isSubmitting} className="w-full" style={{ cursor: "pointer" }}>
-                                {isSubmitting ? "Submitting..." : "Save Changes"}
+                            <Button type="submit" className="w-full" disabled={isSubmitting}>
+                                {isSubmitting ? "Submitting..." : "Complete onboarding"}
                             </Button>
                         </form>
                     </div>
                 </Form>
             </div>
         </div>
-    )
+    );
 }

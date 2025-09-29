@@ -11,8 +11,8 @@ interface TopReferrersProps {
 export function TopReferrers({ topReferrers }: TopReferrersProps) {
     // Sort the topReferrers array by count (highest first)
     const sortedReferrers = [...topReferrers].sort((a, b) => b.count - a.count);
-    const user: any = useAppSelector(selectUser);
-    const createdAt = new Date(user?.user?.createdAt).toDateString();
+    const user = useAppSelector(selectUser);
+    const createdAt = user ? new Date(user.createdAt).toDateString() : '—';
 
     console.log('top referers', topReferrers)
 
