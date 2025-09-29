@@ -17,9 +17,9 @@ interface AverageClicksProps {
 }
 
 export function AverageClicks({averageClicks}: AverageClicksProps) {
-    const user: any = useAppSelector(selectUser)
+    const user = useAppSelector(selectUser)
 
-    const createdAt = new Date(user?.user?.createdAt).toDateString()
+    const createdAt = user ? new Date(user.createdAt).toDateString() : '—'
     return (
         <Card className="flex flex-col">
             <CardHeader className="items-center flex-col gap-4 pb-0">

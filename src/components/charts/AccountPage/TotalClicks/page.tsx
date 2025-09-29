@@ -10,16 +10,16 @@ import {
 
 } from "@/components/ui/card"
 import { useAppSelector } from "@/store/hooks";
-import { selectUser, User } from "@/store/slices/userSlice"
+import { selectUser } from "@/store/slices/userSlice"
 
 interface TotalClicksProps {
     totalClicks: number
 }
 
-export function TotalClicks({totalClicks}: TotalClicksProps) {
-    const user: any = useAppSelector(selectUser)
+export function TotalClicks({ totalClicks }: TotalClicksProps) {
+    const user = useAppSelector(selectUser)
 
-    const createdAt = new Date(user?.user?.createdAt).toDateString()
+    const createdAt = user ? new Date(user.createdAt).toDateString() : '—'
     return (
         <Card className="flex flex-col">
             <CardHeader className="items-center flex-col gap-4 pb-0">

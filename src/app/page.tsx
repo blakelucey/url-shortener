@@ -12,25 +12,20 @@ import LandingPagePricing from "@/components/landing-page-pricing";
 import Footer from "@/components/footer";
 import FAQ from "@/components/faq/page";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useAppKit, useAppKitAccount } from "@reown/appkit/react";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { fetchUser, selectUser } from "@/store/slices/userSlice";
-import { useAccount } from "wagmi";
+import { useAppKit } from "@reown/appkit/react";
 import { Rendering } from "@/components/rendering";
 import { useRouter } from "next/navigation";
 import { logFn } from "../../logging/logging";
+import { useCurrentUser } from "@/hooks/use-current-user";
 const log = logFn("src.app.page.tsx.")
 
 export default function HomePage() {
   const { theme } = useTheme();
   const { open } = useAppKit()
-  const dispatch = useAppDispatch();
-  const { embeddedWalletInfo, caipAddress } = useAppKitAccount();
-  const { isConnected } = useAccount();
-  const user: any = useAppSelector(selectUser)
   const router = useRouter();
-  const [isMounted, setIsMounted] = useState(false); // Use isMounted instead of isClient
-  const [loading, setLoading] = useState<boolean>(false);
+  const [redirecting, setRedirecting] = useState(false);
+
+  const { user, exists, isComplete, loading, isConnected } = useCurrentUser();
 
 
 
@@ -41,24 +36,17 @@ export default function HomePage() {
   }
 
   useEffect(() => {
-    setIsMounted(true); // Set after client-side mount
-    if (caipAddress) {
-      void dispatch(fetchUser(caipAddress));
+    if (!isConnected || loading || redirecting) {
+      return;
     }
-    if (isConnected) {
-      if (user?.user?._id && user?.user?.isBasic) {
-        router.push('/dashboard');
-        setLoading(true)
-      } else {
-        alert("User does not exist, please finish onboarding")
-        handlePayment()
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [caipAddress, dispatch, isConnected, router]);
 
-  // Show a loading screen if data is still being fetched.
-  if (loading) {
+    if (exists && user?.isBasic) {
+      setRedirecting(true);
+      router.push('/dashboard');
+    }
+  }, [exists, isConnected, loading, router, user, redirecting]);
+
+  if (loading || redirecting) {
     return <Rendering />;
   }
 
@@ -131,6 +119,11 @@ export default function HomePage() {
                     >
                       Sign in with your wallet
                     </Button>
+                  </div>
+                )}
+                {isConnected && exists === false && (
+                  <div className="rounded-xl border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">
+                    We couldn't find an active subscription for this wallet. Start your plan below to access the dashboard.
                   </div>
                 )}
                 <div className="flex flex-col items-center gap-2 text-sm text-muted-foreground sm:flex-row sm:justify-center">

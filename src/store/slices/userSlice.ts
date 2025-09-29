@@ -1,6 +1,6 @@
 // src/store/slices/userSlice.ts
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import type { RootState } from '../store'; // adjust the path as needed
+import type { RootState } from '../store';
 
 export interface StripeCustomerInfo {
   subsRes: any;
@@ -26,8 +26,19 @@ export interface User {
   __v: number;
 }
 
+export interface FetchUserPayload {
+  user: User | null;
+  exists: boolean;
+  isComplete: boolean;
+  wallet: string;
+}
+
 interface UserState {
   user: User | null;
+  exists: boolean | null;
+  isComplete: boolean;
+  lastFetchedWallet: string | null;
+  lastRequestedWallet: string | null;
   stripeInfo: StripeCustomerInfo | null;
   loading: boolean;
   stripeLoading: boolean;
@@ -37,6 +48,10 @@ interface UserState {
 
 const initialState: UserState = {
   user: null,
+  exists: null,
+  isComplete: false,
+  lastFetchedWallet: null,
+  lastRequestedWallet: null,
   stripeInfo: null,
   loading: false,
   stripeLoading: false,
@@ -44,18 +59,33 @@ const initialState: UserState = {
   stripeError: null,
 };
 
-export const fetchUser = createAsyncThunk<User, string, { rejectValue: string }>(
+export const fetchUser = createAsyncThunk<FetchUserPayload, string, { rejectValue: string }>(
   'user/fetchUser',
   async (userId: string, { rejectWithValue }) => {
     try {
-      const response = await fetch(`/api/users?userId=${userId}`);
+      const response = await fetch(`/api/users?userId=${encodeURIComponent(userId)}`);
       const data = await response.json();
       if (!response.ok) {
         return rejectWithValue(data.error || 'Failed to fetch user');
       }
-      return data;
+
+      if (!data?.exists) {
+        return {
+          user: null,
+          exists: false,
+          isComplete: false,
+          wallet: userId,
+        };
+      }
+
+      return {
+        user: data.user as User,
+        exists: true,
+        isComplete: Boolean(data.isComplete),
+        wallet: userId,
+      };
     } catch (error: any) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(error.message || 'Failed to fetch user');
     }
   }
 );
@@ -77,7 +107,10 @@ export const createUserAsync = createAsyncThunk<
       if (!response.ok) {
         return rejectWithValue(data.error || 'Failed to create user');
       }
-      return data.user;
+      if (!data?.user) {
+        return rejectWithValue(data.message || 'Failed to create user');
+      }
+      return data.user as User;
     } catch (error: any) {
       return rejectWithValue(error.message);
     }
@@ -85,8 +118,8 @@ export const createUserAsync = createAsyncThunk<
 );
 
 export const deleteUserAsync = createAsyncThunk<
-  string, // Return type: success message
-  string, // Argument type: userId
+  string,
+  string,
   { rejectValue: string }
 >(
   'user/deleteUser',
@@ -108,7 +141,7 @@ export const deleteUserAsync = createAsyncThunk<
       const response = await fetch(`/api/delete`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -132,9 +165,7 @@ export const fetchStripeCustomer = createAsyncThunk<
   async (email: string, { rejectWithValue }) => {
     try {
       const response = await fetch(`/api/stripe?email=${encodeURIComponent(email)}`);
-      console.log('user slice response', response)
       const data = await response.json();
-      console.log('data', data)
       if (!response.ok) {
         return rejectWithValue(data.error || 'Failed to fetch stripe customer');
       }
@@ -149,8 +180,9 @@ const userSlice = createSlice({
   name: 'user',
   initialState,
   reducers: {
-    setUser: (state, action: PayloadAction<User>) => {
+    setUser: (state, action: PayloadAction<User | null>) => {
       state.user = action.payload;
+      state.exists = action.payload ? true : state.exists;
       state.loading = false;
       state.error = null;
     },
@@ -163,6 +195,10 @@ const userSlice = createSlice({
     },
     clearUser: (state) => {
       state.user = null;
+      state.exists = null;
+      state.isComplete = false;
+      state.lastFetchedWallet = null;
+      state.lastRequestedWallet = null;
       state.loading = false;
       state.error = null;
       state.stripeInfo = null;
@@ -171,12 +207,16 @@ const userSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchUser.pending, (state) => {
+      .addCase(fetchUser.pending, (state, action) => {
         state.loading = true;
         state.error = null;
+        state.lastRequestedWallet = action.meta.arg;
       })
-      .addCase(fetchUser.fulfilled, (state, action: PayloadAction<User>) => {
-        state.user = action.payload;
+      .addCase(fetchUser.fulfilled, (state, action: PayloadAction<FetchUserPayload>) => {
+        state.user = action.payload.user;
+        state.exists = action.payload.exists;
+        state.isComplete = action.payload.isComplete;
+        state.lastFetchedWallet = action.payload.wallet;
         state.loading = false;
       })
       .addCase(fetchUser.rejected, (state, action) => {
@@ -189,6 +229,9 @@ const userSlice = createSlice({
       })
       .addCase(createUserAsync.fulfilled, (state, action: PayloadAction<User>) => {
         state.user = action.payload;
+        state.exists = true;
+        state.isComplete = true;
+        state.lastFetchedWallet = action.payload.userId;
         state.loading = false;
       })
       .addCase(createUserAsync.rejected, (state, action) => {
@@ -200,15 +243,15 @@ const userSlice = createSlice({
         state.error = null;
       })
       .addCase(deleteUserAsync.fulfilled, (state, action: PayloadAction<string>) => {
-        // Clear user data upon successful deletion.
         state.user = null;
+        state.exists = false;
+        state.isComplete = false;
         state.loading = false;
       })
       .addCase(deleteUserAsync.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || 'Failed to delete user';
-      });
-    builder
+      })
       .addCase(fetchStripeCustomer.pending, (state) => {
         state.stripeLoading = true;
         state.stripeError = null;
@@ -224,9 +267,13 @@ const userSlice = createSlice({
   },
 });
 
-// This is your selectUser shortcut selector.
-// You can import this function anywhere in your app to quickly get the user data.
 export const selectUser = (state: RootState) => state.users.user;
+export const selectUserExists = (state: RootState) => state.users.exists;
+export const selectUserIsComplete = (state: RootState) => state.users.isComplete;
+export const selectUserLoading = (state: RootState) => state.users.loading;
+export const selectUserError = (state: RootState) => state.users.error;
+export const selectLastFetchedWallet = (state: RootState) => state.users.lastFetchedWallet;
+export const selectLastRequestedWallet = (state: RootState) => state.users.lastRequestedWallet;
 export const selectStripeInfo = (state: RootState) => state.users.stripeInfo;
 export const selectSubscription = (state: RootState) => state.users.stripeInfo?.subsRes;
 export const selectCustomer = (state: RootState) => state.users.stripeInfo?.customer;

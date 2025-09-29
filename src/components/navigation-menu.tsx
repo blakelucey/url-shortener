@@ -23,13 +23,12 @@ import Image from "next/image";
 import image from '../../public/image.png'
 import image_white from '../../public/image_white.png'
 import { ModeToggle } from "./themeToggle";
-import { useAppKit, useAppKitAccount, useDisconnect } from "@reown/appkit/react";
+import { useAppKit, useDisconnect } from "@reown/appkit/react";
 import { useRouter } from "next/navigation";
-import { selectUser, fetchUser } from "@/store/slices/userSlice";
-import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { Rendering } from "./rendering";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { logFn } from "../../logging/logging";
+import { useCurrentUser } from "@/hooks/use-current-user";
 const log = logFn("src.components.navigation-menu.tsx.")
 
 
@@ -80,38 +79,29 @@ const components: { title: string; href?: string; description: string, onClick?:
 ];
 
 export function NavigationMenuUI() {
-    const [isMounted, setIsMounted] = useState(false); // Use isMounted instead of isClient
     const { disconnect } = useDisconnect();
-    const { embeddedWalletInfo, caipAddress } = useAppKitAccount();
     const { open } = useAppKit()
     const { isConnected } = useAccount();
     const router = useRouter();
-    const user: any = useAppSelector(selectUser)
     const [contact, setContact] = useState<boolean>(false)
-    const [loading, setLoading] = useState<boolean>(false);
-    const dispatch = useAppDispatch();
+    const [redirecting, setRedirecting] = useState(false);
 
     const isMobile = useIsMobile();
+    const { user, exists, loading } = useCurrentUser();
 
     useEffect(() => {
-        setIsMounted(true); // Set after client-side mount
-        if (caipAddress) {
-            void dispatch(fetchUser(caipAddress));
+        if (!isConnected || loading || redirecting) {
+            return;
         }
-        if (isConnected) {
-            if (user?.user?._id && user?.user?.isBasic) {
-                router.push('/dashboard');
-                setLoading(true)
-            } else {
-                alert("User does not exist, please finish onboarding")
-                handlePayment()
-            }
+
+        if (exists && user?.isBasic) {
+            setRedirecting(true);
+            router.push('/dashboard');
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [caipAddress, dispatch, isConnected, router]);
+    }, [exists, isConnected, loading, router, user, redirecting]);
 
     // Show a loading screen if data is still being fetched.
-    if (loading) {
+    if (loading || redirecting) {
         return <Rendering />;
     }
 

@@ -13,14 +13,14 @@ import {
 import { Icons } from "./icons"
 import { ContactDialog } from "./contact-dialog" // Adjust path
 import { NavUser } from "./nav-user"
-import { fetchUser, selectUser, User, selectSubscription, selectCustomer } from "@/store/slices/userSlice"
 import { fetchLinks } from "@/store/slices/linkSlice";
 import { fetchClicks } from "@/store/slices/clickSlice"
-import { useAppDispatch, useAppSelector } from "@/store/hooks"
-import { useAppKitAccount } from "@reown/appkit/react"
+import { useAppDispatch } from "@/store/hooks"
 import { useDisconnect } from "@reown/appkit/react";
 import { useRouter } from "next/navigation";
 import { useAccount } from "wagmi"
+import { useCurrentUser } from "@/hooks/use-current-user";
+import { Rendering } from "./rendering";
 
 
 // Sample data (unchanged)
@@ -61,15 +61,11 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [isContactDialogOpen, setIsContactDialogOpen] = useState(false);
-  const stripeCustomerId = useAppSelector(selectCustomer)
-  const { embeddedWalletInfo, caipAddress } = useAppKitAccount();
-  const stripeSubscription = useAppSelector(selectSubscription)
   const dispatch = useAppDispatch()
-  const user = useAppSelector(selectUser)
-  const [userData, setUserData] = useState<User>(user!)
   const { disconnect } = useDisconnect();
   const { isConnected } = useAccount();
   const router = useRouter();
+  const { user, loading, wallet, exists } = useCurrentUser({ requireAuthenticated: true });
 
   const handleDisconnect = () => {
     console.log("Disconnecting wallet...");
@@ -77,17 +73,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   };
 
   useEffect(() => {
-    if (!isConnected) {
-      router.push('/')
+    if (!isConnected || !wallet || !exists) {
+      return;
     }
-    if (caipAddress) {
-      dispatch(fetchUser(caipAddress)).unwrap().catch((e) => {
-        console.error(e)
-      })
-      dispatch(fetchLinks(caipAddress)).unwrap().catch((e) => {
+
+    dispatch(fetchLinks(wallet)).unwrap().catch((e) => {
         console.error(e)
       });
-      dispatch(fetchClicks(caipAddress))
+    dispatch(fetchClicks(wallet))
         .unwrap()
         .then((clicks) => {
           console.log('Fetched clicks:', clicks);
@@ -95,12 +88,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         .catch((e) => {
           console.error('Error fetching clicks:', e);
         });
-    }
-  }, [caipAddress, dispatch, isConnected, router])
-
-  console.log('user', user)
+  }, [dispatch, isConnected, wallet, exists])
 
   console.log('open', isContactDialogOpen)
+
+  if (loading || !exists || !user) {
+    return <Rendering />;
+  }
 
   const modifiedNavMain = data.navMain.map((item) => ({
     ...item,
@@ -116,7 +110,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           return { ...subItem, onClick: () => window.open(process.env.NEXT_PUBLIC_STRIPE_CUSTOMER_PORTAL, "_blank", "noopener noreferrer") };
         }
         if (item.title === "Settings" && subItem.title === "Roadmap") {
-          return !userData?.isBasic
+          return !user?.isBasic
             ? {
               ...subItem,
               onClick: (e: React.MouseEvent) => {
@@ -141,7 +135,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain items={modifiedNavMain} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={userData} />
+        <NavUser user={user} />
       </SidebarFooter>
       <SidebarRail />
       <ContactDialog

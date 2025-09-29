@@ -1,7 +1,7 @@
 "use client"
 
 import { AppSidebar } from "@/components/app-sidebar"
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import dynamic from 'next/dynamic'
 import {
     Breadcrumb,
@@ -23,7 +23,7 @@ import {
     SidebarProvider,
     SidebarTrigger,
 } from "@/components/ui/sidebar"
-import { selectSubscription, selectUser, User } from "@/store/slices/userSlice"
+import { selectSubscription } from "@/store/slices/userSlice"
 import { useAppSelector } from "@/store/hooks"
 import { AreaChartInteractive } from "@/components/charts/AnalyticsPage/AreaChartInteractive/page"
 import { BarChartBrowser } from "@/components/charts/AnalyticsPage/BarChartBrowser/page"
@@ -48,11 +48,12 @@ import AnimeCountdown from "@/components/anime-countdown"
 import { Button } from "@/components/ui/button"
 import axios from "axios"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { useCurrentUser } from "@/hooks/use-current-user";
+import { Rendering } from "@/components/rendering";
 
 export default function Analytics() {
     const stripeSubscription = useAppSelector(selectSubscription)
-    const user: any = useAppSelector(selectUser)
-    const [userData, setUserData] = useState<User>(user?.user)
+    const { user, loading, exists } = useCurrentUser({ requireAuthenticated: true, requireCompletedProfile: true, redirectTo: '/onboarding' });
 
     const isMobile = useIsMobile();
 
@@ -60,8 +61,9 @@ export default function Analytics() {
     const trialEnd = stripeSubscription?.data[0]?.trial_end;
 
     const handleReactivate = async () => {
-        const customerId = userData?.stripeCustomerId;
-        const deleteAt = userData?.deletionScheduledAt;
+        if (!user) return;
+        const customerId = user.stripeCustomerId;
+        const deleteAt = user.deletionScheduledAt;
         const response = await axios.post(`${process.env.NEXT_PUBLIC_FRONTEND_URL}/api/stripe/reactivate-subscription`, { customerId, deleteAt })
 
 
@@ -69,6 +71,10 @@ export default function Analytics() {
             console.log('success')
             window.open(response.data.url, "_blank", "noopener noreferrer")
         }
+    }
+
+    if (loading || !exists || !user) {
+        return <Rendering />;
     }
 
     return (
@@ -83,9 +89,9 @@ export default function Analytics() {
                             <Breadcrumb>
                                 <BreadcrumbList>
                                     <BreadcrumbItem className="hidden md:block">
-                                        <BreadcrumbLink href="/analytics">Analytics</BreadcrumbLink>
+                                    <BreadcrumbLink href="/analytics">Analytics</BreadcrumbLink>
                                     </BreadcrumbItem>
-                                    {userData?.subscriptionStatus === "trialing" ?
+                                    {user?.subscriptionStatus === "trialing" ?
                                         (<><BreadcrumbSeparator className="hidden md:block" /><BreadcrumbItem>
                                             <BreadcrumbPage><AnimeCountdown trialEnd={trialEnd} /></BreadcrumbPage>
                                         </BreadcrumbItem></>) : (<><BreadcrumbSeparator className="hidden md:block" /><BreadcrumbItem>
@@ -98,11 +104,11 @@ export default function Analytics() {
                             <ModeToggle />
                         </div>
                     </header>
-                    {userData?.subscriptionStatus === "canceled" ? (<div className="flex flex-col p-4 m-4 gap-12">
+                    {user?.subscriptionStatus === "canceled" ? (<div className="flex flex-col p-4 m-4 gap-12">
                         <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
                             Please re-activate your subscription to access features</h1>
                         <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">
-                            If you do not re-activate your subscription by {new Date(userData?.deletionScheduledAt).toLocaleDateString()}, your data will be deleted.</h4>
+                            If you do not re-activate your subscription by {new Date(user?.deletionScheduledAt).toLocaleDateString()}, your data will be deleted.</h4>
                         <Button onClick={() => handleReactivate().catch((e) => console.error(e))} style={{ cursor: "pointer" }} variant="outline">re-activate my subscription</Button>
                     </div>) : (
                         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">

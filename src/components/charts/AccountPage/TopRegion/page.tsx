@@ -9,8 +9,8 @@ interface TopRegionProps {
 }
 
 export function TopRegion({ topRegion }: TopRegionProps) {
-  const user: any = useAppSelector(selectUser);
-  const createdAt = new Date(user?.user?.createdAt).toDateString();
+  const user = useAppSelector(selectUser);
+  const createdAt = user ? new Date(user.createdAt).toDateString() : '—';
 
   return (
     <Card className="flex flex-col">

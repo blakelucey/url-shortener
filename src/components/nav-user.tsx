@@ -1,13 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import {
   BadgeCheck,
-  Bell,
   ChevronsUpDown,
   CreditCard,
   LogOut,
-  Sparkles,
 } from "lucide-react"
 
 import {
@@ -33,47 +31,31 @@ import {
 import { useDisconnect } from "@reown/appkit/react";
 import { useRouter } from "next/navigation";
 import { useAccount } from "wagmi"
-import { User, selectSubscription } from '@/store/slices/userSlice'
 import { Icons } from "./icons";
-import { useAppSelector } from "@/store/hooks";
+import type { User } from '@/store/slices/userSlice';
 import { logFn } from "../../logging/logging";
 const log = logFn("src.components.nav-user.tsx.")
 
 export function NavUser({
   user,
-}: any) {
+}: { user: User | null }) {
   const { isMobile } = useSidebar()
   const { disconnect } = useDisconnect();
-  const { isConnected } = useAccount();
-  const stripeSubscription = useAppSelector(selectSubscription)
+  const { isConnected, isConnecting, isReconnecting } = useAccount();
   const router = useRouter();
-  const [userData, setUserData] = useState<User>(user?.user)
 
   useEffect(() => {
-    if (!isConnected) {
+    if (!user && !isConnected && !isConnecting && !isReconnecting) {
+      log('No user state and wallet disconnected; returning to home', 'info');
       router.push('/')
     }
-  }, [isConnected, router])
+  }, [user, isConnected, isConnecting, isReconnecting, router])
 
 
   const handleDisconnect = () => {
     console.log("Disconnecting wallet...");
     disconnect();
   };
-
-      interface PaymentLinkResponse {
-        url: string
-    }
-
-    const handlePayment = async () => {
-        try {
-            const res = await fetch("/api/stripe/create-checkout-session", { method: "POST" });
-            const { url } = (await res.json()) as PaymentLinkResponse;
-            window.open(url, "_blank", "noopener noreferrer");
-        } catch (e) {
-            log("error", 'error', e)
-        }
-    }
 
   return (
     <>
@@ -87,13 +69,13 @@ export function NavUser({
               >
                 <Avatar className="h-8 w-8 rounded-lg">
                   <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-                  <AvatarFallback className="rounded-lg">{userData?.firstName && userData?.lastName
-                    ? `${userData.firstName[0]}${userData.lastName[0]}`
-                    : "N/A"}</AvatarFallback>
+                  <AvatarFallback className="rounded-lg">{user?.firstName && user?.lastName
+                    ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase()
+                    : "??"}</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{userData?.firstName}</span>
-                  <span className="truncate text-xs">{userData?.lastName}</span>
+                  <span className="truncate font-medium">{user?.firstName ?? 'User'}</span>
+                  <span className="truncate text-xs">{user?.lastName ?? ''}</span>
                 </div>
                 <ChevronsUpDown className="ml-auto size-4" />
               </SidebarMenuButton>
@@ -108,18 +90,18 @@ export function NavUser({
                 <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                   <Avatar className="h-8 w-8 rounded-lg">
                     <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-                    <AvatarFallback className="rounded-lg">{userData?.firstName && userData?.lastName
-                      ? `${userData.firstName[0]}${userData.lastName[0]}`
-                      : "N/A"}</AvatarFallback>
+                    <AvatarFallback className="rounded-lg">{user?.firstName && user?.lastName
+                      ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase()
+                      : "??"}</AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-medium">{userData?.firstName}</span>
-                    <span className="truncate text-xs">{userData?.lastName}</span>
+                    <span className="truncate font-medium">{user?.firstName ?? 'User'}</span>
+                    <span className="truncate text-xs">{user?.lastName ?? ''}</span>
                   </div>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              {/* {userData?.isBasic === false && <><DropdownMenuGroup>
+              {/* {user?.isBasic === false && <><DropdownMenuGroup>
                 <DropdownMenuItem onClick={handlePayment}>
                   <Sparkles />
                   Upgrade to Pro

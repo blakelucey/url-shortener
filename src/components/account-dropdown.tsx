@@ -1,9 +1,8 @@
 import {
     CreditCard,
-    Sparkles,
     Users,
 } from "lucide-react"
-import React, { useState, useEffect } from "react"
+import React, { useEffect } from "react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -23,27 +22,27 @@ import { Icons } from "./icons"
 import { useAppKitAccount, useDisconnect } from "@reown/appkit/react";
 import { useRouter } from "next/navigation";
 import { useAccount } from "wagmi"
-import { deleteUserAsync, selectUser, User, selectSubscription } from "@/store/slices/userSlice";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { deleteUserAsync } from "@/store/slices/userSlice";
+import { useAppDispatch } from "@/store/hooks";
+import { useCurrentUser } from "@/hooks/use-current-user";
 import { logFn } from "../../logging/logging";
 const log = logFn("src.components.account-dropdown.tsx.")
 
 export function AccountDropdownMenu() {
     const router = useRouter();
     const dispatch = useAppDispatch()
-    const stripeSubscription = useAppSelector(selectSubscription)
     const { caipAddress } = useAppKitAccount();
     const { disconnect } = useDisconnect();
     const { isConnected } = useAccount();
-    const user: any = useAppSelector(selectUser)
-    const [userData, setUserData] = useState<User>(user?.user)
-    const userId = caipAddress!
+    const { user, loading, exists } = useCurrentUser({ requireAuthenticated: true, requireCompletedProfile: true });
+    const userId = caipAddress ?? user?.userId ?? ''
 
     useEffect(() => {
-        if (!isConnected) {
+        if (!user && !isConnected) {
+            log('Not connected and no user context; redirecting to home page', "info", isConnected)
             router.push('/')
         }
-    }, [isConnected, router])
+    }, [user, isConnected, router])
 
     const handleDisconnect = () => {
         console.log("Disconnecting wallet...");
@@ -73,6 +72,10 @@ export function AccountDropdownMenu() {
         console.log('response', response)
     }
 
+    if (loading || !exists || !user || !userId) {
+        return null;
+    }
+
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -87,7 +90,7 @@ export function AccountDropdownMenu() {
                     <CreditCard />
                     <span>Billing</span>
                 </DropdownMenuItem>
-                {/* {userData?.isBasic === false && <><DropdownMenuGroup>
+                {/* {user?.isBasic === false && <><DropdownMenuGroup>
                     <DropdownMenuItem onClick={handlePayment}>
                         <Sparkles />
                         Upgrade to Pro

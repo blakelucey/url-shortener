@@ -1,7 +1,7 @@
 "use client"
 
 import { AppSidebar } from "@/components/app-sidebar"
-import React, { useState, useEffect } from 'react'
+import React, { useMemo, useState } from 'react'
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -16,11 +16,9 @@ import {
     SidebarProvider,
     SidebarTrigger,
 } from "@/components/ui/sidebar"
-import { useAccount } from "wagmi"
-import { useAppKitAccount } from "@reown/appkit/react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks"
 import { ModeToggle } from "@/components/themeToggle"
-import { fetchUser, selectUser, User, selectSubscription } from "@/store/slices/userSlice"
+import { selectSubscription } from "@/store/slices/userSlice"
 import { MostPopularOS } from "@/components/charts/AccountPage/PopularOS/page"
 import { TotalClicks } from "@/components/charts/AccountPage/TotalClicks/page"
 import UpdateEmail from "@/components/update-email"
@@ -43,15 +41,16 @@ import AnimeCountdown from "@/components/anime-countdown"
 import { Button } from "@/components/ui/button"
 import axios from "axios"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { useCurrentUser } from "@/hooks/use-current-user";
+import { Rendering } from "@/components/rendering";
+import { logFn } from "../../../logging/logging"
+const log = logFn("src.app.account.page.tsx.")
 
 
 
 export default function Account() {
-    const { embeddedWalletInfo, caipAddress } = useAppKitAccount();
     const stripeSubscription = useAppSelector(selectSubscription)
-    const { isConnected, address } = useAccount();
-    const user: any = useAppSelector(selectUser)
-    const [userData, setUserData] = useState<User>(user?.user)
+    const { user, exists, loading } = useCurrentUser({ requireAuthenticated: true, requireCompletedProfile: true, redirectTo: '/onboarding' });
     const userAnalytics = useAppSelector(selectUserAnalyticsSummary);
     const osCounts = useAppSelector(selectClicksByOperatingSystem);
     const browserCounts = useAppSelector(selectClicksByBrowser)
@@ -64,8 +63,6 @@ export default function Account() {
     const topUTMTerm = useAppSelector(selectTopUTMTerm);
     const topUTMContent = useAppSelector(selectTopUTMContent);
     const topUTMCampaign = useAppSelector(selectTopUTMCampaign);
-    const [reactivateSub, setReactivateSub] = useState<boolean>()
-
     const isMobile = useIsMobile();
 
     const trialEnd = stripeSubscription?.data[0]?.trial_end
@@ -77,41 +74,29 @@ export default function Account() {
 
     console.log('userAnalytics', userAnalytics)
 
-    const createdDate = new Date(userData?.createdAt).toDateString()
-
-    console.log('userData', userData)
+    const createdDate = useMemo(() => user ? new Date(user.createdAt).toDateString() : '', [user]);
 
     const dispatch = useAppDispatch()
 
 
-    useEffect(() => {
-        console.log('isConnected:', isConnected);
-        console.log('caipAddress:', caipAddress);
-
-        try {
-            if (caipAddress) {
-                dispatch(fetchUser(caipAddress)).catch((e) => {
-                    console.error(e)
-                })
-            }
-        }
-        catch (e) {
-            console.error(e)
-        }
-
-    }, [isConnected, caipAddress, dispatch, reactivateSub]);
-
     const handleReactivate = async () => {
-        const customerId = userData?.stripeCustomerId;
-        const deleteAt = userData?.deletionScheduledAt;
+        if (!user) return;
+        const customerId = user.stripeCustomerId;
+        const deleteAt = user.deletionScheduledAt;
         const response = await axios.post(`${process.env.NEXT_PUBLIC_FRONTEND_URL}/api/stripe/reactivate-subscription`, { customerId, deleteAt })
 
 
         if (response.status === 200) {
             console.log('success')
             window.open(response.data.url, "_blank", "noopener noreferrer")
-            setReactivateSub(true)
+            // setReactivateSub(true)
         }
+    }
+
+    log("render", 'info',{user: user, exists: exists, loading: loading});
+
+    if (loading || !exists || !user) {
+        return <Rendering />;
     }
 
 
@@ -131,13 +116,13 @@ export default function Account() {
                                     </BreadcrumbItem>
                                     <BreadcrumbSeparator className="hidden md:block" />
                                     <BreadcrumbItem>
-                                        <BreadcrumbPage>{userData?.firstName} {userData?.lastName}</BreadcrumbPage>
+                                        <BreadcrumbPage>{user?.firstName} {user?.lastName}</BreadcrumbPage>
                                     </BreadcrumbItem>
                                     <BreadcrumbSeparator className="hidden md:block" />
                                     <BreadcrumbItem>
                                         <BreadcrumbPage>Account Created: {createdDate}</BreadcrumbPage>
                                     </BreadcrumbItem>
-                                    {userData?.subscriptionStatus === "trialing" ?
+                                    {user?.subscriptionStatus === "trialing" ?
                                         (<><BreadcrumbSeparator className="hidden md:block" /><BreadcrumbItem>
                                             <BreadcrumbPage><AnimeCountdown trialEnd={trialEnd} /></BreadcrumbPage>
                                         </BreadcrumbItem></>) : (<><BreadcrumbSeparator className="hidden md:block" /><BreadcrumbItem>
@@ -151,11 +136,11 @@ export default function Account() {
                         </div>
                     </header>
                     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-                        {userData?.subscriptionStatus === "canceled" ? (<div className="flex flex-col p-4 m-4 gap-12">
+                        {user?.subscriptionStatus === "canceled" ? (<div className="flex flex-col p-4 m-4 gap-12">
                             <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
                                 Please re-activate your subscription to access features</h1>
                             <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">
-                                If you do not re-activate your subscription by {new Date(userData?.deletionScheduledAt).toLocaleDateString()}, your data will be deleted.</h4>
+                                If you do not re-activate your subscription by {new Date(user?.deletionScheduledAt).toLocaleDateString()}, your data will be deleted.</h4>
                             <Button onClick={() => handleReactivate().catch((e) => console.error(e))} style={{ cursor: "pointer" }}>re-activate my subscription</Button>
                         </div>) : (
                             <div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min">
