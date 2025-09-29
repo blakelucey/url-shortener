@@ -39,8 +39,8 @@ function getQueryClient(): QueryClient {
 
 // Metadata for WalletConnect
 const metadata = {
-    name: "defi-yield-aggregator",
-    description: "Stake Yield Aggregator",
+    name: "kliqly.link",
+    description: "Create short, smart links with built-in analytics. Fast, fun, and totally kliq-worthy.",
     url: `${process.env.NEXT_PUBLIC_FRONTEND_URL}`,
     icons: ["https://assets.reown.com/reown-profile-pic.png"],
 };
