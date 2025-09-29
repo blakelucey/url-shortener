@@ -29,7 +29,7 @@ import { Rendering } from "@/components/rendering";
 export default function Dashboard() {
   const stripeCustomerId = useAppSelector(selectCustomer)
   const stripeSubscription = useAppSelector(selectSubscription)
-  const { user, loading, exists } = useCurrentUser({ requireAuthenticated: true, requireCompletedProfile: true, redirectTo: '/onboarding' });
+  const { user, loading, exists } = useCurrentUser({ requireAuthenticated: true, requireCompletedProfile: true, redirectTo: '/onboarding', missingUserRedirect: '/' });
   const dispatch = useAppDispatch();
 
 

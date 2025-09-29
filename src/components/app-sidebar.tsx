@@ -21,6 +21,8 @@ import { useRouter } from "next/navigation";
 import { useAccount } from "wagmi"
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { Rendering } from "./rendering";
+import { logFn } from "../../logging/logging"
+const log = logFn("src.components.app-sidebar.tsx.")
 
 
 // Sample data (unchanged)
@@ -68,8 +70,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user, loading, wallet, exists } = useCurrentUser({ requireAuthenticated: true });
 
   const handleDisconnect = () => {
-    console.log("Disconnecting wallet...");
-    disconnect();
+    log("Disconnecting wallet...", 'info');
+    disconnect().then(() => {
+      router.push('/');
+    });
   };
 
   useEffect(() => {

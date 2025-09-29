@@ -53,7 +53,7 @@ import { Rendering } from "@/components/rendering";
 
 export default function Analytics() {
     const stripeSubscription = useAppSelector(selectSubscription)
-    const { user, loading, exists } = useCurrentUser({ requireAuthenticated: true, requireCompletedProfile: true, redirectTo: '/onboarding' });
+    const { user, loading, exists } = useCurrentUser({ requireAuthenticated: true, requireCompletedProfile: true, redirectTo: '/onboarding', missingUserRedirect: '/' });
 
     const isMobile = useIsMobile();
 

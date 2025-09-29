@@ -19,6 +19,7 @@ export interface UseCurrentUserOptions {
   requireAuthenticated?: boolean;
   requireCompletedProfile?: boolean;
   redirectTo?: string;
+  missingUserRedirect?: string;
 }
 
 export function useCurrentUser(options: UseCurrentUserOptions = {}) {
@@ -26,6 +27,7 @@ export function useCurrentUser(options: UseCurrentUserOptions = {}) {
     requireAuthenticated = false,
     requireCompletedProfile = false,
     redirectTo = '/',
+    missingUserRedirect = '/',
   } = options;
 
   const dispatch = useAppDispatch();
@@ -77,14 +79,14 @@ export function useCurrentUser(options: UseCurrentUserOptions = {}) {
     }
 
     if (exists === false) {
-      router.replace(redirectTo);
+      router.replace(missingUserRedirect);
       return;
     }
 
     if (requireCompletedProfile && exists && !isComplete) {
       router.replace(redirectTo);
     }
-  }, [requireAuthenticated, requireCompletedProfile, exists, isComplete, loading, isConnected, redirectTo, router, walletCandidate, user]);
+  }, [requireAuthenticated, requireCompletedProfile, exists, isComplete, loading, isConnected, redirectTo, missingUserRedirect, router, walletCandidate]);
 
   const refresh = useMemo(() => {
     if (!walletCandidate) {

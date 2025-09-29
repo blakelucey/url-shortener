@@ -53,8 +53,10 @@ export function NavUser({
 
 
   const handleDisconnect = () => {
-    console.log("Disconnecting wallet...");
-    disconnect();
+    log("Disconnecting wallet...", 'info');
+    disconnect().then(() => {
+      router.push('/');
+    });
   };
 
   return (

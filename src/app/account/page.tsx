@@ -50,7 +50,7 @@ const log = logFn("src.app.account.page.tsx.")
 
 export default function Account() {
     const stripeSubscription = useAppSelector(selectSubscription)
-    const { user, exists, loading } = useCurrentUser({ requireAuthenticated: true, requireCompletedProfile: true, redirectTo: '/onboarding' });
+    const { user, exists, loading } = useCurrentUser({ requireAuthenticated: true, requireCompletedProfile: true, redirectTo: '/onboarding', missingUserRedirect: '/' });
     const userAnalytics = useAppSelector(selectUserAnalyticsSummary);
     const osCounts = useAppSelector(selectClicksByOperatingSystem);
     const browserCounts = useAppSelector(selectClicksByBrowser)
